@@ -13,3 +13,5 @@ Without signing material, release builds are unsigned and must not be distribute
 The 0.x test builds used a different debug key. Uninstall one before installing 1.0, first noting settings/mappings; uninstalling clears app data. Releases signed with the 1.0 key can update one another normally.
 
 Run the hardware acceptance checklist and describe unresolved firmware limitations honestly. There is no implied Play Store publication. The workflow in ci-workflow.yml is an optional unsigned CI template; activate it only with an account/token permitted to write GitHub workflows. Never put signing passwords in a workflow file.
+
+Version 1.1 uses versionCode 110 and the same dedicated release key as 1.0. Keep v1.0 assets immutable; publish updates under a new tag. Quick Access/native drag and firmware behavior remain device acceptance cases.

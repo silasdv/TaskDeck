@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1
+
+- Quick Access favorites dock with Floating, Compact, Shelf and Thumb corners styles. Thumb corners groups shortcuts at the bottom left/right with larger targets and independent overflow scrolling.
+- Pin with card Select/long-press or choose installed apps in Dock settings. Touch drag reorders; controller Select provides move/remove actions. Favorites do not create task cards or change protection.
+- Dock size (60–160%), theme, visibility, magnification and running indicators. Automatic app theme follows Android. Current marks the reported app used before TaskDeck.
+- Moved mapped controller hints to the top right beside Settings; reduced button text/badges, redrew Refresh and made Settings backgrounds/focus truly circular.
+- RAM details reachable with D-pad/left stick. Setup completion holds longer and supports Confirm to continue; permission indicators verify live access rather than saved settings.
+- VersionCode 110, same dedicated release key as 1.0. Real RP6 drag-and-drop, firmware origin reporting and notification behavior remain hardware acceptance cases.
+
 ## 1.0
 
 - One main deck; removed the separate Switch apps mode and mode tabs. Each opening selects the first app card, including a protected card; only an empty deck focuses Refresh.

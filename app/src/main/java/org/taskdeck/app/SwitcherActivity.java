@@ -16,7 +16,7 @@ import java.util.*;
 
 /** Explicit card selection never depends on ListView focus or Android's touch mode. */
 public class SwitcherActivity extends Activity {
-    enum Page { APPS, SETUP, CONNECT, CHORD, CONFIRM, SHORTCUTS, RESULTS, WINDOWS, SETTINGS, MEMORY, COMPLETE, MAPPING, BIND }
+    enum Page { APPS, SETUP, CONNECT, CHORD, CONFIRM, SHORTCUTS, RESULTS, WINDOWS, SETTINGS, MEMORY, COMPLETE, MAPPING, BIND, DOCKSTYLE, DOCKBEHAVIOR, PICKER }
     private TaskDeckApp app;
     private Page page;
     private DeckTheme theme;
@@ -25,6 +25,8 @@ public class SwitcherActivity extends Activity {
     private ScrollView appScroll;
     private GridLayout appGrid;
     private TextView compactMemory;
+    private QuickAccessDock dock; private Page pickerReturn=Page.SETTINGS; private boolean dockZone; private int dockIndex,pickerPage;
+    private Button ramButton; private List<JSONObject> pickerApps;
     private Button setupPrevious,setupNext;
     private int gridColumns=1,renderWidth,renderHeight,iconAccent;
     private HorizontalScrollView rail;
@@ -84,17 +86,20 @@ public class SwitcherActivity extends Activity {
         super.onCreate(state); app=(TaskDeckApp)getApplication(); setupStep=state==null?0:state.getInt("setupStep",0); settingsCategory=state==null?0:state.getInt("settingsCategory",0); ramPage=state==null?0:state.getInt("ramPage",0);
         if(Build.VERSION.SDK_INT>=30) getWindow().setDecorFitsSystemWindows(false);
         else getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE|View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+        if(state!=null&&"APPS".equals(state.getString("pickerReturn"))) pickerReturn=Page.APPS;
         Page initial=prefs().getBoolean("setupComplete",false)?Page.APPS:Page.SETUP;
         if(state!=null) try { initial=Page.valueOf(state.getString("page",initial.name())); } catch(IllegalArgumentException ignored){}
         if(initial==Page.CHORD || initial==Page.CONFIRM || initial==Page.WINDOWS || initial==Page.COMPLETE) initial=prefs().getBoolean("setupComplete",false)?Page.APPS:Page.SETUP;
         if(initial==Page.BIND) initial=Page.MAPPING;
         if(initial==Page.SETUP&&prefs().getBoolean("setupComplete",false)) initial=Page.SETTINGS;
-        show(initial);
+        if(getLastNonConfigurationInstance() instanceof JSONObject){ entryTask=(JSONObject)getLastNonConfigurationInstance(); captureEntry=false; }
+        show(initial); if(initial==Page.PICKER) showPicker();
     }
-    @Override public void onSaveInstanceState(Bundle out){ out.putString("page",page.name()); out.putInt("setupStep",setupStep); out.putInt("settingsCategory",settingsCategory); out.putInt("ramPage",ramPage); super.onSaveInstanceState(out); }
+    @Override public Object onRetainNonConfigurationInstance(){ return entryTask; }
+    @Override public void onSaveInstanceState(Bundle out){ out.putString("page",page.name()); out.putInt("setupStep",setupStep); out.putInt("settingsCategory",settingsCategory); out.putInt("ramPage",ramPage); out.putString("pickerReturn",pickerReturn.name()); super.onSaveInstanceState(out); }
     @Override protected void onResume(){
         super.onResume(); TaskDeckApp.recordingShortcut=page==Page.CHORD || page==Page.CONFIRM || page==Page.BIND;
-        app.changed=this::connectionChanged; if(page==Page.SETUP || page==Page.SETTINGS) show(page); updateStatus();
+        app.changed=this::connectionChanged; app.verifyLiveAccess(); if(page==Page.SETUP || page==Page.SETTINGS) show(page); updateStatus();
         if(app.backend!=null) refresh(); else app.connect(false);
     }
     @Override protected void onPause(){ app.changed=null; TaskDeckApp.recordingShortcut=false; stopStick(); super.onPause(); }
@@ -111,9 +116,9 @@ public class SwitcherActivity extends Activity {
         int restoreFocus=page==next&&next!=Page.APPS?controlIndex:-1;
         if(next==Page.APPS){ resetSelection=true; selection.first(); }
         if(protectionPopup!=null) protectionPopup.dismiss(); pageScroll=null;
-        stopStick(); feedback=""; TaskDeckApp.recordingShortcut=next==Page.CHORD || next==Page.CONFIRM || next==Page.BIND; page=next; toolZone=false;
+        stopStick(); feedback=""; TaskDeckApp.recordingShortcut=next==Page.CHORD || next==Page.CONFIRM || next==Page.BIND; page=next; toolZone=false; dockZone=false; dock=null; ramButton=null;
         controls.clear(); controlIndex=-1; tools.clear(); cards.clear(); cardRow=null; rail=null; appScroll=null; appGrid=null; appContent=null; compactMemory=null; operationInfo=null; memoryBars=null; categories.clear(); setupPrevious=null; setupNext=null; renderWidth=0; renderHeight=0; status=null; memory=null;
-        theme=DeckTheme.named(prefs().getString("theme","dark"));
+        theme=DeckTheme.resolve(prefs().getString("theme","dark"),getResources().getConfiguration().uiMode);
         if(iconAccent!=theme.accent){ iconCache.evictAll(); iconAccent=theme.accent; }
         root=new LinearLayout(this); root.setOrientation(LinearLayout.VERTICAL); root.setBackgroundColor(theme.background); root.setPadding(dp(12),dp(6),dp(12),dp(6));
         root.setOnApplyWindowInsetsListener((view,insets)->{
@@ -121,11 +126,11 @@ public class SwitcherActivity extends Activity {
             else view.setPadding(dp(12)+insets.getSystemWindowInsetLeft(),dp(6)+insets.getSystemWindowInsetTop(),dp(12)+insets.getSystemWindowInsetRight(),dp(6)+insets.getSystemWindowInsetBottom());
             return insets;
         }); root.setFocusableInTouchMode(true); setContentView(root); if(!controllerMode) root.requestFocus();
-        if(page==Page.APPS) appsPage(); else if(page==Page.SETUP) setupPage(); else if(page==Page.CONNECT) connectPage(); else if(page==Page.SHORTCUTS) shortcutsPage(); else if(page==Page.RESULTS) resultsPage(); else if(page==Page.WINDOWS) windowsPage(); else if(page==Page.SETTINGS) settingsPage(); else if(page==Page.MEMORY) memoryPage(); else if(page==Page.COMPLETE) completionPage(); else if(page==Page.MAPPING) mappingPage(); else if(page==Page.BIND) bindPage(); else recordPage();
+        if(page==Page.APPS) appsPage(); else if(page==Page.SETUP) setupPage(); else if(page==Page.CONNECT) connectPage(); else if(page==Page.SHORTCUTS) shortcutsPage(); else if(page==Page.RESULTS) resultsPage(); else if(page==Page.WINDOWS) windowsPage(); else if(page==Page.SETTINGS) settingsPage(); else if(page==Page.MEMORY) memoryPage(); else if(page==Page.COMPLETE) completionPage(); else if(page==Page.MAPPING) mappingPage(); else if(page==Page.BIND) bindPage(); else if(page==Page.DOCKSTYLE) dockStylePage(); else if(page==Page.DOCKBEHAVIOR) dockBehaviorPage(); else if(page==Page.PICKER) pickerPage(); else recordPage();
         if(restoreY>0 && pageScroll!=null){ ScrollView scroll=pageScroll; main.post(()->scroll.scrollTo(0,restoreY)); }
         if(controllerMode && restoreFocus>=0 && restoreFocus<controls.size()){ int index=restoreFocus; main.post(()->focusControl(index)); }
         if(controllerMode&&restoreFocus<0&&next!=Page.APPS&&next!=Page.COMPLETE&&controls.size()>1) focusControl(next==Page.SETTINGS?1+settingsCategory:1);
-        root.requestApplyInsets();
+        applySystemBars(); root.requestApplyInsets();
     }
     private boolean landscape(){ return getResources().getConfiguration().orientation==android.content.res.Configuration.ORIENTATION_LANDSCAPE; }
     private void formPage(String title){
@@ -145,10 +150,86 @@ public class SwitcherActivity extends Activity {
     private String actionFor(String key){ switch(key){ case "A":return "open"; case "B":return "exit"; case "X":return "close"; case "Y":return "clear"; default:return "others"; } }
     private Button controllerButton(LinearLayout parent,String key,String label,String icon,Runnable action){
         String printed=ControllerBindings.badge(prefs(),actionFor(key)); Button b=compactButton(button(parent,label,action));
-        Drawable badge=new ControllerBadge(printed,theme.text); boolean shoulder=printed.length()>1&&!ControllerBadge.symbol(printed); badge.setBounds(0,0,dp(shoulder?28:22),dp(22));
-        b.setCompoundDrawables(badge,null,null,null); b.setCompoundDrawablePadding(dp(4)); b.setContentDescription(printed+": "+label); b.setSingleLine(true); if(key.equals("R1")) b.setTextSize(11);
+        Drawable badge=new ControllerBadge(printed,theme.text); boolean shoulder=printed.length()>1&&!ControllerBadge.symbol(printed); badge.setBounds(0,0,dp(shoulder?21:16),dp(16));
+        b.setCompoundDrawables(badge,null,null,null); b.setCompoundDrawablePadding(dp(3)); String full=ControllerBindings.NAMES[Arrays.asList(ControllerBindings.ACTIONS).indexOf(actionFor(key))]; b.setContentDescription(printed+": "+full); b.setTooltipText(full); b.setTextSize(key.equals("R1")?9:9.5f); b.setPadding(dp(3),0,dp(3),0); b.setSingleLine(true);
         ((LinearLayout.LayoutParams)b.getLayoutParams()).rightMargin=dp(4); return b;
     }
+
+    private void applySystemBars(){
+        boolean light=theme.background==DeckTheme.named("light").background; getWindow().setStatusBarColor(theme.background); getWindow().setNavigationBarColor(theme.background);
+        if(Build.VERSION.SDK_INT>=30&&getWindow().getInsetsController()!=null){ int flags=android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS|android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS; getWindow().getInsetsController().setSystemBarsAppearance(light?flags:0,flags); } else if(Build.VERSION.SDK_INT<30){ int mask=View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR,flags=getWindow().getDecorView().getSystemUiVisibility(); getWindow().getDecorView().setSystemUiVisibility((flags&~mask)|(light?mask:0)); }
+    }
+    private void roundSettings(Button button){
+        StateListDrawable states=new StateListDrawable(); for(int state:new int[]{android.R.attr.state_activated,android.R.attr.state_focused,android.R.attr.state_pressed,0}){ GradientDrawable shape=new GradientDrawable(); shape.setShape(GradientDrawable.OVAL); shape.setColor(state==0?theme.raised:theme.selected); if(state!=0) shape.setStroke(dp(2),theme.accent); states.addState(state==0?new int[]{}:new int[]{state},shape); } button.setBackground(states); button.setPadding(dp(9),0,dp(9),0);
+    }
+    private boolean isCurrent(String pkg){ return entryTask!=null&&pkg.equals(entryTask.optString("package"))&&rawTasks.stream().anyMatch(t->pkg.equals(t.optString("package"))); }
+    private String launchLabel(String pkg){ try { return getPackageManager().getApplicationLabel(getPackageManager().getApplicationInfo(pkg,0)).toString(); } catch(Exception unavailable){ return pkg; } }
+    private boolean processReported(String pkg){ for(List<JSONObject> rows:Arrays.asList(rawTasks,backgroundApps)) for(JSONObject task:rows) if(pkg.equals(task.optString("package"))&&Set.of("sampled","shared","partial").contains(task.optString("memoryState"))) return true; return false; }
+    private void createDock(){
+        dock=new QuickAccessDock(this,prefs(),new QuickAccessDock.Host(){
+            public Drawable icon(String pkg){ return appIcon(pkg); } public String label(String pkg){ return launchLabel(pkg); } public boolean running(String pkg){ return processReported(pkg); } public boolean current(String pkg){ return isCurrent(pkg); }
+            public void launch(String pkg){ dockZone=true; toolZone=false; dockIndex=Math.max(0,QuickAccess.read(prefs()).indexOf(pkg)); launchFavorite(pkg); }
+            public void options(String pkg){ dockOptions(pkg); } public void add(){ showPicker(); } public void changed(){ renderDock(); }
+            public boolean controller(){ return controllerMode; }
+            public void touch(){ setInputMode(false); dockZone=false; if(dock!=null) dock.blur(); }
+        }); root.addView(dock,new LinearLayout.LayoutParams(-1,-2)); renderDock();
+    }
+    private void renderDock(){ if(dock==null||page!=Page.APPS) return; dock.update(theme); if(dockZone&&controllerMode){ dockIndex=Math.max(0,Math.min(dock.items.size()-1,dockIndex)); dock.focusItem(dockIndex); } }
+    private void launchFavorite(String pkg){
+        if(busy) return; if(app.backend!=null) for(JSONObject task:rawTasks) if(pkg.equals(task.optString("package"))){ openWindow(task); return; }
+        Intent intent=getPackageManager().getLaunchIntentForPackage(pkg); if(intent==null){ feedback="App is no longer installed or has no launchable screen. Select it to remove the shortcut."; updateStatus(); return; }
+        try { startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); finish(); } catch(RuntimeException denied){ feedback="Android could not open "+launchLabel(pkg); updateStatus(); }
+    }
+    private void pin(String pkg){
+        if(!QuickAccess.read(prefs()).contains(pkg)&&getPackageManager().getLaunchIntentForPackage(pkg)==null){ feedback="This app has no launchable shortcut"; updateStatus(); return; }
+        QuickAccess.toggle(prefs(),pkg); renderDock();
+    }
+    private void choice(String title,String[] labels,int selected,java.util.function.IntConsumer picked){
+        AlertDialog.Builder builder=new AlertDialog.Builder(this).setTitle(title); DialogInterface.OnClickListener pick=(d,which)->{ d.dismiss(); picked.accept(which); }; if(selected<0) builder.setItems(labels,pick); else builder.setSingleChoiceItems(labels,selected,pick); AlertDialog dialog=builder.setNegativeButton("Cancel",null).create();
+        dialog.setOnKeyListener((d,key,event)->{ setInputMode(true);
+            if(key==ControllerBindings.code(prefs(),"exit")||key==KeyEvent.KEYCODE_BACK){ if(event.getAction()==0) d.dismiss(); return true; }
+            if(key==ControllerBindings.code(prefs(),"open")||key==KeyEvent.KEYCODE_DPAD_CENTER){ if(event.getAction()==0&&event.getRepeatCount()==0){ int value=dialog.getListView().getSelectedItemPosition(); if(value<0) value=dialog.getListView().getCheckedItemPosition(); d.dismiss(); picked.accept(Math.max(0,value)); } return true; } return false;
+        });
+        dialog.setOnShowListener(ignored->{ int[] axis={0}; dialog.getListView().setOnTouchListener((view,event)->{ if(event.getActionMasked()==MotionEvent.ACTION_DOWN) setInputMode(false); return false; }); dialog.getListView().setOnGenericMotionListener((view,event)->{ if(!event.isFromSource(InputDevice.SOURCE_JOYSTICK)) return false; setInputMode(true); float y=event.getAxisValue(MotionEvent.AXIS_HAT_Y); if(Math.abs(y)<.55f) y=event.getAxisValue(MotionEvent.AXIS_Y); int next=y>.55f?1:y<-.55f?-1:0;
+            if(next!=0&&next!=axis[0]){ int value=dialog.getListView().getSelectedItemPosition(); if(value<0) value=dialog.getListView().getCheckedItemPosition(); dialog.getListView().setSelection(Math.max(0,Math.min(labels.length-1,value+next))); } axis[0]=next; return true; }); }); dialog.show();
+    }
+    private void dockOptions(String pkg){
+        choice("Quick Access",new String[]{"Open "+launchLabel(pkg),"Move left","Move right","Remove from Quick Access"},-1,index->{ if(index==0){ launchFavorite(pkg); return; } List<String> order=QuickAccess.read(prefs()); int position=order.indexOf(pkg); if(index==3) order.remove(pkg); else order=QuickAccess.move(order,pkg,position+(index==1?-1:1)); QuickAccess.save(prefs(),order); dockIndex=Math.max(0,order.indexOf(pkg)); renderDock(); });
+    }
+    private void dockStylePage(){
+        formPage("Dock style & size"); String[] styles={"Floating","Compact","Shelf","Thumb corners"},styleKeys={"floating","compact","shelf","thumb"}; int current=Math.max(0,Arrays.asList(styleKeys).indexOf(prefs().getString("dockStyle","floating")));
+        button(formMain,"Style: "+styles[current],()->choice("Dock style",styles,current,index->{ prefs().edit().putString("dockStyle",styleKeys[index]).apply(); show(Page.DOCKSTYLE); }));
+        String[] themes={"Follow app","Light","Dark","OLED"},themeKeys={"app","light","dark","oled"}; int chosen=Math.max(0,Arrays.asList(themeKeys).indexOf(prefs().getString("dockTheme","app")));
+        button(formMain,"Theme: "+themes[chosen],()->choice("Dock theme",themes,chosen,index->{ prefs().edit().putString("dockTheme",themeKeys[index]).apply(); show(Page.DOCKSTYLE); }));
+        note(formMain,"Size: "+QuickAccess.size(prefs())+"%"); LinearLayout sizes=row(formMain);
+        button(sizes,"− Size",()->{ prefs().edit().putInt("dockSize",Math.max(60,QuickAccess.size(prefs())-10)).apply(); show(Page.DOCKSTYLE); }); button(sizes,"Size +",()->{ prefs().edit().putInt("dockSize",Math.min(160,QuickAccess.size(prefs())+10)).apply(); show(Page.DOCKSTYLE); });
+        text(formInfo,"Quick Access",20,false); note(formInfo,"Floating centers the tray; Compact uses smaller icons; Shelf fills the width. Thumb corners splits favorites between bottom left and right, with larger touch targets and independent scrolling."); note(formInfo,"Follow app also follows Automatic light/dark mode. Open the deck to preview changes.");
+    }
+    private void dockBehaviorPage(){
+        formPage("Dock behavior"); boolean focus="focus".equals(prefs().getString("dockBehavior","always"));
+        button(formMain,"Visibility: "+(focus?"On navigation":"Always visible"),()->choice("Dock visibility",new String[]{"Always visible","Show on navigation / tap"},focus?1:0,index->{ prefs().edit().putString("dockBehavior",index==1?"focus":"always").apply(); show(Page.DOCKBEHAVIOR); }));
+        toggle(formMain,"Magnify focused icons",prefs().getBoolean("dockMagnify",true),()->{ prefs().edit().putBoolean("dockMagnify",!prefs().getBoolean("dockMagnify",true)).apply(); show(Page.DOCKBEHAVIOR); }); toggle(formMain,"Running indicators",prefs().getBoolean("dockIndicators",true),()->{ prefs().edit().putBoolean("dockIndicators",!prefs().getBoolean("dockIndicators",true)).apply(); show(Page.DOCKBEHAVIOR); });
+        text(formInfo,"Touch and controller",20,false); note(formInfo,"Down from the last app row opens Quick Access. Up returns to the app list. On-navigation mode collapses it again when you leave it; touch its handle to reveal it."); note(formInfo,"Hold and drag icons to reorder. With a controller, press Select for move/remove options. Dots appear only when a process is reported, or for the Current app.");
+    }
+    private void showPicker(){
+        if(page!=Page.PICKER) pickerReturn=page==Page.APPS?Page.APPS:Page.SETTINGS; pickerApps=null; pickerPage=0; show(Page.PICKER);
+        app.requestMemory("Installed apps",5000,()->{ Map<String,JSONObject> launchers=new TreeMap<>(); Intent launcher=new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);
+            for(android.content.pm.ResolveInfo info:getPackageManager().queryIntentActivities(launcher,0)) if(info.activityInfo!=null&&!getPackageName().equals(info.activityInfo.packageName)) launchers.put(info.activityInfo.packageName,new JSONObject().put("package",info.activityInfo.packageName).put("label",info.loadLabel(getPackageManager()).toString())); return new JSONObject().put("apps",new JSONArray(launchers.values()));
+        },result->{ if(page!=Page.PICKER||isDestroyed()) return; pickerApps=new ArrayList<>(); JSONArray values=result.optJSONArray("apps"); if(values!=null) for(int i=0;i<values.length();i++) if(values.optJSONObject(i)!=null) pickerApps.add(values.optJSONObject(i)); pickerApps.sort((a,b)->String.CASE_INSENSITIVE_ORDER.compare(a.optString("label"),b.optString("label"))); show(Page.PICKER); if(result.has("error")){ feedback=result.optString("error"); updateStatus(); } });
+    }
+    private void pickerPage(){
+        formPage("Add Quick Access apps"); int count=pickerApps==null?0:pickerApps.size(); pickerPage=Math.max(0,Math.min(pickerPage,Math.max(0,(count-1)/4)));
+        if(pickerApps==null) note(formMain,"Loading installed apps…"); else if(count==0) note(formMain,"No launchable apps found");
+        if(pickerApps!=null) for(int i=pickerPage*4;i<Math.min(count,pickerPage*4+4);i++){ JSONObject item=pickerApps.get(i); String pkg=item.optString("package"); boolean pinned=QuickAccess.read(prefs()).contains(pkg); Button option=compactButton(button(formMain,(pinned?"Remove ":"Add ")+item.optString("label"),()->{ pin(pkg); show(Page.PICKER); })); option.setSelected(pinned); option.setSingleLine(true); option.setEllipsize(android.text.TextUtils.TruncateAt.END); }
+        text(formInfo,"Favorites, not running tasks",20,false); note(formInfo,"Pinned apps are launch shortcuts. They do not appear in the open-app list unless Android reports a real task. Pinning does not protect an app from closing."); note(formInfo,QuickAccess.read(prefs()).size()+" apps in Quick Access. Hold/drag dock icons or use Select to reorder or remove them.");
+        LinearLayout navigation=row(root); button(navigation,"Previous page",()->{ pickerPage--; show(Page.PICKER); }).setEnabled(pickerPage>0); View gap=new View(this); navigation.addView(gap,new LinearLayout.LayoutParams(0,1,1)); button(navigation,"Next page",()->{ pickerPage++; show(Page.PICKER); }).setEnabled((pickerPage+1)*4<count);
+    }
+    private void scrollPopup(LinearLayout panel){
+        LinearLayout body=new LinearLayout(this); body.setOrientation(LinearLayout.VERTICAL); body.setPadding(panel.getPaddingLeft(),panel.getPaddingTop(),panel.getPaddingRight(),panel.getPaddingBottom()); panel.setPadding(0,0,0,0);
+        while(panel.getChildCount()>0){ View child=panel.getChildAt(0); panel.removeView(child); body.addView(child); } int width=Math.min(dp(400),getResources().getDisplayMetrics().widthPixels-dp(32)); body.measure(View.MeasureSpec.makeMeasureSpec(width,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED));
+        ScrollView scroll=new ScrollView(this); scroll.addView(body); panel.addView(scroll,new LinearLayout.LayoutParams(-1,Math.min(body.getMeasuredHeight(),getResources().getDisplayMetrics().heightPixels-dp(32))));
+    }
+    private void finishSetupAnimation(){ if(page!=Page.COMPLETE) return; show(Page.APPS); if(app.backend!=null) refresh(); }
 
     private int sidebarWidth(){ return getResources().getConfiguration().screenWidthDp>=760?180:152; }
     private Drawable appIcon(String name){
@@ -159,14 +240,18 @@ public class SwitcherActivity extends Activity {
     }
 
     private Button compactButton(Button b){
-        b.setMinHeight(dp(40)); b.setMinimumHeight(dp(40)); b.setTextSize(12); b.setPadding(dp(7),0,dp(7),0);
-        LinearLayout.LayoutParams size=(LinearLayout.LayoutParams)b.getLayoutParams(); size.height=dp(40); size.topMargin=0; size.bottomMargin=0; return b;
+        b.setMinHeight(dp(36)); b.setMinimumHeight(dp(36)); b.setTextSize(11); b.setPadding(dp(5),0,dp(5),0);
+        LinearLayout.LayoutParams size=(LinearLayout.LayoutParams)b.getLayoutParams(); size.height=dp(36); size.topMargin=0; size.bottomMargin=0; return b;
     }
     private void appsPage(){
         LinearLayout header=row(root); header.setLayoutParams(new LinearLayout.LayoutParams(-1,-2));
         tools.add(compactButton(button(header,"Refresh",this::refresh))); tools.add(compactButton(button(header,"Sort",this::sortMenu))); tools.add(compactButton(button(header,"View",this::viewMenu)));
-        View gap=new View(this); header.addView(gap,new LinearLayout.LayoutParams(0,1,1));
-        Button settings=compactButton(button(header,"Settings",()->show(Page.SETTINGS))); settings.setText(""); settings.setContentDescription("Settings"); settings.setTooltipText("Settings"); settings.setGravity(Gravity.CENTER); settings.setCompoundDrawablePadding(0); ((LinearLayout.LayoutParams)settings.getLayoutParams()).width=dp(40); tools.add(settings);
+        View gap=new View(this); header.addView(gap,new LinearLayout.LayoutParams(0,1,0));
+        HorizontalScrollView hints=new HorizontalScrollView(this); hints.setHorizontalScrollBarEnabled(false); hints.setFillViewport(true); header.addView(hints,new LinearLayout.LayoutParams(0,-2,1));
+        LinearLayout actions=new LinearLayout(this); actions.setGravity(Gravity.CENTER_VERTICAL|Gravity.RIGHT); hints.addView(actions);
+        controllerButton(actions,"A","Open","open",this::openSelected); controllerButton(actions,"B","Exit","exit",this::finish); controllerButton(actions,"X","Close","close",this::closeSelected);
+        controllerButton(actions,"Y","Close all","all",this::closeAll); controllerButton(actions,"R1","Close all but current","others",this::closeOthers);
+        Button settings=compactButton(button(header,"Settings",()->show(Page.SETTINGS))); settings.setText(""); settings.setContentDescription("Settings"); settings.setTooltipText("Settings"); settings.setGravity(Gravity.CENTER); settings.setCompoundDrawablePadding(0); ((LinearLayout.LayoutParams)settings.getLayoutParams()).width=dp(36); roundSettings(settings); tools.add(settings);
         LinearLayout stats=row(root); status=text(stats,"",11,true); status.setPadding(0,0,0,0); status.setLayoutParams(new LinearLayout.LayoutParams(0,-2,1)); compactMemory=text(stats,"",11,true); compactMemory.setPadding(0,0,0,0); status.setMaxLines(1); status.setEllipsize(android.text.TextUtils.TruncateAt.END);
         operationInfo=text(root,"",12,true); operationInfo.setMaxLines(2); operationInfo.setEllipsize(android.text.TextUtils.TruncateAt.END); updateOperationInfo();
         LinearLayout deck=row(root); deck.setLayoutParams(new LinearLayout.LayoutParams(-1,0,1)); deck.setGravity(Gravity.TOP);
@@ -177,14 +262,11 @@ public class SwitcherActivity extends Activity {
         memory=text(sidebar,"",11,false); memory.setPadding(0,0,0,0);
         memoryBars=new LinearLayout(this); memoryBars.setOrientation(LinearLayout.VERTICAL); sidebar.addView(memoryBars,new LinearLayout.LayoutParams(-1,0,1));
         backgroundInfo=new TextView(this); backgroundInfo.setVisibility(View.GONE); sidebar.addView(backgroundInfo);
-        Button allRam=button(sidebar,"RAM details",()->{ ramPage=0; show(Page.MEMORY); }); tools.add(allRam); compactButton(allRam);
+        Button allRam=button(landscape()?sidebar:header,"RAM details",()->{ ramPage=0; show(Page.MEMORY); }); ramButton=allRam; tools.add(allRam); compactButton(allRam);
+        if(!landscape()){ header.removeView(allRam); header.addView(allRam,3); tools.remove(allRam); tools.add(3,allRam); allRam.setText("RAM"); }
         sidebar.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,or,ob)->{ if(b-t!=ob-ot) updateBackground(); });
         updateStatus(); updateMemory(); renderCards();
-        HorizontalScrollView footer=new HorizontalScrollView(this); footer.setHorizontalScrollBarEnabled(false); root.addView(footer,new LinearLayout.LayoutParams(-1,-2));
-        LinearLayout actions=new LinearLayout(this); actions.setGravity(Gravity.CENTER_VERTICAL); footer.addView(actions);
-        controllerButton(actions,"A","Open app","open",this::openSelected); controllerButton(actions,"B","Exit menu","exit",this::finish); controllerButton(actions,"X","Close app","close",this::closeSelected);
-        controllerButton(actions,"Y",prefs().getBoolean("exitAfterBulk",true)?"Close all & exit":"Close all apps","all",this::closeAll);
-        controllerButton(actions,"R1","Close all but current","others",this::closeOthers);
+        createDock();
     }
 
     private void renderCards(){
@@ -204,7 +286,7 @@ public class SwitcherActivity extends Activity {
             if(fit&&!fitOverflow) appContent.addView(appGrid,new FrameLayout.LayoutParams(-1,-1));
             else { appScroll=new ScrollView(this); appContent.addView(appScroll,new FrameLayout.LayoutParams(-1,-1)); appScroll.addView(appGrid,new ScrollView.LayoutParams(-1,-2)); }
         }
-        if(tasks.isEmpty()){ if(!horizontal){ appContent.removeAllViews(); appContent.addView(cardRow,new FrameLayout.LayoutParams(-1,-1)); } text(cardRow,app.backend==null?"Settings → Connection to load apps":"Nothing to close",20,true); toolZone=true; toolIndex=0; markSelection(); return; }
+        if(tasks.isEmpty()){ if(!horizontal){ appContent.removeAllViews(); appContent.addView(cardRow,new FrameLayout.LayoutParams(-1,-1)); } text(cardRow,app.backend==null?"Settings → Connection to load apps":"Nothing to close",20,true); if(!dockZone){ toolZone=true; toolIndex=0; } markSelection(); return; }
 
         int width=horizontal?dp(Math.max(116,Math.min(190,available/3-14))):dp(Math.max(1,available/gridColumns-6));
         int minLabel=prefs().getInt("minLabelSp",12),minimum=(int)Math.ceil(minLabel*getResources().getDisplayMetrics().scaledDensity/getResources().getDisplayMetrics().density*1.4)+8;
@@ -217,7 +299,7 @@ public class SwitcherActivity extends Activity {
             else { GridLayout.LayoutParams p=new GridLayout.LayoutParams(); p.width=width; p.height=cellHeight; p.setMargins(dp(3),dp(3),dp(3),dp(3)); appGrid.addView(card,p); }
             ImageView icon=new ImageView(this); icon.setImageDrawable(appIcon(task.optString("package"))); icon.setContentDescription(task.optString("label")); int iconSize=horizontal?(compact?40:60):list?30:24; if(tiny) icon.setVisibility(View.GONE); card.addView(icon,new LinearLayout.LayoutParams(dp(iconSize),dp(iconSize)));
             LinearLayout labels=card; if(list){ labels=new LinearLayout(this); labels.setOrientation(LinearLayout.VERTICAL); LinearLayout.LayoutParams labelSize=new LinearLayout.LayoutParams(0,-2,1); labelSize.leftMargin=dp(10); card.addView(labels,labelSize); }
-            TextView name=text(labels,task.optString("label")+(task.optInt("windowCount",1)>1?" · "+task.optInt("windowCount")+" windows":""),Math.max(minLabel,horizontal?(compact?16:18):micro?9:tiny?11:14),false); name.setGravity(list?Gravity.START:Gravity.CENTER); name.setMaxLines(1); name.setEllipsize(android.text.TextUtils.TruncateAt.END); name.setTypeface(null,Typeface.BOLD);
+            TextView name=text(labels,(isCurrent(task.optString("package"))?"Current · ":"")+task.optString("label")+(task.optInt("windowCount",1)>1?" · "+task.optInt("windowCount")+" windows":""),Math.max(minLabel,horizontal?(compact?16:18):micro?9:tiny?11:14),false); name.setGravity(list?Gravity.START:Gravity.CENTER); name.setMaxLines(1); name.setEllipsize(android.text.TextUtils.TruncateAt.END); name.setTypeface(null,Typeface.BOLD);
             long kb=task.optLong("pssKb",-1); String state=task.optString("memoryState","unavailable");
             String ram=kb>=0?"~"+MemoryUnits.pss(kb)+" MB app RAM"+(state.equals("shared")?" · shared":""):state.equals("loading")?"RAM loading…":state.equals("not-reported")?"No process in snapshot":"RAM unavailable";
             TextView usage=text(labels,ram,horizontal?12:10,true); usage.setMaxLines(1); usage.setEllipsize(android.text.TextUtils.TruncateAt.END); if(micro) usage.setVisibility(View.GONE); usage.setGravity(list?Gravity.START:Gravity.CENTER);
@@ -227,21 +309,23 @@ public class SwitcherActivity extends Activity {
 
             if(horizontal&&compact){ name.setPadding(0,dp(5),0,dp(2)); usage.setPadding(0,dp(2),0,dp(2)); badge.setPadding(0,dp(2),0,dp(2)); }
             if(locked){ Drawable lock=getDrawable(R.drawable.ic_lock); if(lock!=null){ lock.setTint(theme.accent); lock.setBounds(0,0,dp(horizontal?18:12),dp(horizontal?18:12)); TextView target=badge.getVisibility()==View.GONE?name:badge; target.setCompoundDrawables(lock,null,null,null); target.setCompoundDrawablePadding(dp(5)); } }
-            card.setOnClickListener(v->{ selection.select(task.optInt("id")); toolZone=false; markSelection(); openSelected(); });
-            card.setOnLongClickListener(v->{ selection.select(task.optInt("id")); toolZone=false; markSelection(); protectSelected(); return true; });
+            card.setContentDescription(task.optString("label")+(isCurrent(task.optString("package"))?", Current app":""));
+            card.setOnClickListener(v->{ dockZone=false; selection.select(task.optInt("id")); toolZone=false; markSelection(); openSelected(); });
+            card.setOnLongClickListener(v->{ dockZone=false; selection.select(task.optInt("id")); toolZone=false; markSelection(); protectSelected(); return true; });
             cards.add(card);
         }
         markSelection();
     }
     private void markSelection(){
         if(page!=Page.APPS) return;
-        if(cards.isEmpty()) toolZone=true;
+        if(cards.isEmpty()&&!dockZone) toolZone=true;
         if(!tools.isEmpty()){ toolIndex=Math.max(0,Math.min(toolIndex,tools.size()-1)); for(int i=0;i<tools.size();i++) tools.get(i).setActivated(controllerMode&&toolZone&&i==toolIndex); if(controllerMode&&toolZone) tools.get(toolIndex).requestFocus(); }
         for(int i=0;i<cards.size();i++){
             boolean chosen=i==selection.index(); GradientDrawable bg=rounded(chosen?theme.selected:theme.surface);
-            bg.setStroke(dp(chosen&&!toolZone?4:1),chosen?theme.accent:theme.raised); cards.get(i).setBackground(bg); cards.get(i).setSelected(chosen);
+            bg.setStroke(dp(chosen&&!toolZone&&!dockZone?3:1),chosen?theme.accent:isCurrent(tasks.get(i).optString("package"))?successColor():theme.raised); cards.get(i).setBackground(bg); cards.get(i).setSelected(chosen);
         }
         updateStatus();
+        if(dockZone&&dock!=null){ if(controllerMode) dock.focusItem(dockIndex); return; } else if(dock!=null) dock.blur();
         if(!toolZone && !cards.isEmpty()){
             View card=cards.get(selection.index()); if(controllerMode) card.requestFocus();
             main.post(()->{ if(page==Page.APPS && rail!=null && card.getParent()==cardRow) rail.smoothScrollTo(Math.max(0,card.getLeft()-(rail.getWidth()-card.getWidth())/2),0); });
@@ -250,7 +334,9 @@ public class SwitcherActivity extends Activity {
     }
     private boolean shortcutServiceEnabled(){
         android.view.accessibility.AccessibilityManager manager=getSystemService(android.view.accessibility.AccessibilityManager.class);
+        if(!manager.isEnabled()) return false;
         for(android.accessibilityservice.AccessibilityServiceInfo info:manager.getEnabledAccessibilityServiceList(android.accessibilityservice.AccessibilityServiceInfo.FEEDBACK_ALL_MASK)){
+            if(info==null||info.getResolveInfo()==null||info.getResolveInfo().serviceInfo==null) continue;
             android.content.pm.ServiceInfo service=info.getResolveInfo().serviceInfo;
             if(getPackageName().equals(service.packageName) && HotkeyService.class.getName().equals(service.name)) return true;
         } return false;
@@ -265,12 +351,12 @@ public class SwitcherActivity extends Activity {
             note(formInfo,"Start Shizuku, then authorize TaskDeck. Without root, start it again after reboot. Pairing alone does not start its service.");
         } else if(setupStep==1){
             button(formMain,"Calibrate confirm button",()->show(Page.CONFIRM));
-            note(formMain,prefs().getBoolean("confirmCalibrated",prefs().contains("swapped"))?"✓ Confirm calibrated":"Default confirm mapping");
+            note(formMain,prefs().getBoolean("confirmCalibrated",false)?"✓ Confirm calibrated":"Default confirm mapping");
             note(formInfo,"Press the button printed A to correct common swapped button reports. D-pad and left stick move selection. This step is optional.");
         } else if(setupStep==2||setupStep==3){
             boolean direct=setupStep==3; String key=direct?"quickSwitchChord":"shortcutChord";
             button(formMain,direct?"Record direct switch":"Record deck shortcut",()->startRecording(direct));
-            note(formMain,ShortcutKeys.decode(prefs().getString(key,"")).isEmpty()?"Not configured · optional":"✓ "+ShortcutKeys.labels(ShortcutKeys.decode(prefs().getString(key,""))));
+            note(formMain,ShortcutKeys.decode(prefs().getString(key,"")).isEmpty()?"Not configured · optional":"Saved: "+ShortcutKeys.labels(ShortcutKeys.decode(prefs().getString(key,"")))+(shortcutServiceEnabled()?" · service enabled":" · service not enabled"));
             note(formInfo,direct?"An optional different combination switches between your last two apps without opening TaskDeck. You can skip this step.":"Hold your chosen buttons together, release, then save. This optional shortcut opens TaskDeck from another app.");
             note(formInfo,"D-pad, Confirm, Back and Start stay available for navigation and saving. Avoid combinations already used by games.");
         } else if(setupStep==4){
@@ -278,7 +364,7 @@ public class SwitcherActivity extends Activity {
             note(formMain,shortcutServiceEnabled()?"✓ Service enabled":"Service not enabled · optional");
             note(formInfo,"Enable TaskDeck's Accessibility service only if you recorded shortcuts. No screen contents or typed text are read. Otherwise, use the notification or Quick Settings tile.");
         } else if(setupStep==5){
-            LinearLayout options=row(formMain); for(String value:new String[]{"light","dark","oled"}){ Button option=button(options,value.equals("oled")?"OLED":value.equals("light")?"Light":"Dark",()->{ prefs().edit().putString("theme",value).apply(); show(Page.SETUP); }); option.setSelected(value.equals(prefs().getString("theme","dark"))); option.setPadding(dp(6),0,dp(6),0); }
+            LinearLayout options=row(formMain); for(String value:new String[]{"light","dark","oled","auto"}){ Button option=button(options,value.equals("auto")?"Auto":value.equals("oled")?"OLED":value.equals("light")?"Light":"Dark",()->{ prefs().edit().putString("theme",value).apply(); show(Page.SETUP); }); option.setSelected(value.equals(prefs().getString("theme","dark"))); option.setPadding(dp(6),0,dp(6),0); }
             note(formInfo,"Fit all is the default view. Cards, Grid and List remain available from View. All changes can be revisited in Settings.");
         } else if(setupStep==6){
             toggle(formMain,"Stay open after clearing",!prefs().getBoolean("exitAfterBulk",true),()->{ prefs().edit().putBoolean("exitAfterBulk",!prefs().getBoolean("exitAfterBulk",true)).apply(); show(Page.SETUP); });
@@ -286,7 +372,9 @@ public class SwitcherActivity extends Activity {
         } else {
             toggle(formMain,"RAM feedback",prefs().getBoolean("ramNotifications",true),()->{ prefs().edit().putBoolean("ramNotifications",!prefs().getBoolean("ramNotifications",true)).apply(); show(Page.SETUP); });
             toggle(formMain,"Notification shortcut",shortcutVisible(),()->{ if(shortcutVisible()) getSystemService(NotificationManager.class).cancel(1); else shortcutNotification(); show(Page.SETUP); });
-            note(formInfo,"RAM feedback reports measured change in MB. Android controls notification visibility. Finish opens your task deck.");
+            button(formMain,notificationsAllowed()?"Notification settings":"Allow notifications",()->{ if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED) notificationPermission(); else startActivity(new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE,getPackageName())); });
+            note(formInfo,!notificationsAllowed()?"Notifications: not allowed":!notificationsAllowed("ram_results")||!notificationsAllowed("ram")?"Notification access granted · feedback channel blocked":"Notifications: allowed");
+            note(formInfo,"RAM feedback is a preference, not a permission grant. Toast feedback can work without notification access. Android controls banner visibility.");
         }
         LinearLayout nav=row(root); nav.setLayoutParams(new LinearLayout.LayoutParams(-1,-2));
         setupPrevious=button(nav,"Previous",()->{ setupStep--; controlIndex=-1; show(Page.SETUP); }); setupPrevious.setEnabled(setupStep>0); Drawable l1=new ControllerBadge("L1",theme.text); l1.setBounds(0,0,dp(32),dp(24)); setupPrevious.setCompoundDrawables(l1,null,null,null);
@@ -346,7 +434,7 @@ public class SwitcherActivity extends Activity {
         SetupCheckView check=new SetupCheckView(this,theme.accent); root.addView(check,new LinearLayout.LayoutParams(dp(96),dp(96)));
         TextView done=text(root,"You're ready",22,false); done.setGravity(Gravity.CENTER); check.play();
         root.announceForAccessibility("Setup complete");
-        main.postDelayed(()->{ if(page==Page.COMPLETE&&!isFinishing()&&!isDestroyed()){ show(Page.APPS); if(app.backend!=null) refresh(); } },650);
+        main.postDelayed(()->{ if(page==Page.COMPLETE&&!isFinishing()&&!isDestroyed()) finishSetupAnimation(); },1900);
     }
     private void toggle(LinearLayout parent,String label,boolean enabled,Runnable action){
         Button option=button(parent,label+(enabled?" · On":" · Off"),action); option.setSelected(enabled); option.setContentDescription(label+", "+(enabled?"on":"off"));
@@ -366,10 +454,10 @@ public class SwitcherActivity extends Activity {
         else { app.testMemoryFeedback(); if(page==Page.SETTINGS) show(Page.SETTINGS); }
     }
     private void settingsPage(){
-        formPage("Settings"); String[] names={"Connection","Controller","Appearance","Notifications","About"};
+        formPage("Settings"); String[] names={"Connection","Controller","Appearance","Dock","Notifications","About"};
         settingsCategory=Math.max(0,Math.min(names.length-1,settingsCategory));
         if(landscape()){ ((LinearLayout.LayoutParams)formMain.getLayoutParams()).weight=.7f; ((LinearLayout.LayoutParams)formInfo.getLayoutParams()).weight=1.7f; }
-        for(int i=0;i<names.length;i++){ final int category=i; Button item=button(formMain,names[i],()->{ settingsCategory=category; controlIndex=-1; show(Page.SETTINGS); if(controllerMode) focusControl(1+category); }); item.setSelected(i==settingsCategory); if(i==0&&app.backend!=null){ Drawable check=new ActionGlyph("check",successColor()); check.setBounds(0,0,dp(18),dp(18)); item.setCompoundDrawables(check,null,null,null); item.setContentDescription("Connection: connected"); } categories.add(item); item.setLayoutParams(new LinearLayout.LayoutParams(-1,dp(48))); }
+        for(int i=0;i<names.length;i++){ final int category=i; Button item=button(formMain,names[i],()->{ settingsCategory=category; controlIndex=-1; show(Page.SETTINGS); if(controllerMode) focusControl(1+category); }); item.setSelected(i==settingsCategory); if(i==0&&app.backend!=null){ Drawable check=new ActionGlyph("check",successColor()); check.setBounds(0,0,dp(18),dp(18)); item.setCompoundDrawables(check,null,null,null); item.setContentDescription("Connection: connected"); } categories.add(item); item.setMinHeight(dp(44)); item.setMinimumHeight(dp(44)); item.setLayoutParams(new LinearLayout.LayoutParams(-1,dp(44))); }
         text(formInfo,names[settingsCategory],18,false).setTypeface(null,Typeface.BOLD);
         if(settingsCategory==0){
             TextView connection=smallNote(formInfo,app.backend==null?"Shizuku disconnected":"✓ Shizuku connected"); if(app.backend!=null) connection.setTextColor(successColor());
@@ -381,12 +469,15 @@ public class SwitcherActivity extends Activity {
             smallNote(formInfo,"Service: "+(shortcutServiceEnabled()?"enabled":"access required"));
             smallNote(formInfo,"Choose letter or PlayStation labels, calibrate Confirm or remap individual deck actions.");
         } else if(settingsCategory==2){
-            LinearLayout options=row(formInfo); for(String value:new String[]{"light","dark","oled"}){ Button option=button(options,value.equals("oled")?"OLED":value.equals("light")?"Light":"Dark",()->{ prefs().edit().putString("theme",value).apply(); show(Page.SETTINGS); }); option.setSelected(value.equals(prefs().getString("theme","dark"))); option.setPadding(dp(6),0,dp(6),0); }
+            LinearLayout options=row(formInfo); for(String value:new String[]{"light","dark","oled","auto"}){ Button option=button(options,value.equals("auto")?"Auto":value.equals("oled")?"OLED":value.equals("light")?"Light":"Dark",()->{ prefs().edit().putString("theme",value).apply(); show(Page.SETTINGS); }); option.setSelected(value.equals(prefs().getString("theme","dark"))); option.setPadding(dp(6),0,dp(6),0); }
             toggle(formInfo,"Group app windows",prefs().getBoolean("groupApps",true),()->{ prefs().edit().putBoolean("groupApps",!prefs().getBoolean("groupApps",true)).apply(); rebuildTasks(); show(Page.SETTINGS); });
             toggle(formInfo,"Stay open after clearing",!prefs().getBoolean("exitAfterBulk",true),()->{ prefs().edit().putBoolean("exitAfterBulk",!prefs().getBoolean("exitAfterBulk",true)).apply(); show(Page.SETTINGS); });
             smallNote(formInfo,"On keeps this menu open after clearing. Off returns HOME or to the retained app.");
 
         } else if(settingsCategory==3){
+            button(formInfo,"Add apps to Quick Access",this::showPicker); button(formInfo,"Dock style & size",()->show(Page.DOCKSTYLE)); button(formInfo,"Dock behavior",()->show(Page.DOCKBEHAVIOR));
+            smallNote(formInfo,QuickAccess.read(prefs()).size()+" favorites · hold and drag dock icons to reorder, or use Select.");
+        } else if(settingsCategory==4){
             toggle(formInfo,"RAM feedback",prefs().getBoolean("ramNotifications",true),()->{ boolean enabled=!prefs().getBoolean("ramNotifications",true); prefs().edit().putBoolean("ramNotifications",enabled).apply(); if(!enabled) getSystemService(NotificationManager.class).cancel(2); show(Page.SETTINGS); });
             toggle(formInfo,"Notification shortcut",shortcutVisible(),()->{ if(shortcutVisible()){ getSystemService(NotificationManager.class).cancel(1); prefs().edit().putBoolean("pendingNotificationShortcut",false).apply(); } else shortcutNotification(); show(Page.SETTINGS); });
             LinearLayout actions=row(formInfo); button(actions,"Test feedback",this::testFeedback); button(actions,"Permissions",()->startActivity(new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE,getPackageName())));
@@ -428,7 +519,7 @@ public class SwitcherActivity extends Activity {
                 if(next!=0&&next!=axis[0]){ int current=dialog.getListView().getSelectedItemPosition(); if(current<0) current=dialog.getListView().getCheckedItemPosition(); dialog.getListView().setSelection(Math.max(0,Math.min(values.length-1,current+next))); } axis[0]=next; return true; });
         }); dialog.show();
     }
-    private int successColor(){ return "light".equals(prefs().getString("theme","dark"))?Color.rgb(22,130,68):Color.rgb(82,217,151); }
+    private int successColor(){ return theme.background==DeckTheme.named("light").background?Color.rgb(22,130,68):Color.rgb(82,217,151); }
     private String versionName(){ try { return getPackageManager().getPackageInfo(getPackageName(),0).versionName; } catch(Exception absent){ return "Unknown"; } }
     private void openLink(String url){ try { startActivity(new Intent(Intent.ACTION_VIEW,android.net.Uri.parse(url))); } catch(ActivityNotFoundException unavailable){ feedback="No browser available"; updateStatus(); } }
     private void connectPage(){
@@ -472,6 +563,7 @@ public class SwitcherActivity extends Activity {
     private void updateStatus(){
         if(status==null) return;
         if(!feedback.isEmpty()){ status.setText(feedback); status.setVisibility(View.VISIBLE); }
+        else if(page==Page.APPS&&dockZone&&dock!=null) status.setText("Quick Access · "+(dock.selectedPackage().isEmpty()?"Add apps":launchLabel(dock.selectedPackage())));
         else if(page==Page.APPS) status.setText(app.backend==null?"Not connected · Settings → Connection":tasks.size()+" apps · "+prefs().getString("sort","recent")+(tasks.stream().noneMatch(this::closable)?" · Nothing to close":"")+(busy?" · updating…":"")+(!toolZone&&selected()!=null&&!"cards".equals(viewMode())?" · "+selected().optString("label"):""));
         else status.setText(app.status);
     }
@@ -525,7 +617,7 @@ public class SwitcherActivity extends Activity {
         tasks.clear(); tasks.addAll(TaskOrder.arrange(TaskGroups.group(visible,prefs().getBoolean("groupApps",true)),prefs().getString("sort","recent"),this::locked));
         List<Integer> ids=new ArrayList<>(); for(JSONObject task:tasks) ids.add(task.optInt("id")); selection.update(ids);
         if(resetSelection){ selection.first(); toolZone=tasks.isEmpty(); toolIndex=0; resetSelection=false; }
-        if(page==Page.APPS) renderCards(); updateStatus(); updateOperationInfo();
+        if(page==Page.APPS){ renderCards(); renderDock(); } updateStatus(); updateOperationInfo();
     }
     private void refresh(){
         updateMemory(); ITaskBackend backend=app.backend; if(backend==null) return; if(busy){ pendingRefresh=true; return; }
@@ -539,7 +631,7 @@ public class SwitcherActivity extends Activity {
             if(!result.optString("protectionWarning").isEmpty()) feedback=result.optString("protectionWarning")+" · protection cannot be checked";
             rawTasks.clear(); backgroundApps.clear(); JSONArray rows=result.optJSONArray("tasks");
             if(rows!=null) for(int i=0;i<rows.length();i++){ JSONObject task=rows.optJSONObject(i); if(task!=null){ try { task.put("recentRank",i); } catch(JSONException ignored){} rawTasks.add(task); } }
-            if(captureEntry){ entryTask=result.optJSONObject("previousTask"); if(entryTask==null) for(JSONObject task:rawTasks) if(!TaskOrder.mandatory(task)){ entryTask=task; break; } captureEntry=false; }
+            if(captureEntry){ entryTask=result.optJSONObject("previousTask"); captureEntry=false; }
             rebuildTasks(); memoryStatus="RAM loading; tasks ready";
             app.requestMemory("RAM sample",5000,()->new JSONObject(backend.readMemory()),sample->{
                 if(generation!=catalogGeneration||isDestroyed()||isFinishing()||app.backend!=backend) return;
@@ -559,6 +651,7 @@ public class SwitcherActivity extends Activity {
 
     private JSONObject selected(){ Integer id=selection.id(); if(id!=null) for(JSONObject task:tasks) if(task.optInt("id")==id) return task; return null; }
     private void openSelected(){
+        if(dockZone&&dock!=null){ dock.openSelected(); return; }
         JSONObject task=selected(); ITaskBackend backend=app.backend; if(task==null || backend==null || busy) return;
         if(task.optBoolean("launcher")){
             Intent launch=task.optBoolean("home")?new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME):getPackageManager().getLaunchIntentForPackage(task.optString("package"));
@@ -580,7 +673,7 @@ public class SwitcherActivity extends Activity {
     private boolean locked(JSONObject task){ return TaskOrder.mandatory(task)||protectedApps().contains(task.optString("package")) || task.optBoolean("launcher")&&!unlockedLaunchers().contains(task.optString("package")); }
     private boolean launcherIdle(JSONObject task){ return task.optBoolean("launcher")&&task.optBoolean("synthetic")&&"not-reported".equals(task.optString("memoryState")); }
     private boolean closable(JSONObject task){ return !locked(task)&&!launcherIdle(task); }
-    private void closeSelected(){ JSONObject task=selected(); if(task==null) return; if(!closable(task)){ feedback=locked(task)?"This app is protected":"Launcher is not running · Select to restart"; updateStatus(); return; } remove(TaskGroups.expand(task),0); }
+    private void closeSelected(){ if(dockZone){ feedback="Select an open app card to close it"; updateStatus(); return; } JSONObject task=selected(); if(task==null) return; if(!closable(task)){ feedback=locked(task)?"This app is protected":"Launcher is not running · Select to restart"; updateStatus(); return; } remove(TaskGroups.expand(task),0); }
     private void closeAll(){
         List<JSONObject> eligible=new ArrayList<>(); for(JSONObject task:tasks) if(closable(task)) eligible.addAll(TaskGroups.expand(task));
         remove(eligible,prefs().getBoolean("exitAfterBulk",true)?1:0);
@@ -662,6 +755,7 @@ public class SwitcherActivity extends Activity {
     private void reorder(){ rebuildTasks(); }
 
     private void protectSelected(){
+        if(dockZone&&dock!=null){ dock.selectedOptions(); return; }
         JSONObject task=selected(); if(task==null) return; boolean launcher=task.optBoolean("launcher"),mandatory=TaskOrder.mandatory(task);
         List<Button> options=new ArrayList<>(); int[] cursor={0},axis={0};
         LinearLayout panel=new LinearLayout(this){
@@ -694,8 +788,10 @@ public class SwitcherActivity extends Activity {
         Drawable lock=getDrawable(R.drawable.ic_lock); if(lock!=null){ lock.setTint(theme.text); lock.setBounds(0,0,dp(22),dp(22)); toggle.setCompoundDrawables(lock,null,null,null); }
         if(task.optInt("windowCount",1)>1) options.add(button(panel,"Choose window",()->{ protectionPopup.dismiss(); windowGroup=task; detailsPage=0; show(Page.WINDOWS); }));
         if(launcher&&!mandatory) options.add(button(panel,"Restart launcher",()->{ protectionPopup.dismiss(); restartLauncher(task); }));
+        options.add(button(panel,QuickAccess.read(prefs()).contains(task.optString("package"))?"Remove from Quick Access":"Pin to Quick Access",()->{ protectionPopup.dismiss(); pin(task.optString("package")); }));
         while(controls.size()>previous) controls.remove(controls.size()-1);
         GradientDrawable outline=rounded(theme.surface); outline.setStroke(dp(2),theme.muted); panel.setBackground(outline);
+        scrollPopup(panel);
         protectionPopup=new PopupWindow(panel,Math.min(dp(400),getResources().getDisplayMetrics().widthPixels-dp(32)),-2,true); protectionPopup.setBackgroundDrawable(rounded(theme.surface)); protectionPopup.setOutsideTouchable(true); protectionPopup.setElevation(dp(16)); protectionPopup.setOnDismissListener(this::markSelection);
         protectionPopup.showAtLocation(root,Gravity.CENTER,0,0); if(controllerMode){ toggle.requestFocus(); toggle.setActivated(true); }
     }
@@ -780,13 +876,14 @@ public class SwitcherActivity extends Activity {
         if(page==Page.APPS) finish();
         else if(page==Page.RESULTS) show(Page.SETTINGS);
         else if(page==Page.SETTINGS||page==Page.WINDOWS||page==Page.MEMORY||page==Page.COMPLETE) show(Page.APPS);
+        else if(page==Page.PICKER) show(pickerReturn);
         else if(page==Page.BIND) show(Page.MAPPING);
         else if(page==Page.CHORD) show(prefs().getBoolean("setupComplete",false)?Page.SHORTCUTS:Page.SETUP);
         else if(page==Page.SETUP){ if(setupStep>0){ setupStep--; show(Page.SETUP); } else finish(); }
         else show(prefs().getBoolean("setupComplete",false)?Page.SETTINGS:Page.SETUP);
     }
     private void focusMode(View view,boolean controller){
-        if(view instanceof Button||cards.contains(view)){ view.setFocusableInTouchMode(controller); if(!controller) view.setActivated(false); }
+        if(view instanceof Button||cards.contains(view)||dock!=null&&dock.items.contains(view)){ view.setFocusableInTouchMode(controller); if(!controller) view.setActivated(false); }
         if(view instanceof ViewGroup) for(int i=0;i<((ViewGroup)view).getChildCount();i++) focusMode(((ViewGroup)view).getChildAt(i),controller);
     }
     private void setInputMode(boolean controller){
@@ -798,13 +895,19 @@ public class SwitcherActivity extends Activity {
         else if(controller && !(getCurrentFocus() instanceof Button)) focusControl(controlIndex<0?0:controlIndex);
     }
     private boolean focusFirstButton(View view){ if(view instanceof Button&&view.isEnabled()){ view.requestFocus(); return true; } if(view instanceof ViewGroup) for(int i=0;i<((ViewGroup)view).getChildCount();i++) if(focusFirstButton(((ViewGroup)view).getChildAt(i))) return true; return false; }
-    @Override public boolean dispatchTouchEvent(MotionEvent event){ if(event.getActionMasked()==MotionEvent.ACTION_DOWN) setInputMode(false); return super.dispatchTouchEvent(event); }
+    @Override public boolean dispatchTouchEvent(MotionEvent event){
+        if(event.getActionMasked()==MotionEvent.ACTION_DOWN) setInputMode(false);
+        boolean outside=false; QuickAccessDock before=dock;
+        if(event.getActionMasked()==MotionEvent.ACTION_UP&&before!=null&&before.isExpanded()&&"focus".equals(prefs().getString("dockBehavior","always"))){ android.graphics.Rect bounds=new android.graphics.Rect(); before.getGlobalVisibleRect(bounds); outside=!bounds.contains((int)event.getRawX(),(int)event.getRawY()); }
+        boolean handled=super.dispatchTouchEvent(event); if(outside&&dock==before){ dockZone=false; before.expand(false); } return handled;
+    }
 
     @Override public void onBackPressed(){ back(); }
     @Override public boolean dispatchKeyEvent(KeyEvent event){
         int key=event.getKeyCode();
         if(ShortcutKeys.eligible(event)||key>=19&&key<=23) setInputMode(true);
         int a=ControllerBindings.code(prefs(),"open"),b=ControllerBindings.code(prefs(),"exit"),x=ControllerBindings.code(prefs(),"close"),y=ControllerBindings.code(prefs(),"clear");
+        if(page==Page.COMPLETE&&(key==a||key==KeyEvent.KEYCODE_DPAD_CENTER)){ if(event.getAction()==0&&event.getRepeatCount()==0) finishSetupAnimation(); return true; }
         if(page==Page.BIND&&ControllerBindings.BUTTONS.contains(key)){ if(event.getAction()==0&&event.getRepeatCount()==0){ ControllerBindings.assign(prefs(),bindingAction,key); show(Page.MAPPING); } return true; }
         if(page==Page.CHORD && key==KeyEvent.KEYCODE_BUTTON_START && heldKeys.isEmpty() && !capturedKeys.isEmpty()){
             if(event.getAction()==KeyEvent.ACTION_DOWN && event.getRepeatCount()==0 && saveChord.isEnabled()) saveChord.performClick(); return true;
@@ -872,7 +975,16 @@ public class SwitcherActivity extends Activity {
             }
             pageNavigate(direction<0?-1:1); return;
         }
-        if(tools.isEmpty()) return; if(cards.isEmpty()) toolZone=true; toolIndex=Math.max(0,Math.min(toolIndex,tools.size()-1));
+        if(tools.isEmpty()) return;
+        if(dockZone&&dock!=null){
+            if(direction==-2){ dockZone=false; toolZone=cards.isEmpty(); if("focus".equals(prefs().getString("dockBehavior","always"))) dock.expand(false); markSelection(); }
+            else if(direction==1||direction==-1){ dockIndex=Math.max(0,Math.min(dock.items.size()-1,dockIndex+direction)); dock.focusItem(dockIndex); } return;
+        }
+        if(toolZone&&toolIndex==tools.indexOf(ramButton)&&direction==-1){ toolZone=cards.isEmpty(); if(toolZone) toolIndex=0; markSelection(); return; }
+        if(!toolZone&&direction==1&&(!"cards".equals(viewMode())&&selection.index()%Math.max(1,gridColumns)==Math.max(1,gridColumns)-1)&&landscape()){ toolZone=true; toolIndex=tools.indexOf(ramButton); markSelection(); return; }
+        if(!toolZone&&direction==1&&selection.index()==cards.size()-1&&landscape()){ toolZone=true; toolIndex=tools.indexOf(ramButton); markSelection(); return; }
+        if(direction==2&&dock!=null&&((!toolZone&&("cards".equals(viewMode())||selection.index()+Math.max(1,gridColumns)>=cards.size()))||(toolZone&&cards.isEmpty()))){ dockZone=true; toolZone=false; dock.expand(true); markSelection(); return; }
+        if(cards.isEmpty()) toolZone=true; toolIndex=Math.max(0,Math.min(toolIndex,tools.size()-1));
         boolean dense=!"cards".equals(viewMode());
         if(dense&&!toolZone&&!cards.isEmpty()){
             int index=selection.index();

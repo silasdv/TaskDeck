@@ -1,0 +1,89 @@
+package org.taskdeck.app;
+
+import android.content.*;
+import android.graphics.Color;
+import android.graphics.Rect;
+import android.graphics.drawable.*;
+import android.view.*;
+import android.widget.*;
+import java.util.*;
+
+/** macOS-inspired floating launch dock: magnification, indicators and native drag reordering. */
+public final class QuickAccessDock extends LinearLayout {
+    public interface Host {
+        Drawable icon(String pkg); String label(String pkg); boolean running(String pkg); boolean current(String pkg);
+        void launch(String pkg); void options(String pkg); void add(); void changed(); void touch();
+        boolean controller();
+    }
+    private final android.content.SharedPreferences prefs; private final Host host;
+    private DeckTheme theme; private LinearLayout icons,thumbLeft,thumbRight; private HorizontalScrollView scroll,leftScroll,rightScroll; private int split;
+    public final List<View> items=new ArrayList<>(); private final List<String> packages=new ArrayList<>();
+    private boolean expanded=true,dragging,focused; private String draggingPackage; private List<String> dragOrder;
+    private int selected=-1; private long lastScroll;
+    public QuickAccessDock(Context context,android.content.SharedPreferences prefs,Host host){ super(context); this.prefs=prefs; this.host=host; setOrientation(VERTICAL); setGravity(Gravity.CENTER); setClipChildren(false); expanded=!"focus".equals(prefs.getString("dockBehavior","always")); setOnDragListener(this::drag); }
+    private int dp(int value){ return Math.round(value*getResources().getDisplayMetrics().density); }
+    private GradientDrawable rounded(int color){ GradientDrawable shape=new GradientDrawable(); shape.setColor(color); shape.setCornerRadius(dp(18)); return shape; }
+    public boolean isExpanded(){ return expanded; }
+    public void expand(boolean value){ if(expanded!=value){ expanded=value; render(); } }
+    public void update(DeckTheme appTheme){ String choice=prefs.getString("dockTheme","app"); theme="app".equals(choice)?appTheme:DeckTheme.named(choice); if(!dragging) render(); }
+    public String selectedPackage(){ return selected>=0&&selected<packages.size()?packages.get(selected):""; }
+    public void blur(){ focused=false; highlight(-2); }
+    public void focusItem(int index){ focused=true; if(!expanded) expand(true); if(items.isEmpty()) return; selected=Math.max(0,Math.min(index,items.size()-1)); View item=items.get(selected); item.requestFocus(); highlight(selected); item.requestRectangleOnScreen(new Rect(0,0,item.getWidth(),item.getHeight()),false); }
+    public void openSelected(){ if(items.isEmpty()) host.add(); else items.get(Math.max(0,Math.min(selected,items.size()-1))).performClick(); }
+    public void selectedOptions(){ String pkg=selectedPackage(); if(pkg.isEmpty()) host.add(); else host.options(pkg); }
+    private void highlight(int index){
+        boolean magnify=prefs.getBoolean("dockMagnify",true); for(int i=0;i<items.size();i++){ View item=items.get(i); boolean chosen=i==index; GradientDrawable bg=rounded(chosen?theme.selected:Color.TRANSPARENT); if(chosen) bg.setStroke(dp(2),theme.accent); item.setBackground(bg); float scale=magnify?(chosen?1.12f:Math.abs(i-index)==1?1.03f:1):1; item.animate().scaleX(scale).scaleY(scale).setDuration(110).start(); }
+    }
+    private void render(){
+        if(theme==null) return; int offset=scroll==null?0:scroll.getScrollX(),leftOffset=leftScroll==null?0:leftScroll.getScrollX(),rightOffset=rightScroll==null?-1:rightScroll.getScrollX(); removeAllViews(); items.clear(); packages.clear(); thumbLeft=null; thumbRight=null; leftScroll=null; rightScroll=null;
+        if(!expanded){ TextView handle=new TextView(getContext()); handle.setText("Quick Access ↑"); handle.setTextColor(theme.muted); handle.setTextSize(11); handle.setGravity(Gravity.CENTER); handle.setPadding(dp(12),dp(5),dp(12),dp(5)); handle.setContentDescription("Show Quick Access dock"); handle.setOnClickListener(v->{ host.touch(); expand(true); }); addView(handle); return; }
+        if(!dragging&&QuickAccess.read(prefs).isEmpty()){
+            TextView add=new TextView(getContext()); add.setText("Quick Access · Add apps"); add.setTextColor(theme.muted); add.setTextSize(11); add.setGravity(Gravity.CENTER); add.setPadding(dp(14),dp(7),dp(14),dp(7)); add.setBackground(rounded(theme.surface)); add.setFocusable(true); add.setFocusableInTouchMode(host.controller()); add.setDefaultFocusHighlightEnabled(false); add.setContentDescription("Add apps to Quick Access"); add.setOnClickListener(v->host.add()); add.setOnFocusChangeListener((v,focus)->{ if(focus){ selected=0; highlight(0); } }); addView(add); items.add(add); packages.add(""); return;
+        }
+        String style=prefs.getString("dockStyle","floating"); boolean thumbs="thumb".equals(style); int icon=Math.round(("compact".equals(style)?26:thumbs?34:32)*QuickAccess.size(prefs)/100f),cell=Math.max(thumbs?56:44,icon+18);
+        TextView heading=new TextView(getContext()); heading.setText("Quick Access"); heading.setTextSize(10); heading.setTextColor(theme.muted); heading.setGravity(Gravity.CENTER); addView(heading);
+        scroll=new HorizontalScrollView(getContext()); scroll.setHorizontalScrollBarEnabled(false); scroll.setClipChildren(false); scroll.setClipToPadding(false); scroll.setFillViewport(true); addView(scroll,new LayoutParams(-1,dp(icon+28)));
+        LinearLayout center=new LinearLayout(getContext()); center.setGravity(Gravity.CENTER); center.setClipChildren(false); center.setPadding(dp(5),dp(4),dp(5),dp(4)); scroll.addView(center,new HorizontalScrollView.LayoutParams(-1,-1));
+        icons=new LinearLayout(getContext()); icons.setGravity(Gravity.CENTER); icons.setClipChildren(false); icons.setPadding(dp(8),dp(2),dp(8),dp(2)); GradientDrawable shell=rounded(theme.surface); shell.setStroke(dp(1),theme.raised); icons.setBackground(shell);
+        center.addView(icons,new LayoutParams("shelf".equals(style)||thumbs?-1:-2,-1));
+        List<String> order=dragging&&dragOrder!=null?dragOrder:QuickAccess.read(prefs);
+        if(thumbs){
+            icons.setBackgroundColor(Color.TRANSPARENT); icons.setPadding(0,dp(2),0,dp(2)); split=(order.size()+1)/2;
+            leftScroll=new HorizontalScrollView(getContext()); rightScroll=new HorizontalScrollView(getContext()); for(HorizontalScrollView side:new HorizontalScrollView[]{leftScroll,rightScroll}){ side.setHorizontalScrollBarEnabled(false); side.setFillViewport(true); side.setClipChildren(false); }
+            LayoutParams leftSize=new LayoutParams(0,-1,1); leftSize.rightMargin=dp(12); icons.addView(leftScroll,leftSize); icons.addView(rightScroll,new LayoutParams(0,-1,1));
+            FrameLayout leftFrame=new FrameLayout(getContext()),rightFrame=new FrameLayout(getContext()); leftScroll.addView(leftFrame,new HorizontalScrollView.LayoutParams(-2,-1)); rightScroll.addView(rightFrame,new HorizontalScrollView.LayoutParams(-2,-1));
+            thumbLeft=new LinearLayout(getContext()); thumbRight=new LinearLayout(getContext()); for(LinearLayout side:new LinearLayout[]{thumbLeft,thumbRight}){ side.setGravity(Gravity.CENTER_VERTICAL); side.setClipChildren(false); GradientDrawable plate=rounded(theme.surface); plate.setStroke(dp(1),theme.raised); side.setBackground(plate); side.setPadding(dp(5),0,dp(5),0); }
+            leftFrame.addView(thumbLeft,new FrameLayout.LayoutParams(-2,-1,Gravity.LEFT)); rightFrame.addView(thumbRight,new FrameLayout.LayoutParams(-2,-1,Gravity.RIGHT));
+        }
+        if(order.isEmpty()) addItem("",icon,cell); else for(String pkg:order) addItem(pkg,icon,cell);
+        HorizontalScrollView viewport=scroll; post(()->viewport.scrollTo(offset,0));
+        if(thumbs){ HorizontalScrollView left=leftScroll,right=rightScroll; post(()->{ left.scrollTo(leftOffset,0); right.scrollTo(rightOffset<0?Integer.MAX_VALUE:rightOffset,0); }); }
+        post(()->{ if(focused&&host.controller()&&isAttachedToWindow()&&!dragging) focusItem(selected); });
+        if(selected>=items.size()) selected=items.size()-1;
+    }
+    private void addItem(String pkg,int icon,int cell){
+        LinearLayout item=new LinearLayout(getContext()); item.setOrientation(VERTICAL); item.setGravity(Gravity.CENTER); item.setFocusable(true); item.setFocusableInTouchMode(host.controller()); item.setDefaultFocusHighlightEnabled(false); item.setClipChildren(false); item.setTag(pkg);
+        String name=pkg.isEmpty()?"Add apps to Quick Access":host.label(pkg); boolean running=!pkg.isEmpty()&&host.running(pkg),current=!pkg.isEmpty()&&host.current(pkg);
+        ImageView image=new ImageView(getContext()); image.setImageDrawable(pkg.isEmpty()?new ActionGlyph("plus",theme.text):host.icon(pkg)); image.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO); item.addView(image,new LayoutParams(dp(icon),dp(icon)));
+        View indicator=new View(getContext()); GradientDrawable dot=new GradientDrawable(); dot.setShape(GradientDrawable.OVAL); dot.setColor(current?theme.accent:theme.muted); indicator.setBackground(dot); LayoutParams point=new LayoutParams(dp(current?8:4),dp(4)); point.topMargin=dp(3); item.addView(indicator,point); indicator.setVisibility(prefs.getBoolean("dockIndicators",true)&&(running||current)?VISIBLE:INVISIBLE);
+        item.setContentDescription(name+(current?", Current app":running?", running":"")); item.setTooltipText(name); LinearLayout target=thumbLeft==null?icons:items.size()<split?thumbLeft:thumbRight; target.addView(item,new LayoutParams(dp(cell),-1)); packages.add(pkg); items.add(item);
+        item.setOnClickListener(v->{ selected=items.indexOf(item); if(pkg.isEmpty()) host.add(); else host.launch(pkg); });
+        item.setOnFocusChangeListener((v,focused)->{ if(focused){ selected=items.indexOf(v); highlight(selected); } });
+        item.setOnHoverListener((v,event)->{ if(event.getActionMasked()==MotionEvent.ACTION_HOVER_ENTER) highlight(items.indexOf(v)); else if(event.getActionMasked()==MotionEvent.ACTION_HOVER_EXIT) highlight(-2); return false; });
+        item.setOnLongClickListener(v->{ if(pkg.isEmpty()){ host.add(); return true; } host.touch(); dragging=true; draggingPackage=pkg; dragOrder=QuickAccess.read(prefs); boolean started=v.startDragAndDrop(ClipData.newPlainText("TaskDeck Quick Access",pkg),new View.DragShadowBuilder(v),pkg,0); if(!started){ dragging=false; dragOrder=null; } return started; });
+    }
+    private boolean drag(View view,DragEvent event){
+        if(event.getAction()==DragEvent.ACTION_DRAG_STARTED) return event.getLocalState() instanceof String&&QuickAccess.read(prefs).contains((String)event.getLocalState());
+        if(!dragging) return false;
+        if(event.getAction()==DragEvent.ACTION_DRAG_LOCATION){
+            int[] xy=new int[2]; getLocationOnScreen(xy); float screen=xy[0]+event.getX(); int nearest=-1; float distance=Float.MAX_VALUE;
+            for(int i=0;i<items.size();i++){ Rect rect=new Rect(); if(items.get(i).getGlobalVisibleRect(rect)){ float delta=Math.abs(screen-rect.exactCenterX()); if(delta<distance){ nearest=i; distance=delta; } } }
+            if(nearest>=0&&dragOrder.indexOf(draggingPackage)!=nearest){ dragOrder=QuickAccess.move(dragOrder,draggingPackage,nearest); render(); }
+            HorizontalScrollView edge=leftScroll==null?scroll:event.getX()<getWidth()/2f?leftScroll:rightScroll;
+            long now=android.os.SystemClock.uptimeMillis(); if(now-lastScroll>80&&edge!=null){ int[] edgeXY=new int[2]; edge.getLocationOnScreen(edgeXY); float local=screen-edgeXY[0]; if(local<dp(40)) edge.scrollBy(-dp(20),0); else if(local>edge.getWidth()-dp(40)) edge.scrollBy(dp(20),0); lastScroll=now; } return true;
+        }
+        if(event.getAction()==DragEvent.ACTION_DROP){ QuickAccess.save(prefs,dragOrder); return true; }
+        if(event.getAction()==DragEvent.ACTION_DRAG_ENDED){ dragging=false; dragOrder=null; render(); host.changed(); return true; }
+        return true;
+    }
+}

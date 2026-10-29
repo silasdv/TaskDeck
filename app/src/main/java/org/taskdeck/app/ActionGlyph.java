@@ -10,6 +10,9 @@ public final class ActionGlyph extends Drawable {
     public ActionGlyph(String kind,int color){ this.kind=kind; this.color=color; }
     public static String kind(String label){
         String s=label.toLowerCase(Locale.ROOT);
+        if(s.contains("quick access")||s.startsWith("pin ")||s.startsWith("unpin ")) return "pin";
+        if(s.equals("dock")) return "grid";
+        if(s.equals("auto")) return "theme";
         if(s.contains("feedback")) return "notify";
         if(s.contains("ko-fi")) return "heart";
         if(s.equals("switch apps")) return "switch";
@@ -49,6 +52,7 @@ public final class ActionGlyph extends Drawable {
         int save=canvas.save(); canvas.translate(getBounds().left,getBounds().top); canvas.scale(getBounds().width()/24f,getBounds().height()/24f);
         Paint p=new Paint(Paint.ANTI_ALIAS_FLAG); p.setColor(color); p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(2); p.setStrokeCap(Paint.Cap.ROUND); p.setStrokeJoin(Paint.Join.ROUND);
         switch(kind){
+            case "pin": { Path bookmark=new Path(); bookmark.moveTo(6,3); bookmark.lineTo(18,3); bookmark.lineTo(18,21); bookmark.lineTo(12,16); bookmark.lineTo(6,21); bookmark.close(); canvas.drawPath(bookmark,p); break; }
             case "heart": { Path heart=new Path(); heart.moveTo(12,21); heart.cubicTo(-4,10,4,0,12,7); heart.cubicTo(20,0,28,10,12,21); canvas.drawPath(heart,p); break; }
             case "minus": canvas.drawLine(4,12,20,12,p); break;
             case "plus": canvas.drawLine(4,12,20,12,p); canvas.drawLine(12,4,12,20,p); break;
@@ -62,7 +66,7 @@ public final class ActionGlyph extends Drawable {
             case "exit": canvas.drawRect(3,3,12,21,p); canvas.drawLine(9,12,22,12,p); line(canvas,p,17,7,22,12,17,17); break;
             case "all": canvas.drawRoundRect(6,6,21,21,2,2,p); line(canvas,p,3,17,3,3,17,3); canvas.drawLine(10,10,17,17,p); canvas.drawLine(17,10,10,17,p); break;
             case "others": canvas.drawRoundRect(3,4,10,20,2,2,p); canvas.drawRoundRect(14,4,21,20,2,2,p); canvas.drawLine(15,9,20,15,p); canvas.drawLine(20,9,15,15,p); break;
-            case "refresh": canvas.drawArc(new RectF(4,4,20,20),35,285,false,p); line(canvas,p,15,3,20,5,20,10); break;
+            case "refresh": canvas.drawArc(new RectF(4,4,20,20),-40,285,false,p); line(canvas,p,6,3,8.6f,4.7f,7.8f,8); break;
             case "sort": canvas.drawLine(3,6,21,6,p); canvas.drawLine(3,12,16,12,p); canvas.drawLine(3,18,10,18,p); break;
             case "connect": canvas.drawRoundRect(6,7,18,17,3,3,p); canvas.drawLine(9,2,9,7,p); canvas.drawLine(15,2,15,7,p); canvas.drawLine(12,17,12,22,p); break;
             case "notify": { Path path=new Path(); path.moveTo(5,17); path.lineTo(7,14); path.lineTo(7,9); path.cubicTo(7,2,17,2,17,9); path.lineTo(17,14); path.lineTo(19,17); path.close(); canvas.drawPath(path,p); canvas.drawArc(new RectF(9,17,15,23),0,180,false,p); break; }

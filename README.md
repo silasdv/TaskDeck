@@ -2,7 +2,7 @@
 
 **A controller-first Android task manager for gaming handhelds, with full touch support.**
 
-TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **1.0**, Android 10+, using Shizuku.
+TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **1.1**, Android 10+, using Shizuku.
 
 ## Vibecoded
 
@@ -20,14 +20,14 @@ One main screen combines app selection, task closing and RAM information. It sta
 | X / Square | Close selected app's reported windows |
 | Y / Triangle | Close all eligible apps |
 | R1 | Close all but current: retain the app used before opening TaskDeck |
-| Select / Share | Protection, window and launcher-restart options |
+| Select / Share | Protection, Quick Access pinning, window and launcher-restart options |
 
-All six actions can be remapped in Settings > Controller > Button mapping. The action row follows Open–Exit–Close–Close all–Close all but current and displays the actual mapped button labels.
+All six actions can be remapped in Settings > Controller > Button mapping. The top-right action hints, immediately before Settings, follow Open–Exit–Close–Close all–Close all but current and displays the actual mapped button labels.
 
 - **Fit all** is the default. View offers exactly four presets: Fit all, Grid, List and Cards. There is no custom layout editor. Explicit preset choices are preserved. Fit all scrolls if the minimum readable size cannot fit the full set.
 - Sort offers Recent, RAM size and Alphabetical in an outlined popup. Locked apps sort last, keeping eligible apps first.
 - App windows group into one card by default, with a count and one package-wide RAM sample. Disable Group app windows in Settings > Appearance for individual task cards. A grouped X targets all represented windows; separate cards target one window.
-- Compact toolbar: Refresh, Sort, View and an icon-only Settings control. No brand heading, mode tabs, Connect shortcut or Diagnostics screen uses deck space. Main-screen buttons use compact 40dp controls; Settings keeps larger controls.
+- Compact toolbar: Refresh, Sort, View and an icon-only Settings control. No brand heading, mode tabs, Connect shortcut or Diagnostics screen uses deck space. Main-screen buttons use compact 36dp controls with smaller labels; Settings keeps larger controls.
 
 Closing is immediate, with no confirmation dialog. Use disposable app state for testing; unsaved game progress is not saved automatically.
 
@@ -35,21 +35,33 @@ Closing is immediate, with no confirmation dialog. Use disposable app state for 
 
 Android 10+ and **Shizuku 13+** are required. Root is not required. Android 11+ can start Shizuku with wireless debugging; Android 10 needs its documented computer setup. Firmware permissions vary.
 
-1. Download **[TaskDeck-1.0.apk](https://github.com/silasdv/TaskDeck/releases/tag/v1.0)** from Releases and install it. **Earlier 0.x test builds used a different key: uninstall one first, after noting your settings/mappings. Uninstalling clears app data.** Version 1.0 uses a dedicated release key; future releases must use that key for normal upgrades.
+1. Download **[TaskDeck-1.1.apk](https://github.com/silasdv/TaskDeck/releases/tag/v1.1)** from Releases and install it. **Earlier 0.x test builds used a different key: uninstall one first, after noting your settings/mappings. Uninstalling clears app data.** Version 1.1 uses the same dedicated release key as 1.0 and installs over it, retaining settings.
 2. Install Shizuku from its [official download page](https://shizuku.rikka.app/download/) and follow the [official setup guide](https://shizuku.rikka.app/guide/setup/). Pairing is not the same as starting Shizuku. Without root, start it again after reboot.
 3. First launch walks through eight focused screens: connection, confirm calibration, open-menu shortcut, direct-switch shortcut, shortcut-service access, appearance, closing behavior and notifications. Controller steps are separate; optional steps can be skipped with Next. L1 goes back; R1 goes forward.
-4. Finish saves setup completion and draws a brief completion checkmark before opening the deck. Later launches go directly to the deck. **Settings is a category list, not a repeated setup wizard.**
+4. Finish saves setup completion and draws a completion checkmark with about 1.5 seconds of hold time (Confirm continues immediately) before opening the deck. Later launches go directly to the deck. **Settings is a category list, not a repeated setup wizard.**
 5. Test switching and closing with two noncritical apps before using a game with unsaved state.
 
 ## Settings
 
-Settings has Connection, Controller, Appearance, Notifications and About categories, with an adjacent content pane in landscape. Subpages return to Settings after setup. Connection/reconnect tools live in Connection; there is no permanent Connect button on the deck.
+Settings has Connection, Controller, Appearance, Dock, Notifications and About categories, with an adjacent content pane in landscape. Subpages return to Settings after setup. Connection/reconnect tools live in Connection; there is no permanent Connect button on the deck.
 
 **Stay open after clearing** is a stable-label toggle. Highlighted **On** keeps the deck open after bulk clearing. Outlined **Off** returns HOME for Close all, or to the retained app for Close all but current. Errors and unverified results keep the deck open. Empty bulk actions still follow the chosen exit behavior.
 
 Closing behavior lives in Appearance, beside grouping and themes. A green checkmark on Connection indicates an active backend. About shows version/developer information, GitHub and an optional Ko-fi link. RAM feedback and the notification shortcut use the same On/Off convention. Notifications also contains Test feedback and Android permission settings. Android controls actual heads-up/banner visibility. Connection > Last action names confirmed, failed and unverified outcomes for every attempted app/window. Reports are held only in memory.
 
 The full interaction plan is in [USER-FLOW.md](USER-FLOW.md).
+
+## Quick Access dock
+
+Pin launchable apps with Select or touch long-press on a task card. Add installed apps in Settings > Dock even when they are not open. Favorites are shortcuts, separate from task cards and protection: pinning does not lock an app or fabricate an open task.
+
+Choose **Floating**, **Compact**, **Shelf**, or **Thumb corners**. Thumb corners splits favorites into bottom-left and bottom-right groups, with larger touch targets and independent horizontal scrolling for overflow. Dock size ranges from **60–160%**. Dock themes can follow the app or use Light, Dark or OLED; the app also supports **Automatic** theme following Android.
+
+Dock behavior offers always visible or show on navigation/tap, focus/hover magnification and optional running indicators. Indicators use reported process data; an ordinary recent task alone does not prove an app is running. The app used before TaskDeck is marked **Current**, when Android reports that origin; selecting another card does not change it.
+
+Touch-hold and drag to reorder; dropping outside cancels the reorder. Controller: Down from the last app row enters Quick Access, Left/Right selects, Confirm launches, Up returns. Select opens Open, Move left, Move right and Remove options. Removing a favorite never uninstalls or closes it. Installed-app selection is paginated and supports touch and controller.
+
+RAM details is reachable by D-pad or left stick at the right edge of the app area and through its toolbar control in portrait. Setup checks live Shizuku, accessibility and notification access; a saved preference alone never proves permission was granted.
 
 ## Controller mapping
 
@@ -89,7 +101,7 @@ TaskDeck does not replace native swipe-up/Quickstep, obtain live task screenshot
 
 ## Build
 
-No INTERNET permission, ads, analytics, screen-content retrieval or typed-text logging. Task/PSS snapshots, results and feedback diagnostics remain in memory. Preferences persist explicit configuration such as locks, unlocked launchers, theme, view, shortcuts, calibration and closing/notification choices, controller bindings and label profile.
+No INTERNET permission, ads, analytics, screen-content retrieval or typed-text logging. Task/PSS snapshots, results and feedback diagnostics remain in memory. Preferences persist explicit configuration such as locks, unlocked launchers, theme, view, favorites/dock preferences, shortcuts, calibration and closing/notification choices, controller bindings and label profile.
 
 Build with JDK 17, Android SDK 35 / Build Tools 35.0.0 and Gradle 8.11.1:
 
@@ -97,7 +109,7 @@ Build with JDK 17, Android SDK 35 / Build Tools 35.0.0 and Gradle 8.11.1:
 ./gradlew testDebugUnitTest lintRelease assembleRelease bundleRelease
 ```
 
-Windows uses gradlew.bat. Set ANDROID_HOME or local.properties. See [Release signing](docs/RELEASING.md) for signing configuration. Keys/passwords live in ignored `.local/` and are never included in source archives. Without release signing material, the release artifact is unsigned. Application versionCode is 100; UserService implementation remains 8.
+Windows uses gradlew.bat. Set ANDROID_HOME or local.properties. See [Release signing](docs/RELEASING.md) for signing configuration. Keys/passwords live in ignored `.local/` and are never included in source archives. Without release signing material, the release artifact is unsigned. Application versionCode is 110; UserService implementation remains 8.
 
 See [VALIDATION.md](VALIDATION.md) for automated results and [DEVICE-TEST.md](DEVICE-TEST.md) for outstanding hardware checks. UI tests use fake IPC; actual RP6 Shizuku behavior, controller routing and visible RAM banners are not proven by them.
 

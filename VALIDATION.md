@@ -1,4 +1,19 @@
-# Validation — 1.0
+# Validation — 1.1
+
+29 October 2026. Release versionName 1.1, versionCode 110; UserService implementation/protocol remains 8. Same dedicated release key as 1.0, supporting normal upgrades.
+
+- testDebugUnitTest: **101 passed**, zero failures/errors/skips.
+- lintRelease: **0 errors, 36 warnings**. Warnings include English-only strings, physical corner alignment, programmatic view constructors and existing private-API/dependency/backup/accessibility/drawing guidance.
+- assembleRelease and bundleRelease: passed.
+- Release signing retains certificate SHA-256 `7c4fee9313f84dc00aa55ddd58bbc3277901a3e3dcabf97e3506b3ebeabbd386` (RSA 3072). Private signing material remains excluded.
+
+New simulated checks cover favorite persistence/order/corrupt preferences, bounds and theme resolution; Current identity across selection/reopening; D-pad/stick RAM access; live permission indicators; completion delay/Confirm; pinning without protection/task synthesis; launch of closed favorites; controller reorder/removal; Thumb corners geometry, size and focus visibility; first-touch activation after controller; circular Settings, compact hints, Dock pages and installed-app picker return paths. Existing task, controller, IPC, protection, RAM-scale and feedback regressions remain covered.
+
+These are Robolectric/fake-backend checks, not execution on physical RP6 hardware or pixel-level visual review. Native touch drag/drop/cancellation and overflow, firmware origin/keys, real Shizuku APIs, Android notifications, font scaling/insets and all dock styles require DEVICE-TEST.md acceptance. No universal compatibility, reclaimed-memory or performance claim is made.
+
+---
+
+# Historical validation — 1.0
 
 29 October 2026. Release versionName 1.0, versionCode 100. Non-debuggable APK and App Bundle signed with the dedicated TaskDeck release key; Shizuku UserService implementation remains 8. Earlier 0.x builds use the debug key and require uninstalling before this release.
 

@@ -121,6 +121,14 @@ public class TaskDeckApp extends Application {
     }
     private void disconnected(String message) { connectionGeneration++; backend=null; binding=false; pendingPermissionRequest=false; status=message; notifyChanged(); }
     public void notifyChanged() { main.post(()->{ if(changed!=null) changed.run(); }); }
+    /** Recheck broker access off the UI thread after returning from Android/Shizuku settings. */
+    public void verifyLiveAccess(){
+        ITaskBackend service=backend; if(service==null) return;
+        requestMemory("Access status",3000,()->new JSONObject().put("allowed",Shizuku.pingBinder()&&Shizuku.checkSelfPermission()==PackageManager.PERMISSION_GRANTED&&service.asBinder().isBinderAlive()),result->{
+            if(backend!=service||result.has("error")) return;
+            if(!result.optBoolean("allowed")) disconnected("Shizuku access is no longer available. Start it and authorize TaskDeck again.");
+        });
+    }
     protected JSONObject beginUserServiceBinding(ServiceConnection target,boolean request) throws Exception {
         if(!Shizuku.pingBinder()) return BackendRequests.error("Shizuku is not running. Open Shizuku and start it first.");
         if(Shizuku.getVersion()<13) return BackendRequests.error("Shizuku 13 or newer is required.");

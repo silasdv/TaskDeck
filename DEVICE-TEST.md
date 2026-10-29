@@ -1,3 +1,16 @@
+# Version 1.1 acceptance additions
+
+Install 1.1 over release 1.0; verify settings survive. The automated suite is not a substitute for these physical RP6 checks:
+
+- Floating, Compact, Shelf and Thumb corners in landscape/portrait, font scaling and system insets. Thumb corner targets stay reachable; overflow scrolls independently at both sides.
+- Pin closed/running apps; no synthetic task cards or protection changes. Touch hold/drag across corners and within overflow, drop, cancel; order persists after reopening. Controller Select move/remove provides an alternative.
+- Dock size 60/100/160%, all themes, Automatic Android theme changes, always/focus visibility, hover/focus magnification and indicators with unavailable RAM data.
+- First touch after controller use activates once. D-pad/stick can enter/leave dock, launch a favorite and reach RAM details. Header labels and circular Settings remain legible.
+- Current marker follows the actual entry app for shortcut, tile and notification entry; Android may not report every origin reliably.
+- Revoke/regrant Shizuku, notification and Accessibility permissions; setup indicators update honestly. Completion remains visible, and Confirm skips without accidentally launching an app.
+
+---
+
 # RP6 acceptance — 1.0
 
 The checks below require physical hardware and have not been executed here. Record firmware/API, Shizuku version, controller reporting mode and font scale. Use disposable app state; immediate closing does not save games.
