@@ -1,29 +1,21 @@
-# User flow — 0.8
+# User flow — 1.0
 
-TaskDeck is a quick task switcher. App selection is the primary screen and uses most of the display. No brand heading or permanent Connect button competes with it.
+## Main screen
+
+One deck, without a separate switcher mode. Every opening selects the leftmost card in the current sort order, even when protected. An empty deck selects Refresh. D-pad/stick move selection, Confirm opens, Back exits, and mapped close/all/retain-current actions execute directly. Existing protections still apply.
+
+Refresh, Sort, View and icon-only Settings form the compact toolbar. Main controls are 40dp with reduced padding; the mapped shoulder label is smaller and has no decorative action icon. Fit all is the default; Cards/List/Grid remain presets. No custom layout editor.
+
+Used/total RAM accompanies the deck. System and app diagrams share the total physical RAM denominator. No available/free RAM number is displayed. All figures are decimal MB; unknown PSS remains unavailable. RAM details pages through all reported apps.
 
 ## First launch
 
-Eight focused steps: Shizuku connection, confirm-button calibration, open-menu chord, direct-switch chord, shortcut-service access, appearance, closing behavior, notifications. Controller steps each show one task and a saved/enabled indicator. A connection is required before continuing; optional controller steps are skipped with Next. L1 goes back, R1 goes forward. Finish saves completion and draws a brief checkmark before opening the deck. Later launches never reopen this wizard.
-
-## Everyday use
-
-Two separate modes share the app catalog. **Switch apps** shows selection/opening and has no destructive X/Y/R1 actions or RAM sidebar. **Manage tasks** shows closing/protection and RAM tools. The toolbar provides mode selection; L1 changes mode with a destination badge. The last mode is remembered. A new installation starts in Switch apps.
-
-Fit all is the default unless a preset was explicitly selected. Refresh, Sort, View and Settings occupy one compact toolbar without a brand heading or Connect button. Sort/View popups have an outline and selected state. Visually compact buttons retain 48dp touch targets. Fit respects readable text size and scrolls only when necessary.
-
-Manage tasks has a system used/free RAM chart and app PSS comparison bars that adapt to the available height. RAM details exposes all reported entries through pages rather than a fixed three-entry list. Values use decimal MB (1 MB = 1,000,000 bytes), including feedback notifications. Unknown measurements remain unavailable. App PSS is approximate and does not decompose system RAM.
+Eight short setup screens: Shizuku connection, confirm calibration, open-menu shortcut, direct-switch shortcut, shortcut-service access, appearance, closing, notifications. Connection is required before continuing; controller/shortcut steps are optional. L1 previous/R1 next remain fixed. Finish saves completion and briefly animates a checkmark. Later launches skip this wizard.
 
 ## Settings
 
-A category list replaces the repeat wizard: Connection, Controller, Appearance, Closing behavior, Notifications. Categories open an adjacent content pane in landscape; controller up/down previews categories and left/right follows panes and horizontal option rows. Back returns to the deck; subpages return to Settings once setup is complete. Connection and notification tools live here, with no Diagnostics destination.
+Category list: Connection, Controller, Appearance, Notifications, About. Connection has a green checkmark when connected. Appearance contains theme, grouping and Stay open after clearing, with a stable highlighted On/outlined Off toggle. Notifications has feedback, shortcut visibility, a bell-icon feedback test and permissions. About shows version, SilasDV, vibecoded/open-source information, GitHub and optional Ko-fi.
 
-Stay open after clearing is a stable-label toggle: highlighted/on means the deck remains open, outlined/off means bulk actions return home or to the retained app. RAM feedback and notification shortcut use the same state convention. Controller focus is an additional outline, independent of enabled state. First touch acts immediately.
+Controller opens PadBoard-style Button mapping: letter/PlayStation profiles with swapped variants, confirm calibration, six individual actions and reset. Pressing an already-used button swaps actions. Labels and vectors follow actual bindings. Settings respects mapped Confirm/Back, while D-pad and Android Back remain available. Profiles do not pretend to detect firmware physical layout automatically. Chord shortcuts remain a separate submenu.
 
-## Views
-
-Cards, List, Grid and Fit all are the only presets. There is no custom layout editor. Grouping is a separate setting under Appearance. Explicitly selected presets are preserved; Fit all is the default.
-
-## Acceptance
-
-No always-on setup or diagnostics clutter. Controller and touch must reach every setting, RAM page and popup. Charts include textual values/accessibility descriptions and never depend on color alone. Compact buttons retain at least 48dp touch height. Check actual RP6 font scaling/insets and notification delivery on hardware; automated layout/input tests cannot establish those.
+Landscape category up/down previews the pane; left/right follows panes and horizontal option rows. First touch executes immediately. Back returns from settings subpages to Settings; RAM/window pages return to the deck. Physical RP6 input, notification and font/inset behavior remain hardware acceptance cases.

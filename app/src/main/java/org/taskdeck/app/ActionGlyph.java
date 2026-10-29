@@ -10,6 +10,8 @@ public final class ActionGlyph extends Drawable {
     public ActionGlyph(String kind,int color){ this.kind=kind; this.color=color; }
     public static String kind(String label){
         String s=label.toLowerCase(Locale.ROOT);
+        if(s.contains("feedback")) return "notify";
+        if(s.contains("ko-fi")) return "heart";
         if(s.equals("switch apps")) return "switch";
         if(s.startsWith("ram")||s.equals("manage tasks")) return "grid";
         if(s.equals("permissions")) return "info";
@@ -47,6 +49,7 @@ public final class ActionGlyph extends Drawable {
         int save=canvas.save(); canvas.translate(getBounds().left,getBounds().top); canvas.scale(getBounds().width()/24f,getBounds().height()/24f);
         Paint p=new Paint(Paint.ANTI_ALIAS_FLAG); p.setColor(color); p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(2); p.setStrokeCap(Paint.Cap.ROUND); p.setStrokeJoin(Paint.Join.ROUND);
         switch(kind){
+            case "heart": { Path heart=new Path(); heart.moveTo(12,21); heart.cubicTo(-4,10,4,0,12,7); heart.cubicTo(20,0,28,10,12,21); canvas.drawPath(heart,p); break; }
             case "minus": canvas.drawLine(4,12,20,12,p); break;
             case "plus": canvas.drawLine(4,12,20,12,p); canvas.drawLine(12,4,12,20,p); break;
             case "info": canvas.drawCircle(12,12,9,p); canvas.drawCircle(12,7,0.6f,p); canvas.drawLine(12,11,12,17,p); break;

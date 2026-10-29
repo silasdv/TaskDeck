@@ -1,18 +1,33 @@
 # TaskDeck
 
-An experimental Android app switcher and task manager by **SilasDV**, version **0.8.0-prototype**. Built with substantial AI assistance through Codex (vibecoded). This is a local debug-signed device-test build; the new flow still requires physical Retroid Pocket 6 acceptance.
+**A controller-first Android task manager for gaming handhelds, with full touch support.**
+
+TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **1.0**, Android 10+, using Shizuku.
+
+## Vibecoded
+
+This project is **vibecoded**: implementation and documentation were created with substantial AI assistance through OpenAI Codex, guided and iteratively tested by SilasDV. Automated tests cover selected behavior; they do not establish compatibility with every firmware/controller. Human review and contributions are welcome.
 
 ## Everyday use
 
-**Switch apps** is for choosing and opening apps. It uses the available width for apps and has no destructive X/Y/R1 actions. **Manage tasks** adds closing, protection and a RAM panel. Change modes using the toolbar or **L1**; the destination shows its button badge. The last mode is remembered. New installations start in Switch apps.
+One main screen combines app selection, task closing and RAM information. It starts on the first app, including a protected launcher. Refresh is selected only when no cards exist.
 
-- D-pad/left stick selects. **A** opens; **B** exits.
-- In Manage tasks: **X** closes the selected app's reported windows; **Y** closes eligible apps; **R1** closes other eligible apps, keeping the previous app. The single action row follows A–B–X–Y–R1.
-- Select/long-press in Manage tasks opens protection/window/restart options. In Switch apps it opens a window picker when the selected app has several windows.
+| Default input | Action |
+| --- | --- |
+| D-pad / left stick | Move selection |
+| A / Cross | Open selected app |
+| B / Circle | Exit menu |
+| X / Square | Close selected app's reported windows |
+| Y / Triangle | Close all eligible apps |
+| R1 | Close all but current: retain the app used before opening TaskDeck |
+| Select / Share | Protection, window and launcher-restart options |
+
+All six actions can be remapped in Settings > Controller > Button mapping. The action row follows Open–Exit–Close–Close all–Close all but current and displays the actual mapped button labels.
+
 - **Fit all** is the default. View offers exactly four presets: Fit all, Grid, List and Cards. There is no custom layout editor. Explicit preset choices are preserved. Fit all scrolls if the minimum readable size cannot fit the full set.
-- Sort offers Recent, RAM size and Alphabetical in an outlined popup. Locked apps sort last in Manage tasks; Switch apps follows the selected sorting order without that protection grouping.
+- Sort offers Recent, RAM size and Alphabetical in an outlined popup. Locked apps sort last, keeping eligible apps first.
 - App windows group into one card by default, with a count and one package-wide RAM sample. Disable Group app windows in Settings > Appearance for individual task cards. A grouped X targets all represented windows; separate cards target one window.
-- Compact toolbar: Refresh, Sort, View, mode selection and Settings. No brand heading, Connect shortcut or Diagnostics screen uses deck space. Buttons have smaller visual surfaces while retaining 48dp touch targets.
+- Compact toolbar: Refresh, Sort, View and an icon-only Settings control. No brand heading, mode tabs, Connect shortcut or Diagnostics screen uses deck space. Main-screen buttons use compact 40dp controls; Settings keeps larger controls.
 
 Closing is immediate, with no confirmation dialog. Use disposable app state for testing; unsaved game progress is not saved automatically.
 
@@ -20,21 +35,27 @@ Closing is immediate, with no confirmation dialog. Use disposable app state for 
 
 Android 10+ and **Shizuku 13+** are required. Root is not required. Android 11+ can start Shizuku with wireless debugging; Android 10 needs its documented computer setup. Firmware permissions vary.
 
-1. Install the APK over the previous TaskDeck prototype without uninstalling to retain preferences. It uses the same local debug signing key, not a production key.
+1. Download **[TaskDeck-1.0.apk](https://github.com/silasdv/TaskDeck/releases/tag/v1.0)** from Releases and install it. **Earlier 0.x test builds used a different key: uninstall one first, after noting your settings/mappings. Uninstalling clears app data.** Version 1.0 uses a dedicated release key; future releases must use that key for normal upgrades.
 2. Install Shizuku from its [official download page](https://shizuku.rikka.app/download/) and follow the [official setup guide](https://shizuku.rikka.app/guide/setup/). Pairing is not the same as starting Shizuku. Without root, start it again after reboot.
 3. First launch walks through eight focused screens: connection, confirm calibration, open-menu shortcut, direct-switch shortcut, shortcut-service access, appearance, closing behavior and notifications. Controller steps are separate; optional steps can be skipped with Next. L1 goes back; R1 goes forward.
-4. Finish saves setup completion and draws a brief completion checkmark before opening the deck. Later launches go directly to the last deck mode. **Settings is a category list, not a repeated setup wizard.**
+4. Finish saves setup completion and draws a brief completion checkmark before opening the deck. Later launches go directly to the deck. **Settings is a category list, not a repeated setup wizard.**
 5. Test switching and closing with two noncritical apps before using a game with unsaved state.
 
 ## Settings
 
-Settings has Connection, Controller, Appearance, Closing behavior and Notifications categories, with an adjacent content pane in landscape. Subpages return to Settings after setup. Connection/reconnect tools live in Connection; there is no permanent Connect button on the deck.
+Settings has Connection, Controller, Appearance, Notifications and About categories, with an adjacent content pane in landscape. Subpages return to Settings after setup. Connection/reconnect tools live in Connection; there is no permanent Connect button on the deck.
 
-**Stay open after clearing** is a stable-label toggle. Highlighted **On** keeps Manage tasks open after bulk clearing. Outlined **Off** returns HOME for Close all, or to the retained app for Close other apps. Errors and unverified results keep the deck open. Empty bulk actions still follow the chosen exit behavior.
+**Stay open after clearing** is a stable-label toggle. Highlighted **On** keeps the deck open after bulk clearing. Outlined **Off** returns HOME for Close all, or to the retained app for Close all but current. Errors and unverified results keep the deck open. Empty bulk actions still follow the chosen exit behavior.
 
-RAM feedback and the notification shortcut use the same On/Off convention. Notifications also contains Test feedback and Android permission settings. Android controls actual heads-up/banner visibility. Connection > Last action names confirmed, failed and unverified outcomes for every attempted app/window. Reports are held only in memory.
+Closing behavior lives in Appearance, beside grouping and themes. A green checkmark on Connection indicates an active backend. About shows version/developer information, GitHub and an optional Ko-fi link. RAM feedback and the notification shortcut use the same On/Off convention. Notifications also contains Test feedback and Android permission settings. Android controls actual heads-up/banner visibility. Connection > Last action names confirmed, failed and unverified outcomes for every attempted app/window. Reports are held only in memory.
 
 The full interaction plan is in [USER-FLOW.md](USER-FLOW.md).
+
+## Controller mapping
+
+Settings > Controller > Button mapping follows PadBoard's convention: **A/B/X/Y**, **A/B/X/Y (swapped)**, **PlayStation symbols**, **PlayStation symbols (swapped)**. Letter names do not guess Nintendo/Xbox physical placement. PlayStation face hints are consistently sized vectors.
+
+Calibrate confirm button asks for printed A or Cross to infer the common AB/XY pair swap. Calibration resets the four face actions while preserving the remaining actions through conflict swaps. Choose an individual action to assign any supported digital controller button; an occupied assignment swaps the previous action so both stay reachable. Reset mapping keeps your chosen label profile. Settings also follows mapped Confirm/Back, while D-pad, Android Back and setup's L1/R1 navigation remain available. Bindings are global, not per-device. Repeat calibration after changing Retroid's Android controller mode; it does not identify arbitrary permutations or the controller model automatically.
 
 ## Shortcuts and entry points
 
@@ -44,17 +65,17 @@ The full interaction plan is in [USER-FLOW.md](USER-FLOW.md).
 
 Hold up to four desired buttons together, release them, inspect Android key names/scan codes and save with Start or Confirm. D-pad, Confirm, Back and Start remain reserved during recording. Equal or subset/superset conflicts between the two chords cannot be saved. Partial combinations can reach the current game before the completing key is intercepted; choose unused combinations. Held events do not repeatedly trigger. Different controllers/scan codes are kept separate by the chord recognizer.
 
-If both rear buttons report identical key AND scan codes, assign different digital outputs in Retroid settings. Guide/Home and analog-only keys may be intercepted by firmware. Printed-A calibration infers the common AB/XY swap, not arbitrary button permutations. Direct switching depends on firmware task ordering; HOME, split-screen and dock remain acceptance cases.
+If both rear buttons report identical key AND scan codes, assign different digital outputs in Retroid settings. Guide/Home and analog-only keys may be intercepted by firmware. Confirm calibration infers the common AB/XY swap, not arbitrary button permutations. Direct switching depends on firmware task ordering; HOME, split-screen and dock remain acceptance cases.
 
 ## RAM charts and feedback
 
 All displayed memory uses **decimal MB: 1 MB = 1,000,000 bytes**. Android PSS input is KiB and is converted, not relabeled. Unknown samples are unavailable, never zero.
 
-Manage tasks shows used/available system RAM and a system usage bar. App bars compare approximate package PSS. Visible sidebar entries adapt to the available height. **RAM details** exposes every reported entry through paginated charts, without a fixed three-entry cutoff. Values and text descriptions accompany colors; app PSS is not a decomposition of total system RAM and should not be added to match system usage. Android, services, shared pages and cache account for other usage.
+The deck shows used/total system RAM and a system usage bar, without an available/free RAM counter. Every app bar uses the same denominator: total physical RAM. App PSS is converted from KiB to this common scale, rather than making the largest process look like 100% of RAM. Visible sidebar entries adapt to the available height. **RAM details** exposes every reported entry through paginated charts, without a fixed three-entry cutoff. Values and text descriptions accompany colors; app PSS is not a decomposition of total system RAM and should not be added to match system usage. Android, services, shared pages and cache account for other usage.
 
 Task listing completes independently of RAM sampling. A slow or unavailable sample does not disable opening/closing. Old samples are discarded after refresh or catalog changes. Ordinary task removal is not evidence that an app process stopped.
 
-Feedback reports signed available-RAM change and current available MB. It does not prove that a specific amount was reclaimed or that game performance improved. An Application-owned handler coalesces feedback; bulk exit publishes before leaving the Activity. It requests a toast and, when permitted, a quiet high-importance `ram_results` notification. This survives Activity exit, not Android killing/force-stopping the entire app. Channel blocks, notification permission, DND and gaming firmware control presentation. Test feedback does not pretend to close apps.
+Feedback reports signed RAM change and used/total MB. It does not prove that a specific amount was reclaimed or that game performance improved. An Application-owned handler coalesces feedback; bulk exit publishes before leaving the Activity. It requests a toast and, when permitted, a quiet high-importance `ram_results` notification. This survives Activity exit, not Android killing/force-stopping the entire app. Channel blocks, notification permission, DND and gaming firmware control presentation. Test feedback does not pretend to close apps.
 
 ## Closing, protection and limits
 
@@ -66,16 +87,24 @@ Requests have deadlines, late responses are ignored and a stalled connection get
 
 TaskDeck does not replace native swipe-up/Quickstep, obtain live task screenshots, perform emulator savestates or offer general-purpose package force-stop. It is not a RAM booster. Native gesture replacement is separate system integration; this app uses Shizuku and optional key/tile/notification entry points.
 
-## Privacy and build
+## Build
 
-No INTERNET permission, ads, analytics, screen-content retrieval or typed-text logging. Task/PSS snapshots, results and feedback diagnostics remain in memory. Preferences persist explicit configuration such as locks, unlocked launchers, theme, view/mode, shortcuts, calibration and closing/notification choices.
+No INTERNET permission, ads, analytics, screen-content retrieval or typed-text logging. Task/PSS snapshots, results and feedback diagnostics remain in memory. Preferences persist explicit configuration such as locks, unlocked launchers, theme, view, shortcuts, calibration and closing/notification choices, controller bindings and label profile.
 
 Build with JDK 17, Android SDK 35 / Build Tools 35.0.0 and Gradle 8.11.1:
 
 ```sh
-./gradlew assembleDebug testDebugUnitTest lintDebug
+./gradlew testDebugUnitTest lintRelease assembleRelease bundleRelease
 ```
 
-Windows uses gradlew.bat. Set ANDROID_HOME or local.properties. The debug key is in ignored `.local/`; source archives exclude that key and build caches. Application versionCode is 9; UserService implementation remains 8, with unchanged privileged protocol from 0.7.
+Windows uses gradlew.bat. Set ANDROID_HOME or local.properties. See [Release signing](docs/RELEASING.md) for signing configuration. Keys/passwords live in ignored `.local/` and are never included in source archives. Without release signing material, the release artifact is unsigned. Application versionCode is 100; UserService implementation remains 8.
 
 See [VALIDATION.md](VALIDATION.md) for automated results and [DEVICE-TEST.md](DEVICE-TEST.md) for outstanding hardware checks. UI tests use fake IPC; actual RP6 Shizuku behavior, controller routing and visible RAM banners are not proven by them.
+
+## Privacy and contributions
+
+No network permission, advertising, analytics or usage-history logging. See [Privacy](PRIVACY.md), [Contributing](CONTRIBUTING.md), [MIT license](LICENSE) and [Third-party notices](THIRD_PARTY_NOTICES.md).
+
+## Support SilasDV
+
+TaskDeck is free and open source. Optional tips: **[ko-fi.com/silasdv](https://ko-fi.com/silasdv)**. The in-app link opens your browser.

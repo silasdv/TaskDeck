@@ -1,4 +1,22 @@
-# Validation — 0.8.0-prototype
+# Validation — 1.0
+
+29 October 2026. Release versionName 1.0, versionCode 100. Non-debuggable APK and App Bundle signed with the dedicated TaskDeck release key; Shizuku UserService implementation remains 8. Earlier 0.x builds use the debug key and require uninstalling before this release.
+
+- testDebugUnitTest: **86 passed**, no failures/errors/skips.
+- lintRelease: **0 errors, 24 warnings**, including English strings and existing private-API/dependency/backup guidance.
+- assembleRelease and bundleRelease: passed.
+- APK signature verified; certificate SHA-256 `7c4fee9313f84dc00aa55ddd58bbc3277901a3e3dcabf97e3506b3ebeabbd386`, RSA 3072. Private material stays in ignored .local and is excluded from source/history/assets.
+- Manifest version 1.0/code 100, debuggable absent/default false, POST_NOTIFICATIONS and Shizuku API permission only; no INTERNET permission.
+
+New coverage verifies first-card selection even with only a protected launcher, immediate reset on reopening, four preset views without a mode switcher, icon-only Settings, the compact action row and smaller retain-current label without an extra action icon. A known 8 GiB memory fixture checks a half-used system bar at 500/1000 and a 50 MiB app at 6/1000 of total RAM, rather than 1000/1000 of the largest app. Available/free RAM labels are absent.
+
+Controller tests cover conflict-swapping assignments, translated custom face bindings across profiles, calibration/reset, PlayStation vector label entries, actual custom-confirm navigation and app opening, and reserved D-pad during capture. Settings tests cover merged Appearance behavior, connection checkmark, correct feedback icon, About version/SilasDV/Ko-fi intent, and all categories/subpages fitting 640×360dp and 800×360dp landscape. Existing task/protection, windows, PID verification, deadlines, late results, chords and feedback-lifecycle tests remain.
+
+These are simulated UI/fake-IPC checks, not a pixel-perfect review or execution of the final release on a physical RP6. Real Shizuku task APIs, launcher behavior, firmware key reporting, font scaling/insets and visible Android notification banners remain hardware acceptance cases in DEVICE-TEST.md. No universal RAM reclamation or game-performance claim is made.
+
+---
+
+# Historical validation — 0.8.0-prototype
 
 29 October 2026. Local debug-signed test build. Application versionCode 9; UserService implementation/protocol stays 8. No publication and no physical RP6 execution of this version.
 

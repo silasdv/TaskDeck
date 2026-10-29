@@ -3,3 +3,7 @@
 local.properties
 **/build/
 *.apk
+*.aab
+*.keystore
+*.jks
+release-signing.properties

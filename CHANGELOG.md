@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0
+
+- One main deck; removed the separate Switch apps mode and mode tabs. Each opening selects the first app card, including a protected card; only an empty deck focuses Refresh.
+- Smaller main controls, icon-only Settings, and Close all but current with a smaller mapped shoulder label and no decorative action icon.
+- System and app diagrams share the total physical RAM denominator. All figures remain decimal MB; free/available RAM numbers are removed, including feedback notifications.
+- Green connected checkmark, corrected feedback-test bell, closing behavior merged into Appearance, and About with version, SilasDV, vibecoded information, GitHub and Ko-fi.
+- PadBoard-style controller mapping: A/B/X/Y or vector PlayStation labels, swapped variants, confirm calibration, six individual actions and conflict-swapping assignments. Mapped Confirm/Back also operate Settings. Reset keeps the label profile.
+- Dedicated private release key, non-debuggable APK/App Bundle, versionCode 100, public-source installation/privacy/contribution/releasing documentation and Ko-fi funding metadata. Earlier 0.x debug-signed APKs require uninstalling before this release.
+- Shizuku remains required. Latest RP6 firmware behavior and visible Android banners remain hardware acceptance cases.
+
 ## 0.8.0-prototype
 
 - Split Switch apps from Manage tasks. Switch apps has selection/opening only; Manage tasks adds close/protect/RAM tools. Toolbar and labeled L1 change mode; last mode is remembered.
