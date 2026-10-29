@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0-prototype
+
+- Separate touch/controller modes: first tap activates; explicit rounded controller focus on setup controls and sort choices.
+- Four setup screens with Next/Previous and actual connection, saved mapping, Accessibility and notification status. Controller navigation/Confirm/Start remain usable during macro recording.
+- Notification shortcut can be hidden again; permission/channel blocking is visible. RAM notifications have one stateful enable/disable action.
+- Sort by Recent, RAM or Alphabetical. Manual locks always sort last; mandatory protected infrastructure is hidden. Empty or entirely locked decks show “Nothing to close”.
+- New openings select the first visible card. Refreshes retain the current selection where possible.
+- Y closes eligible tasks and exits to HOME; R1 closes others and returns to the app identified on entry, retaining all of that package’s tasks. Both handle empty lists. A setting keeps the deck open instead; operation errors remain visible.
+- Removed the blanket system-app and foreign-top-activity exclusions. Targeted launcher, IME, core-service and manual protection still apply. This changes TaskDeck policy, not Android’s system gesture provider.
+- Colored scalable action vectors, compact landscape cards and wrapped narrow-screen controls.
+- UserService version 3 loads the changed backend on upgrade. No new permissions.
+
 ## 0.2.0-prototype
 
 - Replaced native list focus with explicit app-card selection for D-pad and left-stick input. A opens the selected task, X closes it immediately, Y closes eligible tasks without a confirmation dialog.

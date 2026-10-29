@@ -15,4 +15,5 @@ public final class DeckSelection {
     public void select(int id){ int next=ids.indexOf(id); if(next>=0) index=next; }
     public Integer id(){ return ids.isEmpty()?null:ids.get(index); }
     public int index(){ return index; }
+    public void first(){ index=0; }
 }

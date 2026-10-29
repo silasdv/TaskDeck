@@ -1,16 +1,18 @@
-# RP6 acceptance test — 0.2
+# RP6 acceptance test — 0.3
 
-Record firmware/API, Shizuku version and Retroid controller mode. Use disposable app state first; X/Y no longer ask for confirmation.
+Record firmware/API, Shizuku version and Retroid controller mode. Use disposable app state first. The following hardware checks are NOT TESTED here.
 
-1. Update over 0.1, connect Shizuku if necessary, finish the dedicated setup. Verify later launches open the deck directly.
-2. In landscape, verify multiple horizontal cards, readable labels/RAM states and no clipping. Repeat portrait and with larger system text if used.
-3. Without touching a card first, use D-pad left/right and left stick to select the second/third app. A must open that actual existing task. Stop the stick and verify selection stops. B must return useful focus to the previous app.
-4. Test X on a disposable task and Y on a disposable set. Removal should be immediate, confirmed by refreshed task data, and should skip protected apps. No close-confirmation dialog should appear.
-5. Verify Wave/Home launchers remain protected and Android Settings is closable. Long-press or Select on an ordinary card, toggle protection with A, dismiss with B. Verify the vector lock, persistence after reopening, Y exclusion and unlocking.
-6. Record both rear buttons held together, release, inspect both names/scan codes and save with Start. Verify a single rear button still reaches another macro, the full unused chord opens once, and holding does not repeatedly open. Verify actual firmware reports distinct identifiers; analog-only or reserved keys may not work.
-7. Test Light/Dark/OLED and setup navigation with D-pad/stick. Android/Shizuku permission screens remain external.
-8. Check per-app PSS, including multiple tasks for one app. Unknown values must not be shown as zero. Compare only as approximate memory samples, not guaranteed reclaimable RAM.
-9. Grant optional notification permission; close a task and inspect available-RAM delta. It may be zero or negative and is not attributed exclusively to that task.
-10. Test tile/notification entry, Shizuku stop/reconnect/reboot, permission revocation and dock/external display. No unavailable backend operation should appear successful.
+1. Upgrade over 0.2 without uninstalling. Verify saved preferences and Shizuku reconnection to UserService version 3.
+2. Complete the four setup screens entirely with D-pad/left stick and calibrated Confirm. Return from Android permission settings and verify live connection/Accessibility/notification status. Next/Previous remain reachable while scrolling.
+3. Change themes with a single touch, then immediately navigate with the controller. Repeat lock/unlock and setup toggles; no first-tap focus-only behavior. Focus outlines must follow rounded controls.
+4. Record both rear buttons together, release, inspect identifiers, save with Confirm or Start. D-pad and Confirm must not become chord inputs. Verify service enable/disable and full chord opens once; partial chords still reach the game.
+5. In landscape verify more than two ordinary cards, readable RAM states and no clipping; repeat portrait, large text and dock. Mandatory infrastructure (HOME/Wave, Shizuku, IMEs, TaskDeck, SystemUI) is hidden.
+6. Select apps using D-pad/stick without first touching. Open A and close X. On every fresh opening select the first visible card, not the last-used one.
+7. Long-press or Select, protect/unprotect with touch or Confirm; verify locks persist and always sort last for Recent, RAM and Alphabetical. Locked ordinary apps remain visible. Sort popup supports D-pad/stick/Confirm/Back.
+8. Dismiss Settings and another ordinary preinstalled app through TaskDeck, then compare native Overview. There is no blanket system-app block; explicit infrastructure protections remain intentional. Report any Android rejection verbatim. This is task removal, not package force-stop.
+9. From a disposable game/browser, open TaskDeck via the chord. Select a different card and change sort, then R1: previous app/package stays and opens, other eligible tasks close. Repeat from HOME, split-screen and dock; previous-task detection may fall back to recent order on unsupported firmware.
+10. Y closes eligible tasks and returns HOME. Both Y and R1 exit with an empty deck; “Nothing to close” stays inline. Set “Stay open after close actions” and repeat: menu stays. Backend errors should remain visible instead of claiming success.
+11. Show then hide notification shortcut, revoke/grant Android notification permission and block/unblock each channel. Labels reflect actual state. Enable/disable RAM notifications and inspect available-memory delta; zero/negative change is valid. Result notification should still arrive after the menu exits.
+12. Test tile/notification entry, Shizuku stop/reconnect/reboot and shortcut-service conflicts. Firmware/permission failures must not appear successful. Native swipe-up remains Android’s overview.
 
-Report PASS / FAIL / NOT TESTED. Avoid screenshots of private data. Simulation/build success is not a hardware PASS.
+Report PASS / FAIL / NOT TESTED. Simulation and build success do not establish hardware compatibility. No screenshots of private app content are required.

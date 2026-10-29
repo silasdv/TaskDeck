@@ -55,11 +55,9 @@ public class TaskBackend extends ITaskBackend.Stub {
     private ApplicationInfo app(String name) throws Exception { return context.getPackageManager().getApplicationInfo(name,0); }
     private boolean removable(ActivityManager.RecentTaskInfo task,String home,Set<String> protectedPackages) throws Exception {
         String name=packageOf(task); ApplicationInfo app=app(name);
-        // An app containing a foreign top activity is kept out of destructive operations.
-        boolean foreign=task.topActivity!=null && !name.equals(task.topActivity.getPackageName());
         int taskUser=task.getClass().getField("userId").getInt(task);
         // Protect every discovered IME; avoid ContentResolver, which is unsupported in UserService.
-        return !protectedPackages.contains("!input-method-discovery-unavailable") && !home.isEmpty() && !foreign && TaskPolicy.canRemove(name,(app.flags&ApplicationInfo.FLAG_SYSTEM)!=0,taskUser,user(),home,"",protectedPackages);
+        return !protectedPackages.contains("!input-method-discovery-unavailable") && !home.isEmpty() && TaskPolicy.canRemove(name,(app.flags&ApplicationInfo.FLAG_SYSTEM)!=0,taskUser,user(),home,"",protectedPackages);
     }
     private ActivityManager.RecentTaskInfo find(int id,String expected) throws Exception {
         for(ActivityManager.RecentTaskInfo task:tasks()) if(task.taskId==id && packageOf(task).equals(expected)) return task;
@@ -96,6 +94,25 @@ public class TaskBackend extends ITaskBackend.Stub {
         }
         return result;
     }
+    private JSONObject previousTask(List<ActivityManager.RecentTaskInfo> recent,String home){
+        try {
+            Object manager=manager(),value;
+            try { value=call(manager,"getTasks",new Class[]{int.class,boolean.class,boolean.class},100,false,false); }
+            catch(NoSuchMethodException newer){ value=call(manager,"getTasks",new Class[]{int.class,boolean.class,boolean.class,int.class},100,false,false,-1); }
+            for(Object item:(List<?>)value){
+                ActivityManager.RunningTaskInfo task=(ActivityManager.RunningTaskInfo)item;
+                ComponentName component=task.baseActivity; if(component==null||component.getPackageName().equals(context.getPackageName())) continue;
+                if(task.getClass().getField("userId").getInt(task)!=user()) continue;
+                String name=component.getPackageName();
+                // Only return an identifiable recent task or HOME. Other surfaces are not guessed.
+                if(name.equals(home)) return new JSONObject().put("home",true).put("package",name).put("id",task.taskId);
+                for(ActivityManager.RecentTaskInfo candidate:recent) if(candidate.taskId==task.taskId) return new JSONObject().put("id",task.taskId).put("package",name);
+            }
+        } catch(Exception unavailable){ /* Firmware variation: fall back to recent order. */ }
+        for(ActivityManager.RecentTaskInfo task:recent) if(!packageOf(task).equals(context.getPackageName())&&!packageOf(task).isEmpty()){
+            try { return new JSONObject().put("id",task.taskId).put("package",packageOf(task)).put("fallback",true); } catch(JSONException ignored){}
+        } return null;
+    }
     @Override public synchronized String readTasks() {
         try {
             JSONArray rows=new JSONArray();
@@ -103,6 +120,7 @@ public class TaskBackend extends ITaskBackend.Stub {
             String home=home(); Set<String> protectedApps=protectedPackages();
             Set<String> names=new HashSet<>(); for(ActivityManager.RecentTaskInfo task:recent) names.add(packageOf(task));
             Map<String,Ram> ram; try { ram=appMemory(names); } catch(Exception unavailable){ ram=Collections.emptyMap(); }
+            int rank=0;
             for(ActivityManager.RecentTaskInfo task:recent) {
                 String name=packageOf(task); if(name.isEmpty() || name.equals(context.getPackageName())) continue;
                 ApplicationInfo info; try { info=app(name); } catch(PackageManager.NameNotFoundException ignored) { continue; }
@@ -111,9 +129,9 @@ public class TaskBackend extends ITaskBackend.Stub {
                 long pss=sample==null || sample.processes==0 || sample.missing>0?-1:sample.kb;
                 boolean mandatory=!removable(task,home,protectedApps),manual=userProtected.contains(name);
                 rows.put(new JSONObject().put("id",task.taskId).put("package",name).put("label",context.getPackageManager().getApplicationLabel(info).toString())
-                    .put("removable",!mandatory && !manual).put("mandatoryProtected",mandatory).put("userProtected",manual).put("pssKb",pss).put("memoryState",memoryState));
+                    .put("recentRank",rank++).put("removable",!mandatory && !manual).put("mandatoryProtected",mandatory).put("userProtected",manual).put("pssKb",pss).put("memoryState",memoryState));
             }
-            return new JSONObject().put("uid",android.os.Process.myUid()).put("sdk",Build.VERSION.SDK_INT).put("tasks",rows).toString();
+            return new JSONObject().put("uid",android.os.Process.myUid()).put("sdk",Build.VERSION.SDK_INT).put("tasks",rows).put("previousTask",previousTask(recent,home)).toString();
         } catch(Exception e) { return error(e); }
     }
     @Override public synchronized String openTask(int id,String expected) {

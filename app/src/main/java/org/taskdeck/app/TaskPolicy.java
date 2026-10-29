@@ -7,7 +7,7 @@ public final class TaskPolicy {
     private TaskPolicy() {}
     public static boolean canRemove(String packageName, boolean systemApp, int taskUser, int activeUser,
                                     String home, String inputMethod, Set<String> protectedApps) {
-        return packageName!=null && !packageName.isEmpty() && (!systemApp || packageName.equals("com.android.settings")) && taskUser==activeUser
+        return packageName!=null && !packageName.isEmpty() && taskUser==activeUser
             && !packageName.equals("android") && !packageName.equals("com.android.systemui")
             && !packageName.equals("org.taskdeck.app") && !packageName.equals("org.padboard.keyboard")
             && !packageName.equals("moe.shizuku.privileged.api") && !packageName.equals(home)

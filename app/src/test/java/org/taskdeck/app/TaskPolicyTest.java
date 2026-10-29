@@ -11,7 +11,7 @@ public class TaskPolicyTest {
         assertTrue(allowed("com.android.settings",true,0));
         assertFalse(TaskPolicy.canRemove("wave.launcher",false,0,0,"stock.launcher","ime",Set.of("wave.launcher")));
     }
-    @Test public void otherUsersAndSystemAppsAreExcluded(){ assertFalse(allowed("test.game",false,10)); assertFalse(allowed("system.game",true,0)); }
+    @Test public void otherUsersAreExcludedButOrdinarySystemAppTasksCanClose(){ assertFalse(allowed("test.game",false,10)); assertTrue(allowed("system.game",true,0)); }
     @Test public void infrastructureAndConfiguredExceptionsAreProtected(){
         for(String name: new String[]{"android","com.android.systemui","org.taskdeck.app","org.padboard.keyboard","moe.shizuku.privileged.api","launcher.app","keyboard.app","music.app",""}) assertFalse(name,allowed(name,false,0));
         assertFalse(allowed(null,false,0));
