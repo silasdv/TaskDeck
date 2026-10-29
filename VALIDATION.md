@@ -1,4 +1,24 @@
-# Validation — 0.7.0-prototype
+# Validation — 0.8.0-prototype
+
+29 October 2026. Local debug-signed test build. Application versionCode 9; UserService implementation/protocol stays 8. No publication and no physical RP6 execution of this version.
+
+- assembleDebug: passed.
+- testDebugUnitTest: **78 passed**, 0 failures, 0 errors, 0 skipped.
+- lintDebug: **0 errors, 24 warnings**, including English UI strings and existing private-API/dependency/backup guidance.
+- APK signature: verified with the same debug certificate as previous builds: `07ac7a0eb96089084280494e4a768d86cf0994f78f4c0df8a2e67877c01a06c1`.
+- Permissions remain POST_NOTIFICATIONS and Shizuku API only; no INTERNET permission.
+
+Added coverage checks decimal MB conversion from bytes and Android PSS KiB; strict non-destructive Switch apps versus Manage tasks; fresh Fit default and exactly four view presets; category Settings, stable selected On/outlined Off state and controller navigation across panes/theme rows; first-run eight-step completion and animated-check view followed by a direct subsequent launch; connection gating before optional controller steps; and gamepad D-pad/center navigation during calibration.
+
+All eight wizard screens and Connect, recorder, calibration, shortcut settings, category Settings, RAM and Results panes fit simulated 640×360dp and 800×360dp landscape. Tests check RAM charts show more than three entries on a details page and navigate further pages, toolbar/footer geometry and rounded-control input state. The first RAM layout exposed a chart overflow; bounded font-aware chart rows and pagination corrected it. Existing task/protection, grouped windows, timeouts, late replies, direct-switch chords, RAM publication and backend identity regressions remain covered.
+
+The automated UI tests use fake IPC and simulated geometry. They are not a pixel-level visual review or proof of actual Shizuku operations, firmware controller reporting, real PSS, Android notification banner delivery, system font scaling or RP6 insets. Verify those on hardware using DEVICE-TEST.md. App PSS does not decompose total used RAM, task removal does not guarantee process termination, and no absolute performance/reclaimed-memory claims are made.
+
+USER-FLOW.md records the interaction concept. Settings replaces the repeat wizard; there is no Diagnostics screen, permanent Connect toolbar button or custom layout editor. Installed-but-unopened launchers still never create cards. Reports/samples stay in memory and source archives exclude signing keys/caches.
+
+---
+
+# Historical validation — 0.7.0-prototype
 
 29 October 2026. Local debug build, not published. VersionCode and UserService implementation 8; AIDL adds memory sampling, direct switching and restart verification at IDs 6–8. Shizuku remains required.
 

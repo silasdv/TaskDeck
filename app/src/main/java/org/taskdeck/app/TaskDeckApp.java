@@ -32,8 +32,8 @@ public class TaskDeckApp extends Application {
         int count=pendingRamCount; pendingRamCount=0;
         if(count<=0||!getSharedPreferences("settings",MODE_PRIVATE).getBoolean("ramNotifications",true)) return;
         android.app.ActivityManager.MemoryInfo info=new android.app.ActivityManager.MemoryInfo(); getSystemService(android.app.ActivityManager.class).getMemoryInfo(info);
-        long delta=(info.availMem-ramBefore)/(1024*1024);
-        String message="RAM change: "+(delta>=0?"+":"")+delta+" MiB\nAvailable: "+info.availMem/(1024*1024)+" MiB";
+        long delta=MemoryUnits.bytes(info.availMem-ramBefore);
+        String message="RAM change: "+(delta>=0?"+":"")+delta+" MB\nAvailable: "+MemoryUnits.bytes(info.availMem)+" MB";
         showMemoryFeedback(message,count);
     };
     private void showMemoryFeedback(String message,int count){
@@ -57,7 +57,7 @@ public class TaskDeckApp extends Application {
     }
     /** Publish while the Activity is still foreground, then let the system retain it after finish. */
     public void flushMemoryFeedback(){ if(Looper.myLooper()!=Looper.getMainLooper()){ main.post(this::flushMemoryFeedback); return; } main.removeCallbacks(memoryReport); memoryReport.run(); }
-    public void testMemoryFeedback(){ android.app.ActivityManager.MemoryInfo info=new android.app.ActivityManager.MemoryInfo(); getSystemService(android.app.ActivityManager.class).getMemoryInfo(info); showMemoryFeedback("RAM feedback test\nAvailable: "+info.availMem/(1024*1024)+" MiB",0); }
+    public void testMemoryFeedback(){ android.app.ActivityManager.MemoryInfo info=new android.app.ActivityManager.MemoryInfo(); getSystemService(android.app.ActivityManager.class).getMemoryInfo(info); showMemoryFeedback("RAM feedback test\nAvailable: "+MemoryUnits.bytes(info.availMem)+" MB",0); }
     protected ExecutorService memoryExecutor(){ return memoryWorker; }
     public void backendHealthy(){ recoveryAttempts=0; }
     public void request(String label,long timeout,Callable<JSONObject> operation,Consumer<JSONObject> complete){

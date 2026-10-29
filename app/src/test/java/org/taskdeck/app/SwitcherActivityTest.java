@@ -56,7 +56,7 @@ public class SwitcherActivityTest {
     private TestApp app; private FakeBackend backend;
     private org.robolectric.android.controller.ActivityController<SwitcherActivity> start() throws Exception {
         app=(TestApp)RuntimeEnvironment.getApplication(); backend=new FakeBackend(); app.backend=backend;
-        app.getSharedPreferences("settings",0).edit().putBoolean("setupComplete",true).putString("view","cards").commit();
+        app.getSharedPreferences("settings",0).edit().putBoolean("setupComplete",true).putString("view","cards").putBoolean("manageMode",true).commit();
         var controller=Robolectric.buildActivity(SwitcherActivity.class).setup().visible(); controller.windowFocusChanged(true); drain(); return controller;
     }
     private void drain() throws Exception { for(int i=0;i<6;i++){ app.worker.submit(()->{}).get(5,TimeUnit.SECONDS); Shadows.shadowOf(Looper.getMainLooper()).idle(); } }
@@ -154,7 +154,7 @@ public class SwitcherActivityTest {
     }
     @Test public void touchActivatesThemeOnFirstTapAndControllerCanResume() throws Exception {
         var controller=start(); var activity=controller.get(); show(activity,SwitcherActivity.Page.SETUP);
-        findButton(activity.getWindow().getDecorView(),"Next step").performClick(); findButton(activity.getWindow().getDecorView(),"Next step").performClick();
+        for(int i=0;i<5;i++) findButton(activity.getWindow().getDecorView(),"Next step").performClick();
         var button=findButton(activity.getWindow().getDecorView(),"Light"); button.requestRectangleOnScreen(new android.graphics.Rect(0,0,button.getWidth(),button.getHeight()),true); Shadows.shadowOf(Looper.getMainLooper()).idle();
         int[] xy=new int[2]; button.getLocationOnScreen(xy); long now=android.os.SystemClock.uptimeMillis();
         MotionEvent down=MotionEvent.obtain(now,now,MotionEvent.ACTION_DOWN,xy[0]+button.getWidth()/2f,xy[1]+button.getHeight()/2f,0);
@@ -165,12 +165,12 @@ public class SwitcherActivityTest {
         List<?> controls=(List<?>)field(activity,"controls"); assertTrue(((View)controls.get((Integer)field(activity,"controlIndex"))).isActivated()); end(controller);
     }
     @Test public void notificationShortcutCanBeShownAndHidden() throws Exception {
-        var controller=start(); var activity=controller.get(); Shadows.shadowOf(app).grantPermissions(android.Manifest.permission.POST_NOTIFICATIONS); show(activity,SwitcherActivity.Page.SETUP);
-        for(int i=0;i<3;i++) findButton(activity.getWindow().getDecorView(),"Next step").performClick();
-        findButton(activity.getWindow().getDecorView(),"Show notification shortcut").performClick();
-        assertNotNull(findButton(activity.getWindow().getDecorView(),"Hide notification shortcut"));
-        findButton(activity.getWindow().getDecorView(),"Hide notification shortcut").performClick();
-        assertNotNull(findButton(activity.getWindow().getDecorView(),"Show notification shortcut"));
+        var controller=start(); var activity=controller.get(); Shadows.shadowOf(app).grantPermissions(android.Manifest.permission.POST_NOTIFICATIONS); show(activity,SwitcherActivity.Page.SETTINGS);
+        findButton(activity.getWindow().getDecorView(),"Notifications").performClick();
+        findButton(activity.getWindow().getDecorView(),"Notification shortcut · Off").performClick();
+        assertNotNull(findButton(activity.getWindow().getDecorView(),"Notification shortcut · On"));
+        findButton(activity.getWindow().getDecorView(),"Notification shortcut · On").performClick();
+        assertNotNull(findButton(activity.getWindow().getDecorView(),"Notification shortcut · Off"));
         assertEquals(0,activity.getSystemService(android.app.NotificationManager.class).getActiveNotifications().length); end(controller);
     }
     @Test public void sortingPopupWorksWithDpadAndConfirmWithoutTouch() throws Exception {
@@ -198,7 +198,7 @@ public class SwitcherActivityTest {
     }
     @Test public void sidebarExplainsBackgroundMemoryWithoutOfferingToDismissAService() throws Exception {
         var controller=start(); var activity=controller.get(); String value=((android.widget.TextView)field(activity,"backgroundInfo")).getText().toString();
-        assertTrue(value.contains("Can't close here")); assertTrue(value.contains("Test Keyboard · ~50 MiB")); assertTrue(value.contains("cache also use RAM"));
+        assertTrue(value.contains("Can't close here")); assertTrue(value.contains("Test Keyboard · ~52 MB")); assertTrue(value.contains("cache also use RAM"));
         assertEquals(3,((List<?>)field(activity,"cards")).size()); end(controller);
     }
     @Test public void protectedHomeCardOpensViaHomeIntentInsteadOfRecentsApi() throws Exception {
@@ -209,11 +209,11 @@ public class SwitcherActivityTest {
     }
     @Test @Config(qualifiers="w800dp-h360dp-land") public void everyLandscapeSetupScreenFitsWithoutScrolling() throws Exception {
         var controller=start(); var activity=controller.get(); show(activity,SwitcherActivity.Page.SETUP);
-        for(int step=0;step<4;step++){
+        for(int step=0;step<8;step++){
             assertNull(field(activity,"pageScroll")); layout(activity); assertFits((View)field(activity,"formMain")); assertFits((View)field(activity,"formInfo"));
-            if(step<3) findButton(activity.getWindow().getDecorView(),"Next step").performClick();
+            if(step<7) findButton(activity.getWindow().getDecorView(),"Next step").performClick();
         }
-        for(var page:List.of(SwitcherActivity.Page.CONNECT,SwitcherActivity.Page.CHORD,SwitcherActivity.Page.CONFIRM,SwitcherActivity.Page.SHORTCUTS,SwitcherActivity.Page.LAYOUT,SwitcherActivity.Page.DIAGNOSTICS,SwitcherActivity.Page.RESULTS)){
+        for(var page:List.of(SwitcherActivity.Page.CONNECT,SwitcherActivity.Page.CHORD,SwitcherActivity.Page.CONFIRM,SwitcherActivity.Page.SHORTCUTS,SwitcherActivity.Page.SETTINGS,SwitcherActivity.Page.MEMORY,SwitcherActivity.Page.RESULTS)){
             show(activity,page); layout(activity); assertNull(field(activity,"pageScroll")); assertFits((View)field(activity,"formMain")); assertFits((View)field(activity,"formInfo"));
         }
         end(controller);
@@ -243,7 +243,7 @@ public class SwitcherActivityTest {
         Shadows.shadowOf(app).denyPermissions(android.Manifest.permission.POST_NOTIFICATIONS);
         press(activity,KeyEvent.KEYCODE_BUTTON_Y); drain(); assertTrue(activity.isFinishing()); controller.pause().stop().destroy();
         Shadows.shadowOf(Looper.getMainLooper()).idleFor(1500,TimeUnit.MILLISECONDS);
-        String message=org.robolectric.shadows.ShadowToast.getTextOfLatestToast(); assertNotNull(message); assertTrue(message.contains("RAM change:")); assertTrue(message.contains("Available:")); assertTrue(message.contains("MiB")); app.worker.shutdownNow();
+        String message=org.robolectric.shadows.ShadowToast.getTextOfLatestToast(); assertNotNull(message); assertTrue(message.contains("RAM change:")); assertTrue(message.contains("Available:")); assertTrue(message.contains("MB")); app.worker.shutdownNow();
     }
     @Test public void ramFeedbackCanBeDisabledAndRapidReportsAreCoalesced() throws Exception {
         var controller=start(); org.robolectric.shadows.ShadowToast.reset(); app.getSharedPreferences("settings",0).edit().putBoolean("ramNotifications",false).commit();
@@ -263,7 +263,8 @@ public class SwitcherActivityTest {
         var controller=start(); var activity=controller.get(); show(activity,SwitcherActivity.Page.SETUP); layout(activity);
         var next=findButton(activity.getWindow().getDecorView(),"Next step"); var parent=(ViewGroup)next.getParent(); assertEquals(parent.getWidth(),next.getRight()); assertTrue(next.getCompoundDrawables()[0] instanceof ControllerBadge);
         press(activity,KeyEvent.KEYCODE_BUTTON_L1); assertEquals(0,field(activity,"setupStep")); press(activity,KeyEvent.KEYCODE_BUTTON_R1); assertEquals(1,field(activity,"setupStep"));
-        press(activity,KeyEvent.KEYCODE_BUTTON_L1); assertEquals(0,field(activity,"setupStep")); for(int i=0;i<4;i++) press(activity,KeyEvent.KEYCODE_BUTTON_R1);
+        press(activity,KeyEvent.KEYCODE_BUTTON_L1); assertEquals(0,field(activity,"setupStep")); for(int i=0;i<8;i++) press(activity,KeyEvent.KEYCODE_BUTTON_R1);
+        assertEquals(SwitcherActivity.Page.COMPLETE,field(activity,"page")); Shadows.shadowOf(Looper.getMainLooper()).idleFor(700,TimeUnit.MILLISECONDS);
         drain(); assertEquals(SwitcherActivity.Page.APPS,field(activity,"page")); assertTrue(backend.removed.isEmpty()); end(controller);
     }
     private void changeView(SwitcherActivity activity,String view) throws Exception { app.getSharedPreferences("settings",0).edit().putString("view",view).commit(); show(activity,SwitcherActivity.Page.APPS); invoke(activity,"refresh"); drain(); layout(activity); }
@@ -293,8 +294,8 @@ public class SwitcherActivityTest {
         controller.pause().stop().destroy(); int count=org.robolectric.shadows.ShadowToast.shownToastCount(); Shadows.shadowOf(Looper.getMainLooper()).idleFor(1500,TimeUnit.MILLISECONDS); assertEquals(count,org.robolectric.shadows.ShadowToast.shownToastCount()); app.worker.shutdownNow();
     }
     @Test @Config(qualifiers="w640dp-h360dp-land") public void testFeedbackPostsHighPriorityNotificationAndDisplaysLastResult() throws Exception {
-        var controller=start(); var activity=controller.get(); Shadows.shadowOf(app).grantPermissions(android.Manifest.permission.POST_NOTIFICATIONS); show(activity,SwitcherActivity.Page.SETUP);
-        for(int i=0;i<3;i++) press(activity,KeyEvent.KEYCODE_BUTTON_R1); findButton(activity.getWindow().getDecorView(),"Test RAM feedback").performClick(); layout(activity);
+        var controller=start(); var activity=controller.get(); Shadows.shadowOf(app).grantPermissions(android.Manifest.permission.POST_NOTIFICATIONS); show(activity,SwitcherActivity.Page.SETTINGS);
+        findButton(activity.getWindow().getDecorView(),"Notifications").performClick(); findButton(activity.getWindow().getDecorView(),"Test feedback").performClick(); layout(activity);
         var manager=app.getSystemService(android.app.NotificationManager.class); assertEquals(android.app.NotificationManager.IMPORTANCE_HIGH,manager.getNotificationChannel("ram_results").getImportance());
         assertTrue(app.lastMemoryMessage.contains("test")); assertEquals("RAM feedback test",manager.getActiveNotifications()[0].getNotification().extras.getCharSequence(android.app.Notification.EXTRA_TITLE)); assertFits((View)field(activity,"formMain")); assertFits((View)field(activity,"formInfo")); end(controller);
     }
@@ -341,17 +342,71 @@ public class SwitcherActivityTest {
     @Test public void quickSwitchUsesBackendWithoutOpeningAnotherDeckActivity() throws Exception {
         var controller=start(); app.quickSwitch(); drain(); assertEquals(1,backend.directSwitches); assertNull(Shadows.shadowOf(app).getNextStartedActivity()); end(controller);
     }
-    @Test @Config(qualifiers="w800dp-h360dp-land") public void densityAndMinimumFontPersistAndControllerFocusSurvivesChanges() throws Exception {
-        var controller=start(); var activity=controller.get(); show(activity,SwitcherActivity.Page.LAYOUT); layout(activity);
-        for(int i=0;i<7;i++) press(activity,KeyEvent.KEYCODE_DPAD_DOWN); press(activity,KeyEvent.KEYCODE_BUTTON_A); Shadows.shadowOf(Looper.getMainLooper()).idle(); press(activity,KeyEvent.KEYCODE_BUTTON_A); Shadows.shadowOf(Looper.getMainLooper()).idle();
-        assertEquals(14,app.getSharedPreferences("settings",0).getInt("minLabelSp",12));
-        findButton(activity.getWindow().getDecorView(),"Columns +").performClick(); assertTrue(app.getSharedPreferences("settings",0).getInt("columns",0)>0); layout(activity); assertFits((View)field(activity,"formMain")); end(controller);
+    @Test @Config(qualifiers="w800dp-h360dp-land") public void settingsToggleReflectsStateAndControllerCanCrossPanes() throws Exception {
+        var controller=start(); var activity=controller.get(); show(activity,SwitcherActivity.Page.SETTINGS);
+        findButton(activity.getWindow().getDecorView(),"Closing behavior").performClick(); layout(activity);
+        var toggle=findButton(activity.getWindow().getDecorView(),"Stay open after clearing · Off"); assertFalse(toggle.isSelected()); toggle.performClick();
+        toggle=findButton(activity.getWindow().getDecorView(),"Stay open after clearing · On"); assertTrue(toggle.isSelected()); assertFalse(app.getSharedPreferences("settings",0).getBoolean("exitAfterBulk",true));
+        var focus=SwitcherActivity.class.getDeclaredMethod("focusControl",int.class); focus.setAccessible(true); focus.invoke(activity,4); press(activity,KeyEvent.KEYCODE_DPAD_RIGHT); assertTrue((Integer)field(activity,"controlIndex")>5);
+        press(activity,KeyEvent.KEYCODE_DPAD_LEFT); assertEquals(4,field(activity,"controlIndex")); layout(activity); assertFits((View)field(activity,"formMain")); assertFits((View)field(activity,"formInfo")); end(controller);
     }
     @Test @Config(qualifiers="w800dp-h360dp-land") public void fitAllScrollsRatherThanViolatingMinimumTextSize() throws Exception {
         var controller=start(); var activity=controller.get(); backend.many=true; backend.taskCount=200; app.getSharedPreferences("settings",0).edit().putInt("minLabelSp",22).commit(); changeView(activity,"fit");
         assertNotNull(field(activity,"appScroll")); List<?> cards=(List<?>)field(activity,"cards"); ViewGroup first=(ViewGroup)cards.get(0); android.widget.TextView name=(android.widget.TextView)first.getChildAt(1);
         assertTrue(name.getTextSize()>=22*activity.getResources().getDisplayMetrics().scaledDensity); end(controller);
     }
+    @Test @Config(qualifiers="w640dp-h360dp-land") public void switcherAndManagerAreSeparateAndFreshViewDefaultsToFit() throws Exception {
+        var controller=start(); var activity=controller.get(); app.getSharedPreferences("settings",0).edit().remove("view").remove("manageMode").commit(); show(activity,SwitcherActivity.Page.APPS); layout(activity);
+        assertEquals(View.GONE,((View)field(activity,"sidebar")).getVisibility()); assertNull(field(activity,"appScroll")); assertEquals(View.GONE,((View)field(activity,"compactMemory")).getVisibility());
+        ViewGroup firstCard=(ViewGroup)((List<?>)field(activity,"cards")).get(0); assertEquals(View.GONE,firstCard.getChildAt(2).getVisibility());
+        List<?> tools=(List<?>)field(activity,"tools"); for(Object tool:tools){ String label=((android.widget.Button)tool).getText().toString(); assertFalse(label.equals("Setup")||label.equals("Connect")||label.equals("Diagnostics")||label.equals("Custom")); }
+        ViewGroup footer=(ViewGroup)findButton(activity.getWindow().getDecorView(),"Open app").getParent(); assertEquals(2,footer.getChildCount());
+        press(activity,KeyEvent.KEYCODE_BUTTON_X); press(activity,KeyEvent.KEYCODE_BUTTON_Y); press(activity,KeyEvent.KEYCODE_BUTTON_R1); drain(); assertTrue(backend.removed.isEmpty()); assertFalse(activity.isFinishing());
+        press(activity,KeyEvent.KEYCODE_BUTTON_L1); layout(activity); assertEquals(View.VISIBLE,((View)field(activity,"sidebar")).getVisibility()); footer=(ViewGroup)findButton(activity.getWindow().getDecorView(),"Open app").getParent(); assertEquals(5,footer.getChildCount());
+        assertFits((View)findButton(activity.getWindow().getDecorView(),"Refresh").getParent()); end(controller);
+    }
+    @Test public void viewPopupContainsOnlyFourPresetsAndHasAnOutline() throws Exception {
+        var controller=start(); var activity=controller.get(); invoke(activity,"viewMenu"); PopupWindow popup=(PopupWindow)field(activity,"protectionPopup"); ViewGroup panel=(ViewGroup)popup.getContentView(); int count=0;
+        for(int i=0;i<panel.getChildCount();i++) if(panel.getChildAt(i) instanceof android.widget.Button){ count++; String label=((android.widget.Button)panel.getChildAt(i)).getText().toString(); assertTrue(Set.of("Fit all","Grid","List","Cards").contains(label)); }
+        assertEquals(4,count); assertTrue(panel.getBackground() instanceof android.graphics.drawable.GradientDrawable); popup.dismiss();
+        invoke(activity,"sortMenu"); popup=(PopupWindow)field(activity,"protectionPopup"); assertTrue(popup.getContentView().getBackground() instanceof android.graphics.drawable.GradientDrawable); popup.dismiss(); end(controller);
+    }
+    @Test @Config(qualifiers="w800dp-h360dp-land") public void allSettingsCategoriesFitAndBackNeverReopensSetup() throws Exception {
+        var controller=start(); var activity=controller.get(); show(activity,SwitcherActivity.Page.SETTINGS);
+        for(String category:List.of("Connection","Controller","Appearance","Closing behavior","Notifications")){ findButton(activity.getWindow().getDecorView(),category).performClick(); layout(activity); assertFits((View)field(activity,"formMain")); assertFits((View)field(activity,"formInfo")); }
+        press(activity,KeyEvent.KEYCODE_BUTTON_B); assertEquals(SwitcherActivity.Page.APPS,field(activity,"page")); end(controller);
+    }
+    @Test @Config(qualifiers="w800dp-h360dp-land") public void ramChartsExposeMoreThanThreeEntriesAndPageThroughAllApps() throws Exception {
+        var controller=start(); var activity=controller.get(); backend.many=true; backend.taskCount=20; invoke(activity,"refresh"); drain(); show(activity,SwitcherActivity.Page.MEMORY); layout(activity);
+        ViewGroup pane=(ViewGroup)field(activity,"formInfo"); int bars=0; for(int i=0;i<pane.getChildCount();i++) if(pane.getChildAt(i) instanceof android.widget.ProgressBar) bars++; assertTrue(bars>3); assertFits(pane);
+        findButton(activity.getWindow().getDecorView(),"Next page").performClick(); layout(activity); assertEquals(1,field(activity,"ramPage")); assertFits((View)field(activity,"formInfo")); end(controller);
+    }
+    @Test public void finishingEightStepSetupShowsCheckThenNeverRepeatsOnLaunch() throws Exception {
+        var controller=start(); var activity=controller.get(); app.getSharedPreferences("settings",0).edit().putBoolean("setupComplete",false).commit(); activity.onNewIntent(new android.content.Intent(activity,SwitcherActivity.class));
+        assertEquals(SwitcherActivity.Page.SETUP,field(activity,"page")); for(int i=0;i<8;i++) press(activity,KeyEvent.KEYCODE_BUTTON_R1);
+        assertEquals(SwitcherActivity.Page.COMPLETE,field(activity,"page")); assertTrue(app.getSharedPreferences("settings",0).getBoolean("setupComplete",false));
+        assertTrue(((ViewGroup)field(activity,"root")).getChildAt(0) instanceof SetupCheckView); Shadows.shadowOf(Looper.getMainLooper()).idleFor(700,TimeUnit.MILLISECONDS); assertEquals(SwitcherActivity.Page.APPS,field(activity,"page"));
+        controller.pause().stop().destroy(); controller=Robolectric.buildActivity(SwitcherActivity.class).setup().visible(); assertEquals(SwitcherActivity.Page.APPS,field(controller.get(),"page")); end(controller);
+    }
+    @Test @Config(qualifiers="w800dp-h360dp-land") public void settingsCategoriesNavigateWithoutExtraConfirmationAndThemeRowSupportsLeftRight() throws Exception {
+        var controller=start(); var activity=controller.get(); show(activity,SwitcherActivity.Page.SETTINGS); press(activity,KeyEvent.KEYCODE_DPAD_DOWN);
+        assertEquals(1,field(activity,"settingsCategory")); assertNotNull(findButton(activity.getWindow().getDecorView(),"Calibrate printed A"));
+        press(activity,KeyEvent.KEYCODE_DPAD_DOWN); assertEquals(2,field(activity,"settingsCategory")); press(activity,KeyEvent.KEYCODE_DPAD_RIGHT); assertEquals(6,field(activity,"controlIndex"));
+        press(activity,KeyEvent.KEYCODE_DPAD_RIGHT); assertEquals(7,field(activity,"controlIndex")); press(activity,KeyEvent.KEYCODE_BUTTON_A); Shadows.shadowOf(Looper.getMainLooper()).idle(); assertEquals("dark",app.getSharedPreferences("settings",0).getString("theme",""));
+        press(activity,KeyEvent.KEYCODE_DPAD_LEFT); assertEquals(6,field(activity,"controlIndex")); press(activity,KeyEvent.KEYCODE_DPAD_LEFT); assertEquals(3,field(activity,"controlIndex")); end(controller);
+    }
+    @Test public void calibrationKeepsGamepadDpadAndAndroidBackAvailable() throws Exception {
+        var controller=start(); var activity=controller.get(); show(activity,SwitcherActivity.Page.CONFIRM);
+        KeyEvent down=new KeyEvent(0,0,KeyEvent.ACTION_DOWN,KeyEvent.KEYCODE_DPAD_DOWN,0,0,7,0,0,InputDevice.SOURCE_GAMEPAD); activity.dispatchKeyEvent(down);
+        assertEquals(0,field(activity,"controlIndex")); assertFalse(app.getSharedPreferences("settings",0).getBoolean("confirmCalibrated",false));
+        press(activity,KeyEvent.KEYCODE_DPAD_CENTER); assertEquals(SwitcherActivity.Page.SETTINGS,field(activity,"page")); end(controller);
+    }
+    @Test public void firstSetupRequiresConnectionBeforeOptionalControllerSteps() throws Exception {
+        var controller=start(); var activity=controller.get(); app.backend=null; show(activity,SwitcherActivity.Page.SETUP); assertFalse(((android.widget.Button)field(activity,"setupNext")).isEnabled());
+        press(activity,KeyEvent.KEYCODE_BUTTON_R1); assertEquals(0,field(activity,"setupStep")); app.backend=backend; invoke(activity,"connectionChanged"); assertTrue(((android.widget.Button)field(activity,"setupNext")).isEnabled());
+        press(activity,KeyEvent.KEYCODE_BUTTON_R1); assertEquals(1,field(activity,"setupStep")); end(controller);
+    }
     private void layout(SwitcherActivity activity){ View decor=activity.getWindow().getDecorView(); int w=activity.getResources().getDisplayMetrics().widthPixels,h=activity.getResources().getDisplayMetrics().heightPixels; for(int i=0;i<3;i++){ decor.measure(View.MeasureSpec.makeMeasureSpec(w,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(h,View.MeasureSpec.EXACTLY)); decor.layout(0,0,w,h); Shadows.shadowOf(Looper.getMainLooper()).idle(); } }
-    private void assertFits(View parent){ if(parent instanceof ViewGroup) for(int i=0;i<((ViewGroup)parent).getChildCount();i++){ View child=((ViewGroup)parent).getChildAt(i); assertTrue("Child exceeds bottom: "+(child instanceof android.widget.TextView?((android.widget.TextView)child).getText():child.getClass()),child.getBottom()<=parent.getHeight()-parent.getPaddingBottom()); assertTrue("Child exceeds width",child.getRight()<=parent.getWidth()-parent.getPaddingRight()); } }
+    private String describe(View parent){ StringBuilder info=new StringBuilder(); if(parent instanceof ViewGroup) for(int i=0;i<((ViewGroup)parent).getChildCount();i++){ View c=((ViewGroup)parent).getChildAt(i); info.append(c instanceof android.widget.TextView?((android.widget.TextView)c).getText():c.getClass().getSimpleName()).append(":").append(c.getTop()).append("-").append(c.getBottom()).append("; "); } return info.toString(); }
+    private void assertFits(View parent){ if(parent instanceof ViewGroup) for(int i=0;i<((ViewGroup)parent).getChildCount();i++){ View child=((ViewGroup)parent).getChildAt(i); assertTrue("Child exceeds bottom ["+describe(parent)+", height="+parent.getHeight()+", top="+child.getTop()+", bottom="+child.getBottom()+"]: "+(child instanceof android.widget.TextView?((android.widget.TextView)child).getText():child.getClass()),child.getBottom()<=parent.getHeight()-parent.getPaddingBottom()); assertTrue("Child exceeds width",child.getRight()<=parent.getWidth()-parent.getPaddingRight()); } }
 }

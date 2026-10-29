@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.8.0-prototype
+
+- Split Switch apps from Manage tasks. Switch apps has selection/opening only; Manage tasks adds close/protect/RAM tools. Toolbar and labeled L1 change mode; last mode is remembered.
+- Eight focused first-launch steps separate connection, confirm calibration, each chord, shortcut-service access, appearance, closing and notifications. Optional steps can be skipped. Finish draws a completion checkmark; subsequent launches open the deck.
+- Replaced the repeated setup wizard with category-list Settings. Removed the deck Connect button and Diagnostics destination; connection/notification tools remain under their settings categories. Controller categories open on navigation; left/right follows panes and horizontal option rows.
+- Fit all is the default, with Cards/List/Grid/Fit all as the only presets. Removed the layout editor; no custom layouts. Kept grouping separately under Appearance.
+- All displayed RAM and feedback now use decimal MB, converting system bytes and PSS KiB correctly. Added system/app comparison bars, height-dependent sidebar entries and complete paginated RAM details instead of a fixed three-entry summary.
+- Outlined Sort/View popups, stable highlighted On/outlined Off toggles, compact button surfaces with 48dp touch targets, reduced margins and no brand heading on the deck. Calibration preserves controller navigation.
+- Application versionCode 9; UserService implementation/protocol remains 8. Hardware acceptance remains required for the changed UI and actual RAM-banner delivery.
+
 ## 0.7.0-prototype
 
 - Split task listing from per-app RAM sampling. Slow/unavailable PSS no longer gates selection, opening or closing; stale samples are discarded and icons are cached.

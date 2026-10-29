@@ -10,6 +10,12 @@ public final class ActionGlyph extends Drawable {
     public ActionGlyph(String kind,int color){ this.kind=kind; this.color=color; }
     public static String kind(String label){
         String s=label.toLowerCase(Locale.ROOT);
+        if(s.equals("switch apps")) return "switch";
+        if(s.startsWith("ram")||s.equals("manage tasks")) return "grid";
+        if(s.equals("permissions")) return "info";
+        if(s.equals("appearance")) return "theme";
+        if(s.equals("controller")) return "record";
+        if(s.equals("closing behavior")) return "all";
         if(s.startsWith("−")) return "minus";
         if(s.endsWith("+")) return "plus";
         if(s.equals("diagnostics")) return "info";
