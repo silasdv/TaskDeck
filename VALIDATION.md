@@ -1,4 +1,23 @@
-# Validation — 0.6.1-prototype
+# Validation — 0.7.0-prototype
+
+29 October 2026. Local debug build, not published. VersionCode and UserService implementation 8; AIDL adds memory sampling, direct switching and restart verification at IDs 6–8. Shizuku remains required.
+
+- assembleDebug: passed.
+- testDebugUnitTest: **68 passed**, 0 failures, 0 errors, 0 skipped.
+- lintDebug: **0 errors, 21 warnings**, including English strings, private API access and existing dependency/backup guidance.
+- APK: verified with the same local debug certificate documented below; POST_NOTIFICATIONS and Shizuku API permission only, no INTERNET permission.
+
+New tests cover grouped windows without duplicated RAM, grouped removal, window picking, separate-window mode, named partial/failed/unverified results, blocked RAM while opening still works, RAM timeout without global recovery, persistent density/minimum font controls and controller focus across rebuilds. Fit all respects minimum label size even with 200 fake tasks. New Layout, Shortcuts, Diagnostics and Results pages join the 640×360dp and 800×360dp landscape fit checks.
+
+Deadline tests check exactly-once completion, ignored late replies, worker replacement and no destructive replay. A blocked binding hook checks that setup remains responsive and recovery is bounded. Added endpoints reject ordinary app identity. Shortcut tests cover direct switching without opening the deck and equal/subset conflicts. PID-set tests check old-process disappearance, new nonempty PIDs and unresolved original launcher tasks.
+
+RAM feedback tests validate publication before exit, Application-owned delivery after Activity destruction, permission-denied toast fallback and diagnostic state. They do not demonstrate physical banner visibility. The UI tests use fake IPC, not the real Retroid task service.
+
+**Hardware still required:** real Shizuku task removal, launcher stop/task cleanup/new PID detection, HOME auto-reopening, previous-app ordering, rear-button routing, actual PSS, Shizuku restart recovery, firmware insets and RAM banner after menu exit. No physical RP6 run of 0.7 occurred here. A timeout cannot undo work Android already accepted; uncertain outcomes are reported and destructive actions never auto-repeat. Ordinary task removal does not prove process termination. Feedback survives Activity exit, not an OS kill/force-stop of the whole TaskDeck process. See DEVICE-TEST.md.
+
+No screenshots, typed contents or usage history are collected. Samples, operation reports and diagnostics stay in memory; only explicit configuration is saved. Source archives exclude signing keys and caches.
+
+## Historical validation: 0.6.1 and earlier
 
 29 October 2026. Local debug build; not published. User testing of 0.5 requested denser app views, reordered actions, right-aligned shoulder-based setup navigation and another RAM-feedback correction. The changed 0.6 build has not been executed on physical RP6 hardware here. Shizuku remains required; no direct-root or embedded-ADB mode was added.
 

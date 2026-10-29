@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.7.0-prototype
+
+- Split task listing from per-app RAM sampling. Slow/unavailable PSS no longer gates selection, opening or closing; stale samples are discarded and icons are cached.
+- Added request deadlines, worker recovery and one automatic reconnect attempt. Service binding runs off the UI thread. Late results cannot overwrite newer state; destructive actions are not replayed.
+- Verify ordinary removal against current tasks. Launcher close also removes original task records and checks old PIDs; restart verifies different PIDs. Failed, partial and unverified results name each app/window in View > Last action and keep the menu open where appropriate.
+- Group windows into one app card by default with one per-app RAM sample, a count and Choose window picker. Separate-window mode remains available; grouped close targets the represented windows.
+- Independent Grid columns (Auto/2–10) and minimum label size (10–22 sp). Fit all scrolls if the chosen readable size cannot fit. Added Layout options and rounded, controller-operable controls.
+- Separate optional direct-switch chord for the last two distinct apps. Conflicting equal/subset chords are rejected; recording retains reserved navigation controls.
+- Diagnostics includes feedback test/status, notification permissions, reconnect and last-action details. Actual RP6 notification visibility and privileged task behavior remain hardware acceptance checks.
+- VersionCode/UserService implementation 8. AIDL adds separate memory, previous-app switch and launcher-restart verification operations at IDs 6–8. Shizuku remains required.
+
 ## 0.6.1-prototype
 
 - Removed synthetic cards created from installed launcher packages. Only real Android recent/running tasks appear; installation alone no longer creates a launcher entry.

@@ -8,19 +8,23 @@ import android.view.accessibility.AccessibilityEvent;
 /** Partial combinations remain available to games. No screen or typed-text history. */
 public class HotkeyService extends AccessibilityService {
     private final ChordGate gate=new ChordGate();
+    private final ChordGate quickGate=new ChordGate();
     @Override protected boolean onKeyEvent(KeyEvent event) {
         if(event.getAction()!=KeyEvent.ACTION_DOWN && event.getAction()!=KeyEvent.ACTION_UP) return false;
         if(!ShortcutKeys.eligible(event)) return false;
         android.content.SharedPreferences prefs=getSharedPreferences("settings",MODE_PRIVATE);
-        gate.configure(ShortcutKeys.decode(prefs.getString("shortcutChord","")));
+        java.util.Set<String> deck=ShortcutKeys.decode(prefs.getString("shortcutChord","")),quick=ShortcutKeys.decode(prefs.getString("quickSwitchChord",""));
+        gate.configure(deck); quickGate.configure(quick);
         ChordGate.Result result=gate.update(event.getDeviceId(),ShortcutKeys.id(event),event.getAction()==KeyEvent.ACTION_DOWN,event.getRepeatCount(),prefs.getBoolean("shortcutEnabled",false) && !TaskDeckApp.recordingShortcut);
+        ChordGate.Result direct=quickGate.update(event.getDeviceId(),ShortcutKeys.id(event),event.getAction()==KeyEvent.ACTION_DOWN,event.getRepeatCount(),prefs.getBoolean("quickSwitchEnabled",false)&&!TaskDeckApp.recordingShortcut&&!ShortcutKeys.conflicts(deck,quick));
         if(result==ChordGate.Result.TRIGGER){
             try { startActivity(new Intent(this,SwitcherActivity.class).putExtra("controllerEntry",true).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP)); }
             catch(RuntimeException ignored){ /* Still consume the complete captured down/up pair. */ }
         }
-        return result!=ChordGate.Result.PASS;
+        else if(direct==ChordGate.Result.TRIGGER&&getApplication() instanceof TaskDeckApp) ((TaskDeckApp)getApplication()).quickSwitch();
+        return result!=ChordGate.Result.PASS||direct!=ChordGate.Result.PASS;
     }
     @Override public void onAccessibilityEvent(AccessibilityEvent event) {}
-    @Override public void onInterrupt() { gate.clear(); }
-    @Override public void onDestroy() { gate.clear(); super.onDestroy(); }
+    @Override public void onInterrupt() { gate.clear(); quickGate.clear(); }
+    @Override public void onDestroy() { gate.clear(); quickGate.clear(); super.onDestroy(); }
 }

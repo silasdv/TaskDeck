@@ -17,20 +17,32 @@ import static org.junit.Assert.*;
 @Config(sdk=33,application=SwitcherActivityTest.TestApp.class)
 public class SwitcherActivityTest {
     public static class TestApp extends TaskDeckApp {
+        boolean separateMemory; int recoveries;
         @Override public void onCreate(){}
         @Override public void connect(boolean request){}
+        @Override protected java.util.concurrent.ExecutorService memoryExecutor(){ return separateMemory?memoryWorker:worker; }
+        @Override public void recoverBackend(String reason){ recoveries++; super.recoverBackend(reason); }
     }
     static class FakeBackend extends ITaskBackend.Stub {
-        final List<Integer> removed=new ArrayList<>(); final Set<String> protectedApps=new HashSet<>(),unlockedLaunchers=new HashSet<>(); final List<Boolean> launcherStops=new ArrayList<>(); int opened=-1,reads; boolean extra,many,feedbackBeforeOpen;
+        final List<Integer> removed=new ArrayList<>(); final Set<String> protectedApps=new HashSet<>(),unlockedLaunchers=new HashSet<>(); final List<Boolean> launcherStops=new ArrayList<>(); int opened=-1,reads,directSwitches,taskCount=20; boolean extra,many,feedbackBeforeOpen,duplicates; int failId=-1,unverifiedId=-1;
+        java.util.concurrent.CountDownLatch memoryStarted,releaseMemory;
         public synchronized void setProtectedPackages(String[] names){ protectedApps.clear(); protectedApps.addAll(Arrays.asList(names)); }
         public synchronized void setUnlockedLaunchers(String[] names){ unlockedLaunchers.clear(); unlockedLaunchers.addAll(Arrays.asList(names)); }
-        public synchronized String stopLauncher(String name,boolean restart){ if(!name.equals("wave.launcher")||!restart&&!unlockedLaunchers.contains(name)) return "{\"error\":\"protected\"}"; launcherStops.add(restart); if(!removed.contains(9)) removed.add(9); return "{}"; }
+        public synchronized String stopLauncher(String name,boolean restart){ if(!name.equals("wave.launcher")||!restart&&!unlockedLaunchers.contains(name)) return "{\"error\":\"protected\"}"; launcherStops.add(restart); if(!removed.contains(9)) removed.add(9); return "{\"verified\":true,\"previousPids\":[111]}"; }
+        public String verifyLauncherRestart(String name,int[] previous){ return "{\"verified\":true,\"newPids\":[222]}"; }
+        public String switchPreviousTask(){ directSwitches++; return "{\"switched\":true}"; }
+        public String readMemory(){
+            try { if(memoryStarted!=null) memoryStarted.countDown(); if(releaseMemory!=null) releaseMemory.await();
+                JSONArray values=new JSONArray(); for(int id=7;id<27;id++) values.put(new JSONObject().put("package","test.game"+id).put("pssKb",id*1024).put("memoryState","sampled"));
+                return new JSONObject().put("samples",values).put("backgroundApps",new JSONArray().put(new JSONObject().put("label","Test Keyboard").put("pssKb",51200))).toString();
+            } catch(Exception error){ return "{\"error\":\"RAM unavailable\"}"; }
+        }
         public synchronized String readTasks(){
             reads++;
             try {
                 JSONArray rows=new JSONArray();
-                for(int id:many?java.util.stream.IntStream.range(7,27).toArray():extra?new int[]{7,8,10,11,9}:new int[]{7,8,9}) if(!removed.contains(id)){
-                    String name=id==9?"wave.launcher":"test.game"+id;
+                for(int id:duplicates?new int[]{7,10,8,9}:many?java.util.stream.IntStream.range(7,7+taskCount).toArray():extra?new int[]{7,8,10,11,9}:new int[]{7,8,9}) if(!removed.contains(id)){
+                    String name=id==9?"wave.launcher":"test.game"+(duplicates&&id==10?7:id);
                     rows.put(new JSONObject().put("id",id).put("package",name).put("label",id==9?"Wave Launcher":"Game "+id)
                         .put("launcher",id==9).put("mandatoryProtected",false).put("userProtected",protectedApps.contains(name)).put("removable",(id!=9||unlockedLaunchers.contains(name))&&!protectedApps.contains(name)));
                 }
@@ -38,7 +50,7 @@ public class SwitcherActivityTest {
             } catch(JSONException e){ throw new RuntimeException(e); }
         }
         public synchronized String openTask(int id,String name){ feedbackBeforeOpen=!((TaskDeckApp)RuntimeEnvironment.getApplication()).lastMemoryMessage.isEmpty(); opened=id; return "{}"; }
-        public synchronized String removeTask(int id,String name){ if(id==9||protectedApps.contains(name)) return "{\"error\":\"protected\"}"; removed.add(id); return "{}"; }
+        public synchronized String removeTask(int id,String name){ if(id==9||protectedApps.contains(name)||id==failId) return "{\"error\":\"Permission denied for test app\"}"; if(id==unverifiedId) return "{\"verified\":false,\"warning\":\"Still reported by Android\"}"; removed.add(id); return "{\"verified\":true}"; }
         public void destroy(){}
     }
     private TestApp app; private FakeBackend backend;
@@ -47,10 +59,10 @@ public class SwitcherActivityTest {
         app.getSharedPreferences("settings",0).edit().putBoolean("setupComplete",true).putString("view","cards").commit();
         var controller=Robolectric.buildActivity(SwitcherActivity.class).setup().visible(); controller.windowFocusChanged(true); drain(); return controller;
     }
-    private void drain() throws Exception { for(int i=0;i<3;i++){ app.worker.submit(()->{}).get(5,TimeUnit.SECONDS); Shadows.shadowOf(Looper.getMainLooper()).idle(); } }
+    private void drain() throws Exception { for(int i=0;i<6;i++){ app.worker.submit(()->{}).get(5,TimeUnit.SECONDS); Shadows.shadowOf(Looper.getMainLooper()).idle(); } }
     private void press(SwitcherActivity activity,int key){ activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN,key)); activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP,key)); }
     private Object field(SwitcherActivity activity,String name) throws Exception { var f=SwitcherActivity.class.getDeclaredField(name); f.setAccessible(true); return f.get(activity); }
-    private void end(org.robolectric.android.controller.ActivityController<SwitcherActivity> controller){ controller.pause().stop().destroy(); app.worker.shutdownNow(); }
+    private void end(org.robolectric.android.controller.ActivityController<SwitcherActivity> controller){ controller.pause().stop().destroy(); app.worker.shutdownNow(); app.memoryWorker.shutdownNow(); }
 
     @Test public void dpadSelectsAndOpensSecondCardWithoutTouchOrNativeListFocus() throws Exception {
         var controller=start(); SwitcherActivity activity=controller.get(); activity.getWindow().getDecorView().clearFocus();
@@ -137,7 +149,7 @@ public class SwitcherActivityTest {
         var controller=start(); var activity=controller.get(); show(activity,SwitcherActivity.Page.CHORD);
         press(activity,KeyEvent.KEYCODE_DPAD_DOWN); assertTrue(((Set<?>)field(activity,"capturedKeys")).isEmpty());
         press(activity,KeyEvent.KEYCODE_F8); assertEquals(1,((Set<?>)field(activity,"capturedKeys")).size());
-        press(activity,KeyEvent.KEYCODE_BUTTON_A); assertEquals(SwitcherActivity.Page.SETUP,field(activity,"page"));
+        press(activity,KeyEvent.KEYCODE_BUTTON_A); assertEquals(SwitcherActivity.Page.SHORTCUTS,field(activity,"page"));
         assertEquals(Set.of("138:0"),ShortcutKeys.decode(app.getSharedPreferences("settings",0).getString("shortcutChord",""))); end(controller);
     }
     @Test public void touchActivatesThemeOnFirstTapAndControllerCanResume() throws Exception {
@@ -201,7 +213,7 @@ public class SwitcherActivityTest {
             assertNull(field(activity,"pageScroll")); layout(activity); assertFits((View)field(activity,"formMain")); assertFits((View)field(activity,"formInfo"));
             if(step<3) findButton(activity.getWindow().getDecorView(),"Next step").performClick();
         }
-        for(var page:List.of(SwitcherActivity.Page.CONNECT,SwitcherActivity.Page.CHORD,SwitcherActivity.Page.CONFIRM)){
+        for(var page:List.of(SwitcherActivity.Page.CONNECT,SwitcherActivity.Page.CHORD,SwitcherActivity.Page.CONFIRM,SwitcherActivity.Page.SHORTCUTS,SwitcherActivity.Page.LAYOUT,SwitcherActivity.Page.DIAGNOSTICS,SwitcherActivity.Page.RESULTS)){
             show(activity,page); layout(activity); assertNull(field(activity,"pageScroll")); assertFits((View)field(activity,"formMain")); assertFits((View)field(activity,"formInfo"));
         }
         end(controller);
@@ -285,6 +297,60 @@ public class SwitcherActivityTest {
         for(int i=0;i<3;i++) press(activity,KeyEvent.KEYCODE_BUTTON_R1); findButton(activity.getWindow().getDecorView(),"Test RAM feedback").performClick(); layout(activity);
         var manager=app.getSystemService(android.app.NotificationManager.class); assertEquals(android.app.NotificationManager.IMPORTANCE_HIGH,manager.getNotificationChannel("ram_results").getImportance());
         assertTrue(app.lastMemoryMessage.contains("test")); assertEquals("RAM feedback test",manager.getActiveNotifications()[0].getNotification().extras.getCharSequence(android.app.Notification.EXTRA_TITLE)); assertFits((View)field(activity,"formMain")); assertFits((View)field(activity,"formInfo")); end(controller);
+    }
+    @Test public void groupedAppClosesAllItsWindowsAndKeepsOneRamSample() throws Exception {
+        var controller=start(); var activity=controller.get(); backend.duplicates=true; invoke(activity,"refresh"); drain();
+        List<?> tasks=(List<?>)field(activity,"tasks"); JSONObject first=(JSONObject)tasks.get(0); assertEquals(3,tasks.size()); assertEquals(2,first.getInt("windowCount")); assertEquals(7168,first.getLong("pssKb"));
+        press(activity,KeyEvent.KEYCODE_BUTTON_X); drain(); assertEquals(List.of(7,10),backend.removed); assertEquals(2,app.lastOperation.getInt("confirmed")); end(controller);
+    }
+    @Test public void windowPickerOpensSpecificWindowAndSeparateModeRestoresAllCards() throws Exception {
+        var controller=start(); var activity=controller.get(); backend.duplicates=true; invoke(activity,"refresh"); drain();
+        app.getSharedPreferences("settings",0).edit().putBoolean("groupApps",false).commit(); invoke(activity,"refresh"); drain(); assertEquals(4,((List<?>)field(activity,"cards")).size());
+        app.getSharedPreferences("settings",0).edit().putBoolean("groupApps",true).commit(); invoke(activity,"refresh"); drain(); press(activity,KeyEvent.KEYCODE_BUTTON_SELECT);
+        PopupWindow popup=(PopupWindow)field(activity,"protectionPopup"); findButton(popup.getContentView(),"Choose window").performClick();
+        assertEquals(SwitcherActivity.Page.WINDOWS,field(activity,"page")); findButton(activity.getWindow().getDecorView(),"Window 10").performClick(); drain(); assertEquals(10,backend.opened); end(controller);
+    }
+    @Test public void partialFailuresAndUnverifiedResultsAreRetainedByAppName() throws Exception {
+        var controller=start(); var activity=controller.get(); backend.failId=8; backend.unverifiedId=7; press(activity,KeyEvent.KEYCODE_BUTTON_Y); drain();
+        assertFalse(activity.isFinishing()); assertEquals(1,app.lastOperation.getInt("failed")); assertEquals(1,app.lastOperation.getInt("unverified")); assertEquals(0,app.lastOperation.getInt("confirmed"));
+        assertTrue(app.lastOperation.getString("summary").contains("Game 8")); assertTrue(app.lastOperation.getString("summary").contains("Game 7"));
+        assertEquals(View.VISIBLE,((View)field(activity,"operationInfo")).getVisibility()); show(activity,SwitcherActivity.Page.RESULTS); layout(activity); assertFits((View)field(activity,"formMain")); end(controller);
+    }
+    @Test public void slowRamDoesNotBlockOpeningAnApp() throws Exception {
+        var controller=start(); var activity=controller.get(); app.separateMemory=true; backend.memoryStarted=new java.util.concurrent.CountDownLatch(1); backend.releaseMemory=new java.util.concurrent.CountDownLatch(1);
+        try {
+            invoke(activity,"refresh"); drain(); assertTrue(backend.memoryStarted.await(2,TimeUnit.SECONDS)); assertEquals(false,field(activity,"busy")); assertEquals(3,((List<?>)field(activity,"cards")).size());
+            press(activity,KeyEvent.KEYCODE_DPAD_RIGHT); press(activity,KeyEvent.KEYCODE_BUTTON_A); drain(); assertEquals(8,backend.opened); assertTrue(activity.isFinishing());
+        } finally { backend.releaseMemory.countDown(); end(controller); }
+    }
+    @Test public void ramTimeoutLeavesTaskControlsAvailable() throws Exception {
+        var controller=start(); var activity=controller.get(); app.separateMemory=true; backend.memoryStarted=new java.util.concurrent.CountDownLatch(1); backend.releaseMemory=new java.util.concurrent.CountDownLatch(1);
+        try {
+            invoke(activity,"refresh"); drain(); assertTrue(backend.memoryStarted.await(2,TimeUnit.SECONDS)); Shadows.shadowOf(Looper.getMainLooper()).idleFor(5100,TimeUnit.MILLISECONDS);
+            assertTrue(((String)field(activity,"memoryStatus")).contains("timed out")); assertEquals(false,field(activity,"busy")); assertEquals(0,app.recoveries);
+            press(activity,KeyEvent.KEYCODE_DPAD_RIGHT); assertEquals(Integer.valueOf(8),((DeckSelection)field(activity,"selection")).id());
+        } finally { backend.releaseMemory.countDown(); end(controller); }
+    }
+    @Test public void directShortcutRecordingRejectsNestedChordsThenSavesIndependentBinding() throws Exception {
+        var controller=start(); var activity=controller.get(); app.getSharedPreferences("settings",0).edit().putString("shortcutChord","138:0,139:0").commit(); show(activity,SwitcherActivity.Page.SHORTCUTS);
+        findButton(activity.getWindow().getDecorView(),"Record direct switch").performClick(); press(activity,KeyEvent.KEYCODE_F8); assertFalse(((android.widget.Button)field(activity,"saveChord")).isEnabled());
+        assertTrue(((android.widget.TextView)field(activity,"recordSaved")).getText().toString().contains("conflicts"));
+        findButton(activity.getWindow().getDecorView(),"Record again").performClick(); activity.dispatchKeyEvent(new KeyEvent(0,KeyEvent.KEYCODE_F10)); activity.dispatchKeyEvent(new KeyEvent(0,KeyEvent.KEYCODE_F11)); activity.dispatchKeyEvent(new KeyEvent(1,KeyEvent.KEYCODE_F10)); activity.dispatchKeyEvent(new KeyEvent(1,KeyEvent.KEYCODE_F11));
+        press(activity,KeyEvent.KEYCODE_BUTTON_START); assertEquals(SwitcherActivity.Page.SHORTCUTS,field(activity,"page")); assertEquals(2,ShortcutKeys.decode(app.getSharedPreferences("settings",0).getString("quickSwitchChord","")).size()); end(controller);
+    }
+    @Test public void quickSwitchUsesBackendWithoutOpeningAnotherDeckActivity() throws Exception {
+        var controller=start(); app.quickSwitch(); drain(); assertEquals(1,backend.directSwitches); assertNull(Shadows.shadowOf(app).getNextStartedActivity()); end(controller);
+    }
+    @Test @Config(qualifiers="w800dp-h360dp-land") public void densityAndMinimumFontPersistAndControllerFocusSurvivesChanges() throws Exception {
+        var controller=start(); var activity=controller.get(); show(activity,SwitcherActivity.Page.LAYOUT); layout(activity);
+        for(int i=0;i<7;i++) press(activity,KeyEvent.KEYCODE_DPAD_DOWN); press(activity,KeyEvent.KEYCODE_BUTTON_A); Shadows.shadowOf(Looper.getMainLooper()).idle(); press(activity,KeyEvent.KEYCODE_BUTTON_A); Shadows.shadowOf(Looper.getMainLooper()).idle();
+        assertEquals(14,app.getSharedPreferences("settings",0).getInt("minLabelSp",12));
+        findButton(activity.getWindow().getDecorView(),"Columns +").performClick(); assertTrue(app.getSharedPreferences("settings",0).getInt("columns",0)>0); layout(activity); assertFits((View)field(activity,"formMain")); end(controller);
+    }
+    @Test @Config(qualifiers="w800dp-h360dp-land") public void fitAllScrollsRatherThanViolatingMinimumTextSize() throws Exception {
+        var controller=start(); var activity=controller.get(); backend.many=true; backend.taskCount=200; app.getSharedPreferences("settings",0).edit().putInt("minLabelSp",22).commit(); changeView(activity,"fit");
+        assertNotNull(field(activity,"appScroll")); List<?> cards=(List<?>)field(activity,"cards"); ViewGroup first=(ViewGroup)cards.get(0); android.widget.TextView name=(android.widget.TextView)first.getChildAt(1);
+        assertTrue(name.getTextSize()>=22*activity.getResources().getDisplayMetrics().scaledDensity); end(controller);
     }
     private void layout(SwitcherActivity activity){ View decor=activity.getWindow().getDecorView(); int w=activity.getResources().getDisplayMetrics().widthPixels,h=activity.getResources().getDisplayMetrics().heightPixels; for(int i=0;i<3;i++){ decor.measure(View.MeasureSpec.makeMeasureSpec(w,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(h,View.MeasureSpec.EXACTLY)); decor.layout(0,0,w,h); Shadows.shadowOf(Looper.getMainLooper()).idle(); } }
     private void assertFits(View parent){ if(parent instanceof ViewGroup) for(int i=0;i<((ViewGroup)parent).getChildCount();i++){ View child=((ViewGroup)parent).getChildAt(i); assertTrue("Child exceeds bottom: "+(child instanceof android.widget.TextView?((android.widget.TextView)child).getText():child.getClass()),child.getBottom()<=parent.getHeight()-parent.getPaddingBottom()); assertTrue("Child exceeds width",child.getRight()<=parent.getWidth()-parent.getPaddingRight()); } }

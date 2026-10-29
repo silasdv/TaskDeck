@@ -10,6 +10,12 @@ public final class ActionGlyph extends Drawable {
     public ActionGlyph(String kind,int color){ this.kind=kind; this.color=color; }
     public static String kind(String label){
         String s=label.toLowerCase(Locale.ROOT);
+        if(s.startsWith("−")) return "minus";
+        if(s.endsWith("+")) return "plus";
+        if(s.equals("diagnostics")) return "info";
+        if(s.startsWith("last action")) return "list";
+        if(s.startsWith("switch:")) return "switch";
+        if(s.contains("windows")||s.equals("choose window")) return "grid";
         if(s.equals("view")||s.equals("grid")||s.equals("cards")||s.equals("fit all")) return "grid";
         if(s.equals("list")) return "list";
         if(s.contains("sort")||s.equals("recent")||s.equals("alphabetical")||s.contains("ram size")) return "sort";
@@ -35,6 +41,10 @@ public final class ActionGlyph extends Drawable {
         int save=canvas.save(); canvas.translate(getBounds().left,getBounds().top); canvas.scale(getBounds().width()/24f,getBounds().height()/24f);
         Paint p=new Paint(Paint.ANTI_ALIAS_FLAG); p.setColor(color); p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(2); p.setStrokeCap(Paint.Cap.ROUND); p.setStrokeJoin(Paint.Join.ROUND);
         switch(kind){
+            case "minus": canvas.drawLine(4,12,20,12,p); break;
+            case "plus": canvas.drawLine(4,12,20,12,p); canvas.drawLine(12,4,12,20,p); break;
+            case "info": canvas.drawCircle(12,12,9,p); canvas.drawCircle(12,7,0.6f,p); canvas.drawLine(12,11,12,17,p); break;
+            case "switch": canvas.drawLine(3,7,21,7,p); line(canvas,p,16,3,21,7,16,11); canvas.drawLine(3,17,21,17,p); line(canvas,p,8,13,3,17,8,21); break;
             case "grid": for(int x=0;x<2;x++) for(int y=0;y<2;y++) canvas.drawRoundRect(3+x*11,3+y*11,10+x*11,10+y*11,1,1,p); break;
             case "list": for(int y=5;y<=19;y+=7){ canvas.drawCircle(4,y,1,p); canvas.drawLine(9,y,21,y,p); } break;
             case "open": case "next": canvas.drawLine(4,12,20,12,p); line(canvas,p,13,5,20,12,13,19); break;

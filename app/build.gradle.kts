@@ -2,7 +2,7 @@ plugins { id("com.android.application") }
 android {
     namespace = "org.taskdeck.app"
     compileSdk = 35
-    defaultConfig { applicationId = "org.taskdeck.app"; minSdk = 29; targetSdk = 35; versionCode = 7; versionName = "0.6.1-prototype" }
+    defaultConfig { applicationId = "org.taskdeck.app"; minSdk = 29; targetSdk = 35; versionCode = 8; versionName = "0.7.0-prototype" }
     buildFeatures { aidl = true }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     signingConfigs.getByName("debug") { storeFile = rootProject.file(".local/debug.keystore") }

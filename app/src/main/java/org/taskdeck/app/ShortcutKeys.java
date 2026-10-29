@@ -16,6 +16,7 @@ public final class ShortcutKeys {
         return keys;
     }
     public static String encode(Collection<String> keys){ return String.join(",",keys); }
+    public static boolean conflicts(Set<String> a,Set<String> b){ return !a.isEmpty()&&!b.isEmpty()&&(a.containsAll(b)||b.containsAll(a)); }
     public static String label(String key){
         try {
             String[] parts=key.split(":"); int code=Integer.parseInt(parts[0]),scan=Integer.parseInt(parts[1]);
