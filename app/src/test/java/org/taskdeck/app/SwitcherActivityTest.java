@@ -217,7 +217,7 @@ public class SwitcherActivityTest {
         popup.getContentView().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN,KeyEvent.KEYCODE_BUTTON_A)); drain();
         assertFalse(app.getSharedPreferences("settings",0).getStringSet("unlockedLaunchers",Set.of()).contains("wave.launcher"));
         press(activity,KeyEvent.KEYCODE_BUTTON_SELECT); popup=(PopupWindow)field(activity,"protectionPopup"); popup.getContentView().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN,KeyEvent.KEYCODE_BUTTON_A)); drain();
-        press(activity,KeyEvent.KEYCODE_BUTTON_X); drain(); assertEquals(List.of(false),backend.launcherStops); assertTrue(backend.removed.contains(9)); end(controller);
+        press(activity,KeyEvent.KEYCODE_BUTTON_X); drain(); assertEquals(List.of(false),backend.launcherStops); assertTrue(backend.removed.contains(9)); assertEquals(2,((List<?>)field(activity,"cards")).size()); end(controller);
     }
     @Test public void explicitLauncherRestartKeepsDefaultProtection() throws Exception {
         var controller=start(); var activity=controller.get(); press(activity,KeyEvent.KEYCODE_DPAD_RIGHT); press(activity,KeyEvent.KEYCODE_DPAD_RIGHT); press(activity,KeyEvent.KEYCODE_BUTTON_SELECT);

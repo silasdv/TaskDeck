@@ -17,7 +17,7 @@ public class TaskDeckApp extends Application {
     private boolean binding;
     private int connectionGeneration;
     private final Shizuku.UserServiceArgs args=new Shizuku.UserServiceArgs(new ComponentName("org.taskdeck.app",TaskBackend.class.getName()))
-        .daemon(false).processNameSuffix("tasks").debuggable(false).version(5);
+        .daemon(false).processNameSuffix("tasks").debuggable(false).version(7);
     private int pendingRamCount;
     private long ramBefore;
     public volatile String lastMemoryMessage="";

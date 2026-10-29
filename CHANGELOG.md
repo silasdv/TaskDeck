@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.1-prototype
+
+- Removed synthetic cards created from installed launcher packages. Only real Android recent/running tasks appear; installation alone no longer creates a launcher entry.
+- Frontend also rejects legacy synthetic rows, including rows with a memory sample. An unlocked launcher that is closed disappears when Android no longer reports its task.
+- Existing lock/unlock/restart behavior remains available for actual launcher tasks. Background processes without a task stay in background information.
+- VersionCode 7 and UserService implementation version 7 force the changed backend to load on upgrade; AIDL protocol is unchanged.
+
 ## 0.6.0-prototype
 
 - Reordered the single-row actions to A, B, X, Y, R1.

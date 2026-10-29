@@ -1,9 +1,9 @@
-# Validation — 0.6.0-prototype
+# Validation — 0.6.1-prototype
 
 29 October 2026. Local debug build; not published. User testing of 0.5 requested denser app views, reordered actions, right-aligned shoulder-based setup navigation and another RAM-feedback correction. The changed 0.6 build has not been executed on physical RP6 hardware here. Shizuku remains required; no direct-root or embedded-ADB mode was added.
 
 - assembleDebug: passed.
-- testDebugUnitTest: **47 tests passed**, 0 failures, 0 errors, 0 skipped.
+- testDebugUnitTest: **48 tests passed**, 0 failures, 0 errors, 0 skipped.
 - lintDebug: 0 errors, 17 warnings, mainly English UI strings, hidden task-service access warnings and existing dependency/backup guidance.
 - Signature: apksigner verification passed; same local debug signing key as 0.1/0.2. Certificate SHA-256: `07ac7a0eb96089084280494e4a768d86cf0994f78f4c0df8a2e67877c01a06c1`. This is not a production release key.
 - No INTERNET permission; POST_NOTIFICATIONS and Shizuku API permission only.
@@ -23,3 +23,5 @@ No task screenshots or private text are collected. PSS samples and task metadata
 0.6 regression coverage adds: A–B–X–Y–R1 footer order; right-edge Next and L1/R1 setup navigation including finish without accidentally closing apps; denser Grid visibility and row movement/opening; twenty tiles fully within Fit all's viewport; List selection and view-menu persistence; immediate foreground feedback before bulk exit without a delayed duplicate; and high-importance test notification, last-result display and no clipped setup content at 640×360dp. The existing R1 test now proves feedback is published before openTask switches to the previous app. The initial layout failures (fixed-height grid rows and five stacked feedback controls) were corrected with viewport-sized rows and a compact Permissions/Test row. Settings remain non-scrolling in landscape at both tested sizes.
 
 The RAM change fixes publication order and adds observability; it does not establish physical banner/toast delivery on RP6. Android notification permission, channel settings, DND/game-mode behavior and system process lifetime remain device checks. The result channel is high importance and quiet, and an explicitly disabled legacy RAM channel is still respected. Last-result text is held only in memory. Backend protocol/UserService stays version 5; application versionCode is 6.
+
+0.6.1 removes the backend loop that generated launcher rows from installed package metadata. Every emitted task card now originates in the real Android recent/running task list; background-only packages remain background information. The frontend rejects synthetic rows even if they carry a nonzero memory sample, covered by a new regression test. The launcher unlock/close UI test also verifies the card disappears after removal. Implementation/UserService version 7 reloads the changed backend and application versionCode is 7; AIDL protocol is unchanged. Physical launcher task removal and Android HOME auto-restart still need RP6 verification.

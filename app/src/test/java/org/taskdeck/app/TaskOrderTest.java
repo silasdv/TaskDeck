@@ -23,4 +23,9 @@ public class TaskOrderTest {
         var launcher=task("Wave",0,10,true).put("launcher",true); var core=task("Keyboard",1,20,true); var game=task("Game",2,30,false);
         assertEquals(List.of(game,launcher),TaskOrder.arrange(List.of(launcher,core,game),"recent",TaskOrder::mandatory));
     }
+    @Test public void installedLauncherWithoutRealTaskNeverBecomesACardEvenWithProcessMemory() throws Exception {
+        var installed=task("Installed launcher",0,80000,false).put("launcher",true).put("synthetic",true);
+        var opened=task("Open launcher",1,40000,false).put("launcher",true).put("id",21);
+        assertEquals(List.of(opened),TaskOrder.arrange(List.of(installed,opened),"recent",t->false));
+    }
 }

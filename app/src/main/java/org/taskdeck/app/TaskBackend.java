@@ -41,7 +41,8 @@ public class TaskBackend extends ITaskBackend.Stub {
         List<ActivityManager.RunningAppProcessInfo> processes=(List<ActivityManager.RunningAppProcessInfo>)call(am,"getRunningAppProcesses",new Class[]{});
         Set<String> result=new HashSet<>(); if(processes!=null) for(ActivityManager.RunningAppProcessInfo process:processes) if(process.uid/100000==user()&&process.pkgList!=null) result.addAll(Arrays.asList(process.pkgList)); return result;
     }
-    private Set<String> visibleLaunchers(String home){
+    // Identification/protection metadata only: installed packages are never task cards by themselves.
+    private Set<String> launcherPackages(String home){
         Set<String> result=new HashSet<>(); if(!home.isEmpty()) result.add(home);
         for(ResolveInfo info:context.getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME),0)) if(info.activityInfo!=null) result.add(info.activityInfo.packageName);
         for(ResolveInfo info:context.getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),0)) if(info.activityInfo!=null){
@@ -63,7 +64,7 @@ public class TaskBackend extends ITaskBackend.Stub {
         Set<String> result=inputMethods();
         Set<String> requiredKeyboards=new HashSet<>(result);
         if(result.isEmpty()) result.add("!input-method-discovery-unavailable");
-        result.addAll(visibleLaunchers(home()));
+        result.addAll(launcherPackages(home()));
         for(ResolveInfo info:context.getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME),0)) if(info.activityInfo!=null) result.add(info.activityInfo.packageName);
         // Wave can be used as a frontend without holding Android's default HOME role.
         for(ResolveInfo info:context.getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),0)){
@@ -146,7 +147,7 @@ public class TaskBackend extends ITaskBackend.Stub {
     @Override public synchronized String readTasks() {
         try {
             JSONArray rows=new JSONArray(),background=new JSONArray(); List<TaskInfo> recent=tasks();
-            String home=home(); Set<String> protectedApps=protectedPackages(),launchers=visibleLaunchers(home),listed=new HashSet<>(),running;
+            String home=home(); Set<String> protectedApps=protectedPackages(),launchers=launcherPackages(home),listed=new HashSet<>(),running;
             try { running=runningPackages(); } catch(Exception unavailable){ running=Collections.emptySet(); }
             Set<String> names=new HashSet<>(running); names.addAll(launchers); names.addAll(protectedApps);
             names.add("moe.shizuku.privileged.api"); names.add("com.android.systemui");
@@ -160,14 +161,6 @@ public class TaskBackend extends ITaskBackend.Stub {
                 JSONObject row=new JSONObject().put("id",task.taskId).put("package",name).put("label",context.getPackageManager().getApplicationLabel(info).toString())
                     .put("recentRank",rank++).put("removable",!mandatory&&!manual&&(!launcher||unlockedLaunchers.contains(name))).put("mandatoryProtected",mandatory).put("userProtected",manual).put("launcher",launcher).put("home",name.equals(home));
                 rows.put(memoryFields(row,ram.get(name))); listed.add(name); if(!mandatory||launcher) visiblePackages.add(name);
-            }
-            // HOME does not need a recent task to be a useful, protected launcher shortcut.
-            for(String name:new TreeSet<>(launchers)) if(!listed.contains(name)){
-                ApplicationInfo info; try { info=app(name); } catch(Exception unavailable){ continue; }
-                rows.put(memoryFields(new JSONObject().put("id",-(Math.abs(name.hashCode()%1000000000)+1)).put("package",name)
-                    .put("label",context.getPackageManager().getApplicationLabel(info).toString()).put("launcher",true).put("synthetic",true)
-                    .put("home",name.equals(home)).put("mandatoryProtected",false).put("removable",unlockedLaunchers.contains(name)).put("recentRank",rank++),ram.get(name)));
-                visiblePackages.add(name);
             }
             for(String name:new TreeSet<>(names)) if(!name.equals(context.getPackageName())&&!visiblePackages.contains(name)){
                 Ram sample=ram.get(name); if(!listed.contains(name)&&!running.contains(name)) continue;
@@ -210,7 +203,7 @@ public class TaskBackend extends ITaskBackend.Stub {
         try {
             // Establish shell/root identity before using any privileged operation.
             tasks();
-            if(!visibleLaunchers(home()).contains(expected)) throw new SecurityException("Not an installed HOME launcher or recognized Wave frontend");
+            if(!launcherPackages(home()).contains(expected)) throw new SecurityException("Not an installed HOME launcher or recognized Wave frontend");
             Set<String> keyboards=inputMethods();
             if(keyboards.isEmpty()||!TaskPolicy.canRemove(expected,false,user(),user(),"","",keyboards)) throw new SecurityException("Required service protection");
             if(!forRestart&&(!unlockedLaunchers.contains(expected)||userProtected.contains(expected))) throw new SecurityException("Launcher is locked");
