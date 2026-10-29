@@ -16,6 +16,7 @@ import java.util.*;
 public class TaskBackend extends ITaskBackend.Stub {
     private final Context context;
     private Set<String> userProtected=Collections.emptySet();
+    private Set<String> unlockedLaunchers=Collections.emptySet();
     public TaskBackend(Context context) { this.context=context; }
     private Object manager() throws Exception { return Class.forName("android.app.ActivityTaskManager").getDeclaredMethod("getService").invoke(null); }
     private Object call(Object receiver,String name,Class<?>[] types,Object... args) throws Exception {
@@ -42,6 +43,7 @@ public class TaskBackend extends ITaskBackend.Stub {
     }
     private Set<String> visibleLaunchers(String home){
         Set<String> result=new HashSet<>(); if(!home.isEmpty()) result.add(home);
+        for(ResolveInfo info:context.getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME),0)) if(info.activityInfo!=null) result.add(info.activityInfo.packageName);
         for(ResolveInfo info:context.getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),0)) if(info.activityInfo!=null){
             String label=info.loadLabel(context.getPackageManager()).toString().toLowerCase(Locale.ROOT).replaceAll("[^a-z]","");
             if(label.contains("wavelauncher")||info.activityInfo.packageName.equals("com.wavelauncher")) result.add(info.activityInfo.packageName);
@@ -59,6 +61,7 @@ public class TaskBackend extends ITaskBackend.Stub {
     }
     private Set<String> protectedPackages(){
         Set<String> result=inputMethods();
+        Set<String> requiredKeyboards=new HashSet<>(result);
         if(result.isEmpty()) result.add("!input-method-discovery-unavailable");
         result.addAll(visibleLaunchers(home()));
         for(ResolveInfo info:context.getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME),0)) if(info.activityInfo!=null) result.add(info.activityInfo.packageName);
@@ -69,6 +72,8 @@ public class TaskBackend extends ITaskBackend.Stub {
                 if(label.equalsIgnoreCase("WaveLauncher")) result.add(info.activityInfo.packageName);
             }
         }
+        result.removeAll(unlockedLaunchers);
+        result.addAll(requiredKeyboards);
         return result;
     }
     private String packageOf(TaskInfo task) {
@@ -80,7 +85,7 @@ public class TaskBackend extends ITaskBackend.Stub {
         String name=packageOf(task); ApplicationInfo app=app(name);
         int taskUser=task.getClass().getField("userId").getInt(task);
         // Protect every discovered IME; avoid ContentResolver, which is unsupported in UserService.
-        return !protectedPackages.contains("!input-method-discovery-unavailable") && !home.isEmpty() && TaskPolicy.canRemove(name,(app.flags&ApplicationInfo.FLAG_SYSTEM)!=0,taskUser,user(),home,"",protectedPackages);
+        return !protectedPackages.contains("!input-method-discovery-unavailable") && !home.isEmpty() && TaskPolicy.canRemove(name,(app.flags&ApplicationInfo.FLAG_SYSTEM)!=0,taskUser,user(),unlockedLaunchers.contains(name)?"":home,"",protectedPackages);
     }
     private TaskInfo find(int id,String expected) throws Exception {
         for(TaskInfo task:tasks()) if(task.taskId==id && packageOf(task).equals(expected)) return task;
@@ -151,9 +156,9 @@ public class TaskBackend extends ITaskBackend.Stub {
             for(TaskInfo task:recent){
                 String name=packageOf(task); if(name.isEmpty()||name.equals(context.getPackageName())) continue;
                 ApplicationInfo info; try { info=app(name); } catch(PackageManager.NameNotFoundException ignored){ continue; }
-                boolean mandatory=!removable(task,home,protectedApps),manual=userProtected.contains(name),launcher=launchers.contains(name);
+                boolean launcher=launchers.contains(name),mandatory=!removable(task,home,protectedApps)&&(!launcher||unlockedLaunchers.contains(name)),manual=userProtected.contains(name);
                 JSONObject row=new JSONObject().put("id",task.taskId).put("package",name).put("label",context.getPackageManager().getApplicationLabel(info).toString())
-                    .put("recentRank",rank++).put("removable",!mandatory&&!manual).put("mandatoryProtected",mandatory).put("userProtected",manual).put("launcher",launcher).put("home",name.equals(home));
+                    .put("recentRank",rank++).put("removable",!mandatory&&!manual&&(!launcher||unlockedLaunchers.contains(name))).put("mandatoryProtected",mandatory).put("userProtected",manual).put("launcher",launcher).put("home",name.equals(home));
                 rows.put(memoryFields(row,ram.get(name))); listed.add(name); if(!mandatory||launcher) visiblePackages.add(name);
             }
             // HOME does not need a recent task to be a useful, protected launcher shortcut.
@@ -161,7 +166,7 @@ public class TaskBackend extends ITaskBackend.Stub {
                 ApplicationInfo info; try { info=app(name); } catch(Exception unavailable){ continue; }
                 rows.put(memoryFields(new JSONObject().put("id",-(Math.abs(name.hashCode()%1000000000)+1)).put("package",name)
                     .put("label",context.getPackageManager().getApplicationLabel(info).toString()).put("launcher",true).put("synthetic",true)
-                    .put("home",name.equals(home)).put("mandatoryProtected",true).put("removable",false).put("recentRank",rank++),ram.get(name)));
+                    .put("home",name.equals(home)).put("mandatoryProtected",false).put("removable",unlockedLaunchers.contains(name)).put("recentRank",rank++),ram.get(name)));
                 visiblePackages.add(name);
             }
             for(String name:new TreeSet<>(names)) if(!name.equals(context.getPackageName())&&!visiblePackages.contains(name)){
@@ -197,6 +202,22 @@ public class TaskBackend extends ITaskBackend.Stub {
     @Override public synchronized void setProtectedPackages(String[] packages){
         Set<String> next=new HashSet<>(); if(packages!=null) for(String name:packages) if(name!=null && name.matches("[A-Za-z0-9_.]+")) next.add(name);
         userProtected=next;
+    }
+    @Override public synchronized void setUnlockedLaunchers(String[] packages){
+        Set<String> next=new HashSet<>(); if(packages!=null) for(String name:packages) if(name!=null&&name.matches("[A-Za-z0-9_.]+")) next.add(name); unlockedLaunchers=next;
+    }
+    @Override public synchronized String stopLauncher(String expected,boolean forRestart){
+        try {
+            // Establish shell/root identity before using any privileged operation.
+            tasks();
+            if(!visibleLaunchers(home()).contains(expected)) throw new SecurityException("Not an installed HOME launcher or recognized Wave frontend");
+            Set<String> keyboards=inputMethods();
+            if(keyboards.isEmpty()||!TaskPolicy.canRemove(expected,false,user(),user(),"","",keyboards)) throw new SecurityException("Required service protection");
+            if(!forRestart&&(!unlockedLaunchers.contains(expected)||userProtected.contains(expected))) throw new SecurityException("Launcher is locked");
+            Object am=Class.forName("android.app.ActivityManager").getDeclaredMethod("getService").invoke(null);
+            call(am,"forceStopPackage",new Class[]{String.class,int.class},expected,user());
+            return "{\"requested\":true}";
+        } catch(Exception failure){ return error(failure); }
     }
     @Override public void destroy() { System.exit(0); }
 }

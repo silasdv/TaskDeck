@@ -21,8 +21,10 @@ public class SwitcherActivityTest {
         @Override public void connect(boolean request){}
     }
     static class FakeBackend extends ITaskBackend.Stub {
-        final List<Integer> removed=new ArrayList<>(); final Set<String> protectedApps=new HashSet<>(); int opened=-1,reads; boolean extra;
+        final List<Integer> removed=new ArrayList<>(); final Set<String> protectedApps=new HashSet<>(),unlockedLaunchers=new HashSet<>(); final List<Boolean> launcherStops=new ArrayList<>(); int opened=-1,reads; boolean extra;
         public synchronized void setProtectedPackages(String[] names){ protectedApps.clear(); protectedApps.addAll(Arrays.asList(names)); }
+        public synchronized void setUnlockedLaunchers(String[] names){ unlockedLaunchers.clear(); unlockedLaunchers.addAll(Arrays.asList(names)); }
+        public synchronized String stopLauncher(String name,boolean restart){ if(!name.equals("wave.launcher")||!restart&&!unlockedLaunchers.contains(name)) return "{\"error\":\"protected\"}"; launcherStops.add(restart); if(!removed.contains(9)) removed.add(9); return "{}"; }
         public synchronized String readTasks(){
             reads++;
             try {
@@ -30,7 +32,7 @@ public class SwitcherActivityTest {
                 for(int id:extra?new int[]{7,8,10,11,9}:new int[]{7,8,9}) if(!removed.contains(id)){
                     String name=id==9?"wave.launcher":"test.game"+id;
                     rows.put(new JSONObject().put("id",id).put("package",name).put("label",id==9?"Wave Launcher":"Game "+id)
-                        .put("launcher",id==9).put("mandatoryProtected",id==9).put("userProtected",protectedApps.contains(name)).put("removable",id!=9&&!protectedApps.contains(name)));
+                        .put("launcher",id==9).put("mandatoryProtected",false).put("userProtected",protectedApps.contains(name)).put("removable",(id!=9||unlockedLaunchers.contains(name))&&!protectedApps.contains(name)));
                 }
                 return new JSONObject().put("uid",2000).put("sdk",33).put("tasks",rows).put("backgroundApps",new JSONArray().put(new JSONObject().put("label","Test Keyboard").put("pssKb",51200).put("reason","Protected service"))).put("previousTask",new JSONObject().put("id",7).put("package","test.game7")).toString();
             } catch(JSONException e){ throw new RuntimeException(e); }
@@ -205,6 +207,45 @@ public class SwitcherActivityTest {
         end(controller);
     }
     @Test @Config(qualifiers="w640dp-h360dp-land") public void compactLandscapeSetupAlsoFitsWithoutScrolling() throws Exception { everyLandscapeSetupScreenFitsWithoutScrolling(); }
+    @Test public void launcherStartsLockedCanBeUnlockedClosedAndLockedAgain() throws Exception {
+        var controller=start(); var activity=controller.get(); press(activity,KeyEvent.KEYCODE_DPAD_RIGHT); press(activity,KeyEvent.KEYCODE_DPAD_RIGHT);
+        press(activity,KeyEvent.KEYCODE_BUTTON_X); drain(); assertTrue(backend.launcherStops.isEmpty());
+        press(activity,KeyEvent.KEYCODE_BUTTON_SELECT); PopupWindow popup=(PopupWindow)field(activity,"protectionPopup");
+        popup.getContentView().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN,KeyEvent.KEYCODE_BUTTON_A)); drain();
+        assertTrue(app.getSharedPreferences("settings",0).getStringSet("unlockedLaunchers",Set.of()).contains("wave.launcher"));
+        press(activity,KeyEvent.KEYCODE_BUTTON_SELECT); popup=(PopupWindow)field(activity,"protectionPopup");
+        popup.getContentView().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN,KeyEvent.KEYCODE_BUTTON_A)); drain();
+        assertFalse(app.getSharedPreferences("settings",0).getStringSet("unlockedLaunchers",Set.of()).contains("wave.launcher"));
+        press(activity,KeyEvent.KEYCODE_BUTTON_SELECT); popup=(PopupWindow)field(activity,"protectionPopup"); popup.getContentView().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN,KeyEvent.KEYCODE_BUTTON_A)); drain();
+        press(activity,KeyEvent.KEYCODE_BUTTON_X); drain(); assertEquals(List.of(false),backend.launcherStops); assertTrue(backend.removed.contains(9)); end(controller);
+    }
+    @Test public void explicitLauncherRestartKeepsDefaultProtection() throws Exception {
+        var controller=start(); var activity=controller.get(); press(activity,KeyEvent.KEYCODE_DPAD_RIGHT); press(activity,KeyEvent.KEYCODE_DPAD_RIGHT); press(activity,KeyEvent.KEYCODE_BUTTON_SELECT);
+        PopupWindow popup=(PopupWindow)field(activity,"protectionPopup"); popup.getContentView().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN,KeyEvent.KEYCODE_DPAD_DOWN));
+        popup.getContentView().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN,KeyEvent.KEYCODE_BUTTON_A)); drain();
+        assertEquals(List.of(true),backend.launcherStops); assertTrue(app.getSharedPreferences("settings",0).getStringSet("unlockedLaunchers",Set.of()).isEmpty());
+        assertEquals("wave.launcher",Shadows.shadowOf(activity).getNextStartedActivity().getPackage()); assertTrue(activity.isFinishing()); end(controller);
+    }
+    @Test public void ramFeedbackAppearsAfterActivityIsDestroyedWithoutNotificationPermission() throws Exception {
+        var controller=start(); var activity=controller.get(); org.robolectric.shadows.ShadowToast.reset();
+        Shadows.shadowOf(app).denyPermissions(android.Manifest.permission.POST_NOTIFICATIONS);
+        press(activity,KeyEvent.KEYCODE_BUTTON_Y); drain(); assertTrue(activity.isFinishing()); controller.pause().stop().destroy();
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(1500,TimeUnit.MILLISECONDS);
+        String message=org.robolectric.shadows.ShadowToast.getTextOfLatestToast(); assertNotNull(message); assertTrue(message.contains("RAM change:")); assertTrue(message.contains("Available:")); assertTrue(message.contains("MiB")); app.worker.shutdownNow();
+    }
+    @Test public void ramFeedbackCanBeDisabledAndRapidReportsAreCoalesced() throws Exception {
+        var controller=start(); org.robolectric.shadows.ShadowToast.reset(); app.getSharedPreferences("settings",0).edit().putBoolean("ramNotifications",false).commit();
+        app.reportMemoryResult(1,0); Shadows.shadowOf(Looper.getMainLooper()).idleFor(1500,TimeUnit.MILLISECONDS); assertNull(org.robolectric.shadows.ShadowToast.getTextOfLatestToast());
+        app.getSharedPreferences("settings",0).edit().putBoolean("ramNotifications",true).commit(); app.reportMemoryResult(1,0); app.reportMemoryResult(2,0);
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(1500,TimeUnit.MILLISECONDS); assertEquals(1,org.robolectric.shadows.ShadowToast.shownToastCount()); end(controller);
+    }
+    @Test @Config(qualifiers="w640dp-h360dp-land") public void allFiveFooterActionsFitOneVisibleRowWithoutLegend() throws Exception {
+        var controller=start(); var activity=controller.get(); layout(activity);
+        var open=findButton(activity.getWindow().getDecorView(),"Open app"); ViewGroup row=(ViewGroup)open.getParent(); assertEquals(5,row.getChildCount());
+        for(int i=0;i<5;i++) assertEquals(open.getTop(),row.getChildAt(i).getTop());
+        View last=row.getChildAt(4); View viewport=(View)row.getParent(); assertTrue("Footer requires horizontal scrolling: "+last.getRight()+" / "+viewport.getWidth(),last.getRight()<=viewport.getWidth());
+        ViewGroup root=(ViewGroup)field(activity,"root"); assertSame(viewport,root.getChildAt(root.getChildCount()-1)); end(controller);
+    }
     private void layout(SwitcherActivity activity){ View decor=activity.getWindow().getDecorView(); int w=activity.getResources().getDisplayMetrics().widthPixels,h=activity.getResources().getDisplayMetrics().heightPixels; decor.measure(View.MeasureSpec.makeMeasureSpec(w,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(h,View.MeasureSpec.EXACTLY)); decor.layout(0,0,w,h); }
     private void assertFits(View parent){ if(parent instanceof ViewGroup) for(int i=0;i<((ViewGroup)parent).getChildCount();i++){ View child=((ViewGroup)parent).getChildAt(i); assertTrue("Child exceeds bottom: "+(child instanceof android.widget.TextView?((android.widget.TextView)child).getText():child.getClass()),child.getBottom()<=parent.getHeight()-parent.getPaddingBottom()); assertTrue("Child exceeds width",child.getRight()<=parent.getWidth()-parent.getPaddingRight()); } }
 }

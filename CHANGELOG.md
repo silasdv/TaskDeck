@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0-prototype
+
+- One visible row of five controller actions at 640dp landscape; removed the duplicated bottom legend. Narrow portrait keeps a single horizontally scrollable row.
+- All discovered HOME launchers and the recognized Wave frontend default to protected, with persistent per-package unlock/relock choices. Unlocked launcher close actions request a launcher-scoped force-stop through Shizuku.
+- Long-press/Select offers Restart launcher, usable once while retaining protection. D-pad/stick chooses popup actions; Confirm executes. Keyboard/core protection remains enforced by the backend.
+- Moved RAM feedback to an Application-owned handler. A standard Android toast reports measured RAM change and available RAM even after the switcher Activity finishes/destroys, without POST_NOTIFICATIONS. Rapid close actions coalesce. Optional notification-shade results still respect permission/channel settings; disabling feedback suppresses both.
+- Idle synthetic launcher shortcuts are not counted as running closable apps. Android may reopen its default HOME launcher after a stop.
+- Shizuku remains the privileged connection method. UserService/API version 5, versionCode 5, no added permissions or direct-root/embedded-ADB mode.
+
 ## 0.4.0-prototype
 
 - Fixed empty/all-protected deck entry: controller focus starts on Refresh, horizontal toolbar navigation no longer resets to nowhere, and Down cannot enter a nonexistent card. Shortcut entry restores controller mode after previous touch use.

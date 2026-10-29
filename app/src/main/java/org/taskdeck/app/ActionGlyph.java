@@ -11,8 +11,8 @@ public final class ActionGlyph extends Drawable {
     public static String kind(String label){
         String s=label.toLowerCase(Locale.ROOT);
         if(s.contains("sort")||s.equals("recent")||s.equals("alphabetical")||s.contains("ram size")) return "sort";
-        if(s.contains("refresh")) return "refresh";
-        if(s.contains("notification")) return "notify";
+        if(s.contains("refresh")||s.contains("restart")) return "refresh";
+        if(s.contains("notification")||s.contains("ram feedback")) return "notify";
         if(s.contains("others")||s.contains("other apps")) return "others";
         if(s.contains("close all")||s.contains("all +")||s.startsWith("y ·")) return "all";
         if(s.contains("close")&&!s.contains("setup")) return "close";

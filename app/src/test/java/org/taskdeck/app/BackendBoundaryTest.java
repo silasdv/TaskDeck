@@ -17,5 +17,6 @@ public class BackendBoundaryTest {
         assertTrue(new JSONObject(backend.readTasks()).getString("error").contains("Shizuku shell/root"));
         assertTrue(new JSONObject(backend.removeTask(123,"test.game")).has("error"));
         assertTrue(new JSONObject(backend.openTask(123,"test.game")).has("error"));
+        assertTrue(new JSONObject(backend.stopLauncher("test.game",true)).getString("error").contains("Shizuku shell/root"));
     }
 }
