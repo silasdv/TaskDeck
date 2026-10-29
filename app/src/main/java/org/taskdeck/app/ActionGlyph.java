@@ -10,6 +10,8 @@ public final class ActionGlyph extends Drawable {
     public ActionGlyph(String kind,int color){ this.kind=kind; this.color=color; }
     public static String kind(String label){
         String s=label.toLowerCase(Locale.ROOT);
+        if(s.equals("view")||s.equals("grid")||s.equals("cards")||s.equals("fit all")) return "grid";
+        if(s.equals("list")) return "list";
         if(s.contains("sort")||s.equals("recent")||s.equals("alphabetical")||s.contains("ram size")) return "sort";
         if(s.contains("refresh")||s.contains("restart")) return "refresh";
         if(s.contains("notification")||s.contains("ram feedback")) return "notify";
@@ -33,6 +35,8 @@ public final class ActionGlyph extends Drawable {
         int save=canvas.save(); canvas.translate(getBounds().left,getBounds().top); canvas.scale(getBounds().width()/24f,getBounds().height()/24f);
         Paint p=new Paint(Paint.ANTI_ALIAS_FLAG); p.setColor(color); p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(2); p.setStrokeCap(Paint.Cap.ROUND); p.setStrokeJoin(Paint.Join.ROUND);
         switch(kind){
+            case "grid": for(int x=0;x<2;x++) for(int y=0;y<2;y++) canvas.drawRoundRect(3+x*11,3+y*11,10+x*11,10+y*11,1,1,p); break;
+            case "list": for(int y=5;y<=19;y+=7){ canvas.drawCircle(4,y,1,p); canvas.drawLine(9,y,21,y,p); } break;
             case "open": case "next": canvas.drawLine(4,12,20,12,p); line(canvas,p,13,5,20,12,13,19); break;
             case "back": canvas.drawLine(4,12,20,12,p); line(canvas,p,11,5,4,12,11,19); break;
             case "close": canvas.drawCircle(12,12,9,p); canvas.drawLine(8,8,16,16,p); canvas.drawLine(16,8,8,16,p); break;

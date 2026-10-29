@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.0-prototype
+
+- Reordered the single-row actions to A, B, X, Y, R1.
+- Added persistent Cards, List, Grid and Fit all modes. Grid defaults to multiple rows and uses more screen width; Fit all scales tiles to the reported task count. Dense modes show available RAM compactly instead of reserving a wide sidebar. Selected names remain visible in the status line.
+- D-pad/stick navigation follows grid rows/columns or list rows, with Up from the first row entering tools. Cards keep horizontal navigation.
+- Right-aligned Next/Finish in setup, labeled rectangular L1 Previous / R1 Next badges and matching shoulder shortcuts. Repeated key-downs do not skip multiple steps.
+- Bulk exit/restart publishes pending RAM feedback while still foreground. Added quiet high-importance RAM result notification channel, Test RAM feedback, runtime permission request/status and an in-memory last result. Existing notification channel blocks and RAM-feedback preference remain respected. Hardware delivery is still an acceptance test.
+- VersionCode 6; privileged backend API remains version 5 because no backend protocol changes were needed. Shizuku stays required.
+
 ## 0.5.0-prototype
 
 - One visible row of five controller actions at 640dp landscape; removed the duplicated bottom legend. Narrow portrait keeps a single horizontally scrollable row.

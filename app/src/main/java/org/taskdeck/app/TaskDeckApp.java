@@ -20,27 +20,36 @@ public class TaskDeckApp extends Application {
         .daemon(false).processNameSuffix("tasks").debuggable(false).version(5);
     private int pendingRamCount;
     private long ramBefore;
+    public volatile String lastMemoryMessage="";
     private final Runnable memoryReport=()->{
         int count=pendingRamCount; pendingRamCount=0;
-        if(!getSharedPreferences("settings",MODE_PRIVATE).getBoolean("ramNotifications",true)) return;
+        if(count<=0||!getSharedPreferences("settings",MODE_PRIVATE).getBoolean("ramNotifications",true)) return;
         android.app.ActivityManager.MemoryInfo info=new android.app.ActivityManager.MemoryInfo(); getSystemService(android.app.ActivityManager.class).getMemoryInfo(info);
         long delta=(info.availMem-ramBefore)/(1024*1024);
         String message="RAM change: "+(delta>=0?"+":"")+delta+" MiB\nAvailable: "+info.availMem/(1024*1024)+" MiB";
+        showMemoryFeedback(message,count);
+    };
+    private void showMemoryFeedback(String message,int count){
+        lastMemoryMessage=message;
         android.widget.Toast.makeText(this,message,android.widget.Toast.LENGTH_LONG).show();
         android.app.NotificationManager manager=getSystemService(android.app.NotificationManager.class);
         boolean permission=Build.VERSION.SDK_INT<33||checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)==PackageManager.PERMISSION_GRANTED;
-        android.app.NotificationChannel channel=manager.getNotificationChannel("ram");
-        if(permission&&manager.areNotificationsEnabled()&&(channel==null||channel.getImportance()!=android.app.NotificationManager.IMPORTANCE_NONE)){
-            manager.createNotificationChannel(new android.app.NotificationChannel("ram","Task results",android.app.NotificationManager.IMPORTANCE_LOW));
-            try { manager.notify(2,new android.app.Notification.Builder(this,"ram").setSmallIcon(R.drawable.ic_tasks).setContentTitle(count+" item(s) closed").setContentText(message.replace('\n',' ')).setTimeoutAfter(12000).setAutoCancel(true).build()); }
+        android.app.NotificationChannel old=manager.getNotificationChannel("ram"),channel=manager.getNotificationChannel("ram_results");
+        if(permission&&manager.areNotificationsEnabled()&&(old==null||old.getImportance()!=android.app.NotificationManager.IMPORTANCE_NONE)&&(channel==null||channel.getImportance()!=android.app.NotificationManager.IMPORTANCE_NONE)){
+            android.app.NotificationChannel results=new android.app.NotificationChannel("ram_results","RAM result popups",android.app.NotificationManager.IMPORTANCE_HIGH); results.enableVibration(false); results.setSound(null,null); manager.createNotificationChannel(results);
+            try { manager.notify(2,new android.app.Notification.Builder(this,"ram_results").setSmallIcon(R.drawable.ic_tasks).setContentTitle(count>0?count+" item(s) closed":"RAM feedback test").setContentText(message.replace('\n',' ')).setStyle(new android.app.Notification.BigTextStyle().bigText(message)).setTimeoutAfter(20000).setAutoCancel(true).build()); }
             catch(SecurityException revoked){ /* Permission can change while the result is pending; the toast still works. */ }
         }
-    };
+    }
     /** Application-owned and coalesced; survives Activity finish/destroy without notification permission. */
     public void reportMemoryResult(int count,long before){
         if(count<=0) return;
-        main.post(()->{ if(pendingRamCount==0) ramBefore=before; pendingRamCount+=count; main.removeCallbacks(memoryReport); main.postDelayed(memoryReport,1200); });
+        Runnable queue=()->{ if(pendingRamCount==0) ramBefore=before; pendingRamCount+=count; main.removeCallbacks(memoryReport); main.postDelayed(memoryReport,1200); };
+        if(Looper.myLooper()==Looper.getMainLooper()) queue.run(); else main.post(queue);
     }
+    /** Publish while the Activity is still foreground, then let the system retain it after finish. */
+    public void flushMemoryFeedback(){ if(Looper.myLooper()!=Looper.getMainLooper()){ main.post(this::flushMemoryFeedback); return; } main.removeCallbacks(memoryReport); memoryReport.run(); }
+    public void testMemoryFeedback(){ android.app.ActivityManager.MemoryInfo info=new android.app.ActivityManager.MemoryInfo(); getSystemService(android.app.ActivityManager.class).getMemoryInfo(info); showMemoryFeedback("RAM feedback test\nAvailable: "+info.availMem/(1024*1024)+" MiB",0); }
     private final ServiceConnection connection=new ServiceConnection() {
         @Override public void onServiceConnected(ComponentName name,IBinder binder) {
             binding=false;

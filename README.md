@@ -1,20 +1,20 @@
 # TaskDeck — controller task switcher prototype
 
-An experimental Android task switcher by **SilasDV**. Working name, version **0.5.0-prototype**. Built with substantial AI assistance through Codex (vibecoded). This is a device-test build; the changed interface still needs Retroid Pocket 6 testing.
+An experimental Android task switcher by **SilasDV**. Working name, version **0.6.0-prototype**. Built with substantial AI assistance through Codex (vibecoded). This is a device-test build; the changed interface still needs Retroid Pocket 6 testing.
 
 ## Included
 
 - A Shizuku UserService that reads real recent tasks, brings an existing task forward and removes an eligible task.
-- Horizontal app cards with explicit D-pad/left-stick selection independent of Android touch focus. A opens, X closes one task, Y closes eligible tasks and exits to HOME, R1 closes other eligible tasks while retaining the previous app, B exits.
+- Persistent Cards, List, Grid (default) and Fit all views with explicit D-pad/left-stick selection independent of Android touch focus. A opens, X closes one task, Y closes eligible tasks and exits to HOME, R1 closes other eligible tasks while retaining the previous app, B exits.
 - Closing is immediate: no confirmation dialogs. Unsaved work or game progress may be lost.
 - Long-press a card or press Select to open its protection popup. A toggles the lock; B dismisses. User protection is persistent and enforced in the backend. Launchers default to locked but can be unlocked. Their popup also offers an explicit one-off restart that keeps the saved lock.
-- A four-screen setup wizard using two columns without scrolling in landscape, a separate connection screen, live status and Light, Dark and OLED themes. Touch activates on the first tap; controller navigation uses explicit selection.
+- A four-screen setup wizard using two columns without scrolling in landscape, labeled L1 Previous / R1 Next or Finish controls with Next aligned right, a separate connection screen, live status and Light, Dark and OLED themes. Touch activates on the first tap; controller navigation uses explicit selection.
 - Printed-A calibration for standard/swapped face-button reporting.
 - A Quick Settings tile, notification shortcut and optional recorded multi-button controller shortcut, with visible Android names and scan codes.
 - Available/total RAM, best-effort per-app PSS samples, and optional application-owned RAM-change popup feedback, including after the menu exits, without RAM-boost claims.
 - Recent, descending RAM and alphabetical sorting. User-locked apps are always last; mandatory infrastructure is summarized separately; all discovered HOME launchers and Wave remain visible as launcher cards, locked by default. Inline “Nothing to close” state.
 - Optional stay-open behavior after bulk closing; by default bulk actions return to HOME or the retained app, even for an empty list. Errors keep the menu open for inspection.
-- Neutral menu vectors, a gear for Setup, SNES-colored circular A/B/X/Y badges and a rectangular R1 badge; clear “Open app”, “Close app”, “Close all & exit” and “Close other apps” labels. A single row of all five actions in landscape replaces the two-row footer; the duplicated explanatory legend is removed. Scalable action icons and explicit backend errors rather than pretending an action succeeded.
+- Neutral menu vectors, a gear for Setup, SNES-colored circular A/B/X/Y badges and a rectangular R1 badge; clear “Open app”, “Close app”, “Close all & exit” and “Close other apps” labels. A single row of all five actions follows A–B–X–Y–R1; the duplicated explanatory legend is removed. Scalable action icons and explicit backend errors rather than pretending an action succeeded.
 
 ## Requirements and installation
 
@@ -41,6 +41,10 @@ If both rear buttons report the same key code AND scan code, they cannot be dist
 
 If A/B are reversed, choose Setup > step 2 > Calibrate printed A. It infers the common AB/XY pair swap, not arbitrary button permutations. In the deck, left/right select cards, up selects toolbar controls, down returns to cards. Select opens the lock popup.
 
+## App views
+
+Choose **View** in the top toolbar: Cards, List, Grid or Fit all. Grid is the default and shows multiple rows; List uses compact rows and full-width names. Dense views collapse the wide RAM sidebar while retaining available-memory information in the header; Cards retains detailed background-memory information. The sidebar is also shown when nothing is closable. Fit all adapts columns and tile height to fit the reported task set without scrolling; large sets shrink labels/icons and the selected name remains in the status line. There is no promise that arbitrarily large sets remain comfortably readable at once. Grid/List scroll to the selected app if necessary. D-pad/stick up/down moves between rows, left/right between columns; Up from the first row enters the toolbar.
+
 ## What closing means
 
 For ordinary apps, X and Y **remove tasks**, similar to dismissing cards in Android Overview. Those actions do not implement package-wide force-stop, do not guarantee that background services terminate and do not save emulator state. **Launcher-only exception:** explicitly unlocked launcher close actions use Shizuku to request a package force-stop; the explicit Restart launcher action stops then opens that launcher, while retaining its saved protection. Unsaved work may be lost. Y operates on the eligible tasks shown when requested, not every Android process.
@@ -65,13 +69,15 @@ The right sidebar shows used/available system RAM, explains that Android/service
 
 The backend attempts to aggregate proportional set size (PSS) for reported processes belonging to each app. Values are approximate, can be cached by Android and are shared across multiple task cards for the same app. Shared-package processes are marked shared. Missing/partial/denied samples are not shown as zero; an app absent from the process snapshot is labeled accordingly.
 
-After closing, the Application (not the Activity) waits about 1.2 seconds, measures available RAM and shows a standard Android text toast with the signed change and current available memory. Nearby close actions are coalesced. The handler and result do not retain or depend on the switcher Activity, so finishing/destroying that Activity does not cancel feedback. This does not promise delivery after Android kills or the user force-stops the entire TaskDeck process. Disable RAM feedback in setup step 4 to turn it off. If notification permission/channel settings allow, a matching result is also posted to the notification shade; the toast itself needs no notification permission.
+Single-app close feedback is coalesced by an Application-owned handler. Before bulk exit or launcher restart, pending feedback is flushed while TaskDeck is still foreground, then the Activity finishes. This avoids relying solely on delayed background toast delivery. Text toasts need no notification permission. When permitted, a separate high-importance, quiet `ram_results` channel posts a 20-second result notification eligible for heads-up display. Existing user-disabled `ram`/result channels remain respected. Android, Do Not Disturb and gaming firmware still control banner presentation.
+
+Setup step 4 includes **Test RAM feedback**, **Permissions**, notification permission status and the last result held in memory. Test requests POST_NOTIFICATIONS when needed and still offers toast fallback if denied; it does not pretend an app was closed. Test output can be inspected without closing anything. RAM feedback remains independently switchable. The Activity-destruction tests verify wiring; they do not demonstrate banner delivery on RP6 firmware or survival after Android kills/force-stops the entire TaskDeck process.
 
 The deck reports total available RAM and its signed change after that short delay. This is not proof of RAM reclaimed by those tasks: Android caches and unrelated processes also affect it. Optional notification-shade entries require notification permission; the result popup does not. No promised performance gain or universal per-app measurement is implied.
 
 ## Current limits
 
-- User feedback on 0.4 exposed the two-row footer, invisible RAM feedback and overly rigid launcher protection. The 0.5 launcher-stop/restart operations and actual toast delivery on RP6 firmware need hardware acceptance. Hidden APIs can be rejected by unsupported firmware.
+- User feedback on 0.5 requested denser views, reordered actions, shoulder-based setup navigation and further RAM feedback fixes. Actual notification/banner delivery on RP6 firmware remains unverified; use Test RAM feedback and report permission/game-mode state if it remains invisible. Hidden APIs can be rejected by unsupported firmware.
 - Tested build target: API 35. The first intended hardware test is the RP6's installed firmware, with API level reported by the backend.
 - No native swipe-up/Quickstep replacement, live screenshots, general-purpose app force-stop, per-controller profiles or automatic emulator savestates. Force-stop is narrowly limited to launcher closing/restarting.
 - Global hotkeys require explicitly enabled Accessibility and can conflict with other key-filtering services or reserved firmware keys. Only digital shortcut keys are supported.
@@ -81,7 +87,7 @@ The deck reports total available RAM and its signed change after that short dela
 
 ## Privacy
 
-No Internet permission, advertising, analytics, typed-text logging or screen-content retrieval. Task/process samples are held in memory and not written as a usage history. Preferences store configuration: shortcut button identifiers, calibration, theme, setup state, sort/exit choices, notification choices and explicitly protected package names and unlocked launcher packages. Accessibility handles only the opt-in chord and discards accessibility events. Shizuku is a separate application with its own privileges.
+No Internet permission, advertising, analytics, typed-text logging or screen-content retrieval. Task/process samples are held in memory and not written as a usage history. Preferences store configuration: shortcut button identifiers, calibration, theme, setup state, sort/view/exit choices, notification choices and explicitly protected package names and unlocked launcher packages. Accessibility handles only the opt-in chord and discards accessibility events. Shizuku is a separate application with its own privileges.
 
 ## Build
 

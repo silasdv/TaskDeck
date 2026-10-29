@@ -1,10 +1,10 @@
-# Validation — 0.5.0-prototype
+# Validation — 0.6.0-prototype
 
-29 October 2026. Local debug build; not published. User testing of 0.4 identified the two-row footer, missing RAM popup and overly rigid launcher protection. The changed 0.5 build has not been executed on physical RP6 hardware here. Shizuku remains required; no direct-root or embedded-ADB mode was added.
+29 October 2026. Local debug build; not published. User testing of 0.5 requested denser app views, reordered actions, right-aligned shoulder-based setup navigation and another RAM-feedback correction. The changed 0.6 build has not been executed on physical RP6 hardware here. Shizuku remains required; no direct-root or embedded-ADB mode was added.
 
 - assembleDebug: passed.
-- testDebugUnitTest: **41 tests passed**, 0 failures, 0 errors, 0 skipped.
-- lintDebug: 0 errors, 14 warnings, mainly English UI strings, hidden task-service access warnings and existing dependency/backup guidance.
+- testDebugUnitTest: **47 tests passed**, 0 failures, 0 errors, 0 skipped.
+- lintDebug: 0 errors, 17 warnings, mainly English UI strings, hidden task-service access warnings and existing dependency/backup guidance.
 - Signature: apksigner verification passed; same local debug signing key as 0.1/0.2. Certificate SHA-256: `07ac7a0eb96089084280494e4a768d86cf0994f78f4c0df8a2e67877c01a06c1`. This is not a production release key.
 - No INTERNET permission; POST_NOTIFICATIONS and Shizuku API permission only.
 
@@ -19,3 +19,7 @@ Hidden API calls remain isolated to the Shizuku shell/root UserService, with a d
 0.5 adds five regression cases: launcher default lock plus unlock/relock/close, explicit restart retaining its saved lock, RAM toast after Activity finish/destroy with POST_NOTIFICATIONS denied, feedback disable/coalescing behavior, and all five footer actions fitting a single visible row at 640×360dp with no legend below. Normal app identity is also rejected by the new launcher-stop endpoint. These tests validate lifecycle/control wiring, not root/shell execution on Retroid. Launcher stop requests are confined to discovered launcher packages and the current Android user; required keyboard/core protection is rechecked. Synthetic idle launchers are excluded from bulk close eligibility. The Application-owned handler survives Activity destruction, not an OS process kill or force-stop of TaskDeck.
 
 No task screenshots or private text are collected. PSS samples and task metadata are transient; only explicit configuration, including chosen protected package names and shortcut key/scan identifiers, is stored.
+
+0.6 regression coverage adds: A–B–X–Y–R1 footer order; right-edge Next and L1/R1 setup navigation including finish without accidentally closing apps; denser Grid visibility and row movement/opening; twenty tiles fully within Fit all's viewport; List selection and view-menu persistence; immediate foreground feedback before bulk exit without a delayed duplicate; and high-importance test notification, last-result display and no clipped setup content at 640×360dp. The existing R1 test now proves feedback is published before openTask switches to the previous app. The initial layout failures (fixed-height grid rows and five stacked feedback controls) were corrected with viewport-sized rows and a compact Permissions/Test row. Settings remain non-scrolling in landscape at both tested sizes.
+
+The RAM change fixes publication order and adds observability; it does not establish physical banner/toast delivery on RP6. Android notification permission, channel settings, DND/game-mode behavior and system process lifetime remain device checks. The result channel is high importance and quiet, and an explicitly disabled legacy RAM channel is still respected. Last-result text is held only in memory. Backend protocol/UserService stays version 5; application versionCode is 6.
