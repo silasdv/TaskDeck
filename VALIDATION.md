@@ -1,18 +1,17 @@
-# Validation — 0.1.0-prototype
+# Validation — 0.2.0-prototype
 
-29 October 2026. Local debug build; no publication and no confirmed RP6 hardware execution.
+29 October 2026. Local debug build; not published. User testing of 0.1 identified controller-selection and UX failures. The redesigned 0.2 build has not been executed on physical RP6 hardware here.
 
 - assembleDebug: passed.
-- testDebugUnitTest: 8 tests passed, 0 failures.
-- lintDebug: passed, 0 errors and 12 warnings. Remaining warnings include English-only UI strings, older annotation dependency and backup/attribute guidance.
-- APK signature: verified, debug certificate CN=TaskDeck Debug, O=SilasDV. SHA-256 certificate fingerprint: 07ac7a0eb96089084280494e4a768d86cf0994f78f4c0df8a2e67877c01a06c1.
-- Manifest permissions checked: POST_NOTIFICATIONS and Shizuku API_V23 only; no INTERNET permission.
-- MIT third-party notice bundled in APK assets.
+- testDebugUnitTest: **19 tests passed**, 0 failures.
+- lintDebug: 0 errors, 12 warnings, mainly English UI strings and existing dependency/backup guidance.
+- Signature: same local debug signing key as 0.1; verify with apksigner. This is not a production release key.
+- No INTERNET permission; POST_NOTIFICATIONS and Shizuku API permission only.
 
-Tests cover removal exclusions, fail-closed behavior when the backend runs as an ordinary app, shortcut opt-in and repeat/release handling, and controller cancellation of close-all without sending removal requests. The UI test uses fake IPC and is not a test of real task service permissions.
+Checks cover explicit D-pad selection/opening without native ListView focus, immediate X removal and selection of a neighbor, left-stick selection/stopping, Select/long-press protection and unlocking, Y exclusions, multi-key recording/saving, chord event balance/device separation and baseline backend identity/policy restrictions. At simulated 800×360dp landscape, more than two cards are visible and card contents fit.
 
-Two narrow lint exceptions are documented in source: hidden APIs only in the Shizuku shell/root UserService (where Shizuku documents unrestricted non-SDK access), and the legacy Quick Settings Intent overload only on OS versions below API 34. Neither exception proves device compatibility.
+UI tests use fake task IPC. They do not verify Android's actual task service or PSS values. Per-app PSS, Wave's discovery on Retroid firmware and rear-button reporting require hardware acceptance.
 
-UserService avoids ContentResolver. It discovers input-method packages through PackageManager and protects them all; removal fails closed if that discovery returns no input methods.
+Hidden API calls remain isolated to the Shizuku shell/root UserService, with a documented narrow lint exception. The old Quick Settings Intent overload is restricted to pre-34 devices, also documented. Protection is rechecked in the backend; user locks are passed before list reads/removals. Missing HOME/input-method discovery fails closed.
 
-Not tested: actual shell/root task enumeration and switching, task removal on Retroid firmware, global shortcut delivery by RP6 hardware, notification/tile launch on the device, dock/external-display operation, and behavior after reboot. Follow DEVICE-TEST.md.
+No task screenshots or private text are collected. PSS samples and task metadata are transient; only explicit configuration, including chosen protected package names and shortcut key/scan identifiers, is stored.

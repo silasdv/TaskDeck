@@ -8,6 +8,7 @@ import rikka.shizuku.Shizuku;
 import java.util.concurrent.*;
 
 public class TaskDeckApp extends Application {
+    public static volatile boolean recordingShortcut;
     public volatile ITaskBackend backend;
     public volatile String status="Start Shizuku, then connect.";
     public Runnable changed;
@@ -16,7 +17,7 @@ public class TaskDeckApp extends Application {
     private boolean binding;
     private int connectionGeneration;
     private final Shizuku.UserServiceArgs args=new Shizuku.UserServiceArgs(new ComponentName("org.taskdeck.app",TaskBackend.class.getName()))
-        .daemon(false).processNameSuffix("tasks").debuggable(false).version(1);
+        .daemon(false).processNameSuffix("tasks").debuggable(false).version(2);
     private final ServiceConnection connection=new ServiceConnection() {
         @Override public void onServiceConnected(ComponentName name,IBinder binder) {
             binding=false;
@@ -36,7 +37,10 @@ public class TaskDeckApp extends Application {
         if(result==PackageManager.PERMISSION_GRANTED) connect(false); else disconnected("Shizuku access denied. Enable it in Shizuku to continue.");
     });
     @Override public void onCreate() {
-        super.onCreate(); Shizuku.addBinderReceivedListenerSticky(received); Shizuku.addBinderDeadListener(dead); Shizuku.addRequestPermissionResultListener(permission);
+        super.onCreate();
+        android.content.SharedPreferences preferences=getSharedPreferences("settings",MODE_PRIVATE);
+        if(!preferences.contains("shortcutChord")) preferences.edit().putBoolean("shortcutEnabled",false).apply();
+        Shizuku.addBinderReceivedListenerSticky(received); Shizuku.addBinderDeadListener(dead); Shizuku.addRequestPermissionResultListener(permission);
     }
     private void disconnected(String message) { backend=null; binding=false; status=message; notifyChanged(); }
     public void notifyChanged() { main.post(()->{ if(changed!=null) changed.run(); }); }

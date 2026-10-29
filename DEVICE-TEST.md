@@ -1,17 +1,16 @@
-# RP6 acceptance test — not yet executed
+# RP6 acceptance test — 0.2
 
-Record Android version/API, Retroid firmware build, controller input mode and Shizuku version. Do not include personal text or screenshots of sensitive apps in a report.
+Record firmware/API, Shizuku version and Retroid controller mode. Use disposable app state first; X/Y no longer ask for confirmation.
 
-1. Start Shizuku and connect TaskDeck. Verify a shell/root UID and actual recent tasks. Record any displayed error exactly.
-2. Open two non-critical apps with recognizable state, such as a browser test page and calculator. Open TaskDeck from its Quick Settings tile; A must return to the selected existing task.
-3. Test D-pad and left-stick navigation. Hold and release the stick; selection must stop. B must exit the menu and return usable input focus to the prior app.
-4. If needed, calibrate printed A. Verify A open, B back, X close and Y close-all. Confirmation dialogs must accept D-pad plus calibrated A and cancel with calibrated B. Held buttons must not trigger repeated operations.
-5. Close one non-critical app task. It should disappear only after backend confirmation. Check Android's Overview separately. A remaining background service is not automatically an error: this is task removal, not force-stop.
-6. Confirm that home/system tasks and the active keyboard are marked protected and cannot be removed. The Y count must exclude them.
-7. With only disposable tasks eligible, test Y confirmation and per-task result counts. Do not use unsaved games for this test.
-8. Learn an unused digital/macro key and enable the optional Accessibility service. Open TaskDeck from the launcher, browser and an emulator. Other game buttons must still reach the game. Holding the shortcut must open only once.
-9. Disable the shortcut and verify its key is released back to the game. Withdraw Accessibility access and verify the Quick Settings tile still works.
-10. Stop Shizuku and verify an explicit disconnected/error state. No destructive operation may appear successful. Restart and reconnect; test again after reboot.
-11. Check landscape, portrait and dock/external display. Verify touch buttons remain reachable and that opening/closing dialogs does not leave stick-repeat active.
+1. Update over 0.1, connect Shizuku if necessary, finish the dedicated setup. Verify later launches open the deck directly.
+2. In landscape, verify multiple horizontal cards, readable labels/RAM states and no clipping. Repeat portrait and with larger system text if used.
+3. Without touching a card first, use D-pad left/right and left stick to select the second/third app. A must open that actual existing task. Stop the stick and verify selection stops. B must return useful focus to the previous app.
+4. Test X on a disposable task and Y on a disposable set. Removal should be immediate, confirmed by refreshed task data, and should skip protected apps. No close-confirmation dialog should appear.
+5. Verify Wave/Home launchers remain protected and Android Settings is closable. Long-press or Select on an ordinary card, toggle protection with A, dismiss with B. Verify the vector lock, persistence after reopening, Y exclusion and unlocking.
+6. Record both rear buttons held together, release, inspect both names/scan codes and save with Start. Verify a single rear button still reaches another macro, the full unused chord opens once, and holding does not repeatedly open. Verify actual firmware reports distinct identifiers; analog-only or reserved keys may not work.
+7. Test Light/Dark/OLED and setup navigation with D-pad/stick. Android/Shizuku permission screens remain external.
+8. Check per-app PSS, including multiple tasks for one app. Unknown values must not be shown as zero. Compare only as approximate memory samples, not guaranteed reclaimable RAM.
+9. Grant optional notification permission; close a task and inspect available-RAM delta. It may be zero or negative and is not attributed exclusively to that task.
+10. Test tile/notification entry, Shizuku stop/reconnect/reboot, permission revocation and dock/external display. No unavailable backend operation should appear successful.
 
-Report actual results as PASS / FAIL / NOT TESTED for each item. Do not convert compile/test success into a hardware PASS.
+Report PASS / FAIL / NOT TESTED. Avoid screenshots of private data. Simulation/build success is not a hardware PASS.
