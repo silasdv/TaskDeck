@@ -4,7 +4,7 @@ import android.graphics.*;
 import android.graphics.drawable.Drawable;
 import java.util.Locale;
 
-/** Small scalable vectors; semantic color is shared by icon, label and focus border. */
+/** Scalable neutral action vectors. Face-button colors belong to ControllerBadge. */
 public final class ActionGlyph extends Drawable {
     final String kind; final int color;
     public ActionGlyph(String kind,int color){ this.kind=kind; this.color=color; }
@@ -13,7 +13,7 @@ public final class ActionGlyph extends Drawable {
         if(s.contains("sort")||s.equals("recent")||s.equals("alphabetical")||s.contains("ram size")) return "sort";
         if(s.contains("refresh")) return "refresh";
         if(s.contains("notification")) return "notify";
-        if(s.contains("others")) return "others";
+        if(s.contains("others")||s.contains("other apps")) return "others";
         if(s.contains("close all")||s.contains("all +")||s.startsWith("y ·")) return "all";
         if(s.contains("close")&&!s.contains("setup")) return "close";
         if(s.contains("exit")||s.contains("stay open")) return "exit";
@@ -27,16 +27,7 @@ public final class ActionGlyph extends Drawable {
         return "setup";
     }
     public static int color(String kind,DeckTheme theme){
-        boolean light=theme.background==Color.parseColor("#EFF3FA");
-        switch(kind){
-            case "open": case "next": return Color.parseColor(light?"#245CC5":"#76B5FF");
-            case "exit": return Color.parseColor(light?"#B92B3D":"#FF8795");
-            case "close": return Color.parseColor(light?"#A8490E":"#FFB178");
-            case "all": case "others": case "record": return Color.parseColor(light?"#7340B8":"#C7A3FF");
-            case "sort": return Color.parseColor(light?"#876000":"#FFD476");
-            case "connect": case "check": return Color.parseColor(light?"#087559":"#75E1B7");
-            default: return theme.accent;
-        }
+        return theme.text;
     }
     @Override public void draw(Canvas canvas){
         int save=canvas.save(); canvas.translate(getBounds().left,getBounds().top); canvas.scale(getBounds().width()/24f,getBounds().height()/24f);
@@ -55,7 +46,7 @@ public final class ActionGlyph extends Drawable {
             case "record": canvas.drawCircle(12,12,9,p); p.setStyle(Paint.Style.FILL); canvas.drawCircle(12,12,4,p); break;
             case "check": line(canvas,p,4,12,10,18,21,5); break;
             case "theme": canvas.drawCircle(12,12,9,p); p.setStyle(Paint.Style.FILL); canvas.drawArc(new RectF(3,3,21,21),90,180,true,p); break;
-            default: canvas.drawCircle(12,12,4,p); for(int i=0;i<8;i++){ double a=Math.PI*i/4; canvas.drawLine(12+(float)Math.cos(a)*7,12+(float)Math.sin(a)*7,12+(float)Math.cos(a)*10,12+(float)Math.sin(a)*10,p); }
+            default: { Path gear=new Path(); for(int i=0;i<32;i++){ double angle=Math.PI*i/16; float radius=i%4==0||i%4==3?10:8; float x=12+(float)Math.cos(angle)*radius,y=12+(float)Math.sin(angle)*radius; if(i==0) gear.moveTo(x,y); else gear.lineTo(x,y); } gear.close(); canvas.drawPath(gear,p); canvas.drawCircle(12,12,3,p); }
         } canvas.restoreToCount(save);
     }
     private void line(Canvas c,Paint p,float a,float b,float x,float y,float d,float e){ Path path=new Path(); path.moveTo(a,b); path.lineTo(x,y); path.lineTo(d,e); c.drawPath(path,p); }

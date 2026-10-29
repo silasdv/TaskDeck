@@ -1,6 +1,6 @@
 # TaskDeck — controller task switcher prototype
 
-An experimental Android task switcher by **SilasDV**. Working name, version **0.3.0-prototype**. Built with substantial AI assistance through Codex (vibecoded). This is a device-test build; the redesigned interface still needs Retroid Pocket 6 testing.
+An experimental Android task switcher by **SilasDV**. Working name, version **0.4.0-prototype**. Built with substantial AI assistance through Codex (vibecoded). This is a device-test build; the changed interface still needs Retroid Pocket 6 testing.
 
 ## Included
 
@@ -8,13 +8,13 @@ An experimental Android task switcher by **SilasDV**. Working name, version **0.
 - Horizontal app cards with explicit D-pad/left-stick selection independent of Android touch focus. A opens, X closes one task, Y closes eligible tasks and exits to HOME, R1 closes other eligible tasks while retaining the previous app, B exits.
 - Closing is immediate: no confirmation dialogs. Unsaved work or game progress may be lost.
 - Long-press a card or press Select to open its protection popup. A toggles the lock; B dismisses. User protection is persistent and enforced in the backend.
-- A four-screen setup wizard with visible live connection/shortcut/notification status, separate connection screen, and Light, Dark and OLED themes. Touch activates on the first tap; controller navigation uses explicit selection.
+- A four-screen setup wizard using two columns without scrolling in landscape, a separate connection screen, live status and Light, Dark and OLED themes. Touch activates on the first tap; controller navigation uses explicit selection.
 - Printed-A calibration for standard/swapped face-button reporting.
 - A Quick Settings tile, notification shortcut and optional recorded multi-button controller shortcut, with visible Android names and scan codes.
 - Available/total RAM, best-effort per-app PSS samples, and optional RAM-change result notifications, without RAM-boost claims.
-- Recent, descending RAM and alphabetical sorting. User-locked apps are always last; mandatory infrastructure is hidden. Inline “Nothing to close” state.
+- Recent, descending RAM and alphabetical sorting. User-locked apps are always last; mandatory infrastructure is summarized separately; HOME and Wave remain visible as protected launcher cards. Inline “Nothing to close” state.
 - Optional stay-open behavior after bulk closing; by default bulk actions return to HOME or the retained app, even for an empty list. Errors keep the menu open for inspection.
-- Scalable colored action icons and explicit backend errors rather than pretending an action succeeded.
+- Neutral menu vectors, a gear for Setup, SNES-colored circular A/B/X/Y badges and a rectangular R1 badge; clear “Open app”, “Close app”, “Close all & exit” and “Close other apps” labels. Scalable action icons and explicit backend errors rather than pretending an action succeeded.
 
 ## Requirements and installation
 
@@ -24,7 +24,7 @@ Android 10+; **Shizuku 13+**. Android 11+ allows Shizuku startup through wireles
 2. Install Shizuku from its [official download page](https://shizuku.rikka.app/download/).
 3. Start Shizuku following its [official setup guide](https://shizuku.rikka.app/guide/setup/). Without root, start it again after a device reboot.
 4. Open TaskDeck's first-run setup, then **Connect Shizuku > Authorize / Connect**. Approve Shizuku's access prompt.
-5. Check the connection status, then finish setup to enter the app deck. Subsequent launches open the deck directly. An empty list does not establish compatibility.
+5. Check the connection status, then finish setup to enter the app deck. Subsequent launches open the deck directly. An empty list does not establish compatibility. When no tasks are closable, controller focus starts on Refresh. Protected launcher cards remain accessible with Down; a truly empty deck stays in the toolbar.
 6. Test with a browser and another non-critical app before trying a game with unsaved progress.
 
 ## Opening without the launcher
@@ -45,7 +45,7 @@ If A/B are reversed, choose Setup > step 2 > Calibrate printed A. It infers the 
 
 X and Y **remove recent tasks**, similar to dismissing cards in Android Overview. They do not implement package-wide force-stop, do not guarantee that all background services terminate and do not save emulator state. Unsaved work may be lost. Y operates on the eligible tasks shown when requested, not every Android process.
 
-The privileged backend rechecks task ID, expected package and protection policy immediately before removal. HOME launchers, Wave Launcher discovered by its launcher label, input methods, TaskDeck, PadBoard and Shizuku are protected. There is **no blanket system-app restriction**: ordinary system-app tasks, including Settings, can be dismissed unless the user locks them. Android/SystemUI and other-user tasks remain excluded. Tasks with a foreign top activity are no longer blocked solely for that reason. Mandatory infrastructure is hidden rather than displayed as an unclosable card. If HOME/input-method discovery fails, removal fails closed. User-selected package locks are saved and synchronized to the privileged backend before removal. There is no arbitrary shell-command interface.
+The privileged backend rechecks task ID, expected package and protection policy immediately before removal. HOME launchers, Wave Launcher discovered by its launcher label, input methods, TaskDeck, PadBoard and Shizuku are protected. There is **no blanket system-app restriction**: ordinary system-app tasks, including Settings, can be dismissed unless the user locks them. Android/SystemUI and other-user tasks remain excluded. Tasks with a foreign top activity are no longer blocked solely for that reason. HOME and Wave are visible as protected, launchable cards, including an explicitly marked launcher shortcut when there is no recent task. Other protected services and apps without a dismissible task appear in a small background-memory summary. If HOME/input-method discovery fails, removal fails closed. User-selected package locks are saved and synchronized to the privileged backend before removal. There is no arbitrary shell-command interface.
 
 Close others identifies the previous non-TaskDeck task on entry using a best-effort running-task query, with recent-order fallback on unsupported firmware. It retains all tasks of that package, independently of the selected card or sort order. HOME is returned to as HOME. Split-screen, unusual firmware task ordering, and cross-display focus remain device acceptance cases. Finishing TaskDeck means closing its UI, not killing its shortcut service.
 
@@ -55,7 +55,11 @@ Android’s [ActivityTaskManagerService](https://android.googlesource.com/platfo
 
 Replacing the native swipe-up Quickstep provider is a separate system-integration project. [QuickSwitch](https://github.com/skittles9823/QuickSwitch) requires Magisk/KernelSU/APatch and a compatible launcher. This Shizuku build offers its own controller/notification/tile entry and does not replace the system gesture or require rooting the RP6.
 
+The task reader combines recent and running task IDs where the firmware permits it, so activities excluded from recents can still appear. Ordinary Settings tasks remain closable. An app process without its own task cannot be dismissed as a task; it is summarized instead. Unsupported running-task APIs fall back to recents.
+
 ## RAM measurements
+
+The right sidebar shows used/available system RAM, explains that Android/services/caches still use memory, and lists up to three protected or taskless app processes with approximate PSS (or n/a), followed by the remaining entry count. It is a compact sample, not an exhaustive process manager; figures cannot simply be summed to equal system RAM usage. Background app metadata and PSS remain transient.
 
 The backend attempts to aggregate proportional set size (PSS) for reported processes belonging to each app. Values are approximate, can be cached by Android and are shared across multiple task cards for the same app. Shared-package processes are marked shared. Missing/partial/denied samples are not shown as zero; an app absent from the process snapshot is labeled accordingly.
 
@@ -63,7 +67,7 @@ After closing tasks, the deck reports total available RAM and its signed change 
 
 ## Current limits
 
-- User feedback on 0.2 exposed touch/focus and setup-flow issues. The 0.3 fixes, bulk-return identification, broader task-removal policy and PSS sampling need hardware acceptance. Hidden APIs can be rejected by unsupported firmware.
+- User feedback on 0.3 exposed empty-deck focus issues, missing launcher visibility and excessively tall setup pages. The 0.4 empty-deck focus fixes, running-task enumeration, launcher shortcuts and landscape redesign need hardware acceptance. Hidden APIs can be rejected by unsupported firmware.
 - Tested build target: API 35. The first intended hardware test is the RP6's installed firmware, with API level reported by the backend.
 - No native swipe-up/Quickstep replacement, live screenshots, package force-stop, per-controller profiles or automatic emulator savestates.
 - Global hotkeys require explicitly enabled Accessibility and can conflict with other key-filtering services or reserved firmware keys. Only digital shortcut keys are supported.

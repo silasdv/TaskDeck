@@ -1,6 +1,7 @@
 package org.taskdeck.app;
 
 import android.app.ActivityManager;
+import android.app.TaskInfo;
 import android.content.*;
 import android.content.pm.*;
 import android.os.*;
@@ -20,10 +21,31 @@ public class TaskBackend extends ITaskBackend.Stub {
     private Object call(Object receiver,String name,Class<?>[] types,Object... args) throws Exception {
         Method method=receiver.getClass().getMethod(name,types); method.setAccessible(true); return method.invoke(receiver,args);
     }
-    @SuppressWarnings("unchecked") private List<ActivityManager.RecentTaskInfo> tasks() throws Exception {
+    @SuppressWarnings("unchecked") private List<TaskInfo> tasks() throws Exception {
         if(android.os.Process.myUid()!=0 && android.os.Process.myUid()!=2000) throw new SecurityException("Task backend must run as Shizuku shell/root, not the normal app process.");
         Object slice=call(manager(),"getRecentTasks",new Class[]{int.class,int.class,int.class},100,0,user());
-        return (List<ActivityManager.RecentTaskInfo>)call(slice,"getList",new Class[]{});
+        List<TaskInfo> result=new ArrayList<>((List<TaskInfo>)call(slice,"getList",new Class[]{}));
+        Set<Integer> ids=new HashSet<>(); for(TaskInfo task:result) ids.add(task.taskId);
+        // Recent-only queries omit HOME and activities explicitly excluded from recents.
+        try { for(TaskInfo task:runningTasks()) if(task.getClass().getField("userId").getInt(task)==user()&&ids.add(task.taskId)) result.add(task); } catch(Exception unsupported){}
+        return result;
+    }
+    @SuppressWarnings("unchecked") private List<ActivityManager.RunningTaskInfo> runningTasks() throws Exception {
+        Object manager=manager();
+        try { return (List<ActivityManager.RunningTaskInfo>)call(manager,"getTasks",new Class[]{int.class,boolean.class,boolean.class},100,false,false); }
+        catch(NoSuchMethodException newer){ return (List<ActivityManager.RunningTaskInfo>)call(manager,"getTasks",new Class[]{int.class,boolean.class,boolean.class,int.class},100,false,false,-1); }
+    }
+    @SuppressWarnings("unchecked") private Set<String> runningPackages() throws Exception {
+        Object am=Class.forName("android.app.ActivityManager").getDeclaredMethod("getService").invoke(null);
+        List<ActivityManager.RunningAppProcessInfo> processes=(List<ActivityManager.RunningAppProcessInfo>)call(am,"getRunningAppProcesses",new Class[]{});
+        Set<String> result=new HashSet<>(); if(processes!=null) for(ActivityManager.RunningAppProcessInfo process:processes) if(process.uid/100000==user()&&process.pkgList!=null) result.addAll(Arrays.asList(process.pkgList)); return result;
+    }
+    private Set<String> visibleLaunchers(String home){
+        Set<String> result=new HashSet<>(); if(!home.isEmpty()) result.add(home);
+        for(ResolveInfo info:context.getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),0)) if(info.activityInfo!=null){
+            String label=info.loadLabel(context.getPackageManager()).toString().toLowerCase(Locale.ROOT).replaceAll("[^a-z]","");
+            if(label.contains("wavelauncher")||info.activityInfo.packageName.equals("com.wavelauncher")) result.add(info.activityInfo.packageName);
+        } return result;
     }
     private int user() throws Exception { return (Integer)call(UserHandle.getUserHandleForUid(context.getApplicationInfo().uid),"getIdentifier",new Class[]{}); }
     private String home() {
@@ -38,6 +60,7 @@ public class TaskBackend extends ITaskBackend.Stub {
     private Set<String> protectedPackages(){
         Set<String> result=inputMethods();
         if(result.isEmpty()) result.add("!input-method-discovery-unavailable");
+        result.addAll(visibleLaunchers(home()));
         for(ResolveInfo info:context.getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME),0)) if(info.activityInfo!=null) result.add(info.activityInfo.packageName);
         // Wave can be used as a frontend without holding Android's default HOME role.
         for(ResolveInfo info:context.getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),0)){
@@ -48,19 +71,19 @@ public class TaskBackend extends ITaskBackend.Stub {
         }
         return result;
     }
-    private String packageOf(ActivityManager.RecentTaskInfo task) {
+    private String packageOf(TaskInfo task) {
         ComponentName component=task.baseActivity!=null ? task.baseActivity : task.baseIntent==null ? null : task.baseIntent.getComponent();
         return component==null ? "" : component.getPackageName();
     }
     private ApplicationInfo app(String name) throws Exception { return context.getPackageManager().getApplicationInfo(name,0); }
-    private boolean removable(ActivityManager.RecentTaskInfo task,String home,Set<String> protectedPackages) throws Exception {
+    private boolean removable(TaskInfo task,String home,Set<String> protectedPackages) throws Exception {
         String name=packageOf(task); ApplicationInfo app=app(name);
         int taskUser=task.getClass().getField("userId").getInt(task);
         // Protect every discovered IME; avoid ContentResolver, which is unsupported in UserService.
         return !protectedPackages.contains("!input-method-discovery-unavailable") && !home.isEmpty() && TaskPolicy.canRemove(name,(app.flags&ApplicationInfo.FLAG_SYSTEM)!=0,taskUser,user(),home,"",protectedPackages);
     }
-    private ActivityManager.RecentTaskInfo find(int id,String expected) throws Exception {
-        for(ActivityManager.RecentTaskInfo task:tasks()) if(task.taskId==id && packageOf(task).equals(expected)) return task;
+    private TaskInfo find(int id,String expected) throws Exception {
+        for(TaskInfo task:tasks()) if(task.taskId==id && packageOf(task).equals(expected)) return task;
         throw new IllegalStateException("Task changed or is no longer available. Refresh and try again.");
     }
     private String error(Exception exception) {
@@ -94,45 +117,64 @@ public class TaskBackend extends ITaskBackend.Stub {
         }
         return result;
     }
-    private JSONObject previousTask(List<ActivityManager.RecentTaskInfo> recent,String home){
+    private JSONObject previousTask(List<TaskInfo> recent,String home){
         try {
-            Object manager=manager(),value;
-            try { value=call(manager,"getTasks",new Class[]{int.class,boolean.class,boolean.class},100,false,false); }
-            catch(NoSuchMethodException newer){ value=call(manager,"getTasks",new Class[]{int.class,boolean.class,boolean.class,int.class},100,false,false,-1); }
-            for(Object item:(List<?>)value){
+            for(Object item:runningTasks()){
                 ActivityManager.RunningTaskInfo task=(ActivityManager.RunningTaskInfo)item;
                 ComponentName component=task.baseActivity; if(component==null||component.getPackageName().equals(context.getPackageName())) continue;
                 if(task.getClass().getField("userId").getInt(task)!=user()) continue;
                 String name=component.getPackageName();
                 // Only return an identifiable recent task or HOME. Other surfaces are not guessed.
                 if(name.equals(home)) return new JSONObject().put("home",true).put("package",name).put("id",task.taskId);
-                for(ActivityManager.RecentTaskInfo candidate:recent) if(candidate.taskId==task.taskId) return new JSONObject().put("id",task.taskId).put("package",name);
+                for(TaskInfo candidate:recent) if(candidate.taskId==task.taskId) return new JSONObject().put("id",task.taskId).put("package",name);
             }
         } catch(Exception unavailable){ /* Firmware variation: fall back to recent order. */ }
-        for(ActivityManager.RecentTaskInfo task:recent) if(!packageOf(task).equals(context.getPackageName())&&!packageOf(task).isEmpty()){
+        for(TaskInfo task:recent) if(!packageOf(task).equals(context.getPackageName())&&!packageOf(task).isEmpty()){
             try { return new JSONObject().put("id",task.taskId).put("package",packageOf(task)).put("fallback",true); } catch(JSONException ignored){}
         } return null;
     }
+    private JSONObject memoryFields(JSONObject row,Ram sample) throws JSONException {
+        String state=sample==null?"unavailable":sample.processes==0?"not-reported":sample.missing>0?"partial":sample.shared?"shared":"sampled";
+        long pss=sample==null||sample.processes==0||sample.missing>0?-1:sample.kb;
+        return row.put("pssKb",pss).put("memoryState",state);
+    }
     @Override public synchronized String readTasks() {
         try {
-            JSONArray rows=new JSONArray();
-            List<ActivityManager.RecentTaskInfo> recent=tasks();
-            String home=home(); Set<String> protectedApps=protectedPackages();
-            Set<String> names=new HashSet<>(); for(ActivityManager.RecentTaskInfo task:recent) names.add(packageOf(task));
+            JSONArray rows=new JSONArray(),background=new JSONArray(); List<TaskInfo> recent=tasks();
+            String home=home(); Set<String> protectedApps=protectedPackages(),launchers=visibleLaunchers(home),listed=new HashSet<>(),running;
+            try { running=runningPackages(); } catch(Exception unavailable){ running=Collections.emptySet(); }
+            Set<String> names=new HashSet<>(running); names.addAll(launchers); names.addAll(protectedApps);
+            names.add("moe.shizuku.privileged.api"); names.add("com.android.systemui");
+            for(TaskInfo task:recent) names.add(packageOf(task));
             Map<String,Ram> ram; try { ram=appMemory(names); } catch(Exception unavailable){ ram=Collections.emptyMap(); }
-            int rank=0;
-            for(ActivityManager.RecentTaskInfo task:recent) {
-                String name=packageOf(task); if(name.isEmpty() || name.equals(context.getPackageName())) continue;
-                ApplicationInfo info; try { info=app(name); } catch(PackageManager.NameNotFoundException ignored) { continue; }
-                Ram sample=ram.get(name);
-                String memoryState=sample==null?"unavailable":sample.processes==0?"not-reported":sample.missing>0?"partial":sample.shared?"shared":"sampled";
-                long pss=sample==null || sample.processes==0 || sample.missing>0?-1:sample.kb;
-                boolean mandatory=!removable(task,home,protectedApps),manual=userProtected.contains(name);
-                rows.put(new JSONObject().put("id",task.taskId).put("package",name).put("label",context.getPackageManager().getApplicationLabel(info).toString())
-                    .put("recentRank",rank++).put("removable",!mandatory && !manual).put("mandatoryProtected",mandatory).put("userProtected",manual).put("pssKb",pss).put("memoryState",memoryState));
+            int rank=0; Set<String> visiblePackages=new HashSet<>();
+            for(TaskInfo task:recent){
+                String name=packageOf(task); if(name.isEmpty()||name.equals(context.getPackageName())) continue;
+                ApplicationInfo info; try { info=app(name); } catch(PackageManager.NameNotFoundException ignored){ continue; }
+                boolean mandatory=!removable(task,home,protectedApps),manual=userProtected.contains(name),launcher=launchers.contains(name);
+                JSONObject row=new JSONObject().put("id",task.taskId).put("package",name).put("label",context.getPackageManager().getApplicationLabel(info).toString())
+                    .put("recentRank",rank++).put("removable",!mandatory&&!manual).put("mandatoryProtected",mandatory).put("userProtected",manual).put("launcher",launcher).put("home",name.equals(home));
+                rows.put(memoryFields(row,ram.get(name))); listed.add(name); if(!mandatory||launcher) visiblePackages.add(name);
             }
-            return new JSONObject().put("uid",android.os.Process.myUid()).put("sdk",Build.VERSION.SDK_INT).put("tasks",rows).put("previousTask",previousTask(recent,home)).toString();
-        } catch(Exception e) { return error(e); }
+            // HOME does not need a recent task to be a useful, protected launcher shortcut.
+            for(String name:new TreeSet<>(launchers)) if(!listed.contains(name)){
+                ApplicationInfo info; try { info=app(name); } catch(Exception unavailable){ continue; }
+                rows.put(memoryFields(new JSONObject().put("id",-(Math.abs(name.hashCode()%1000000000)+1)).put("package",name)
+                    .put("label",context.getPackageManager().getApplicationLabel(info).toString()).put("launcher",true).put("synthetic",true)
+                    .put("home",name.equals(home)).put("mandatoryProtected",true).put("removable",false).put("recentRank",rank++),ram.get(name)));
+                visiblePackages.add(name);
+            }
+            for(String name:new TreeSet<>(names)) if(!name.equals(context.getPackageName())&&!visiblePackages.contains(name)){
+                Ram sample=ram.get(name); if(!listed.contains(name)&&!running.contains(name)) continue;
+                try {
+                    ApplicationInfo info=app(name); boolean protectedApp=protectedApps.contains(name)||name.equals("moe.shizuku.privileged.api")||name.equals("com.android.systemui")||name.equals("android");
+                    background.put(memoryFields(new JSONObject().put("package",name).put("label",context.getPackageManager().getApplicationLabel(info).toString())
+                        .put("reason",protectedApp?"Protected service":"No dismissible task"),sample));
+                } catch(Exception unavailable){}
+            }
+            String warning=home.isEmpty()?"HOME discovery unavailable":protectedApps.contains("!input-method-discovery-unavailable")?"Keyboard discovery unavailable":"";
+            return new JSONObject().put("uid",android.os.Process.myUid()).put("sdk",Build.VERSION.SDK_INT).put("tasks",rows).put("backgroundApps",background).put("protectionWarning",warning).put("previousTask",previousTask(recent,home)).toString();
+        } catch(Exception e){ return error(e); }
     }
     @Override public synchronized String openTask(int id,String expected) {
         try {
@@ -144,11 +186,11 @@ public class TaskBackend extends ITaskBackend.Stub {
     }
     @Override public synchronized String removeTask(int id,String expected) {
         try {
-            ActivityManager.RecentTaskInfo task=find(id,expected);
+            TaskInfo task=find(id,expected);
             if(userProtected.contains(expected) || !removable(task,home(),protectedPackages())) throw new SecurityException("Protected task: removal is disabled.");
             boolean removed=(Boolean)call(manager(),"removeTask",new Class[]{int.class},id);
             if(!removed) throw new IllegalStateException("Android did not remove this task.");
-            for(ActivityManager.RecentTaskInfo remaining:tasks()) if(remaining.taskId==id) throw new IllegalStateException("Task is still listed after removal. Refresh to check its state.");
+            for(TaskInfo remaining:tasks()) if(remaining.taskId==id) throw new IllegalStateException("Task is still listed after removal. Refresh to check its state.");
             return "{}";
         } catch(Exception e) { return error(e); }
     }

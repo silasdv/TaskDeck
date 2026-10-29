@@ -17,7 +17,7 @@ public class TaskDeckApp extends Application {
     private boolean binding;
     private int connectionGeneration;
     private final Shizuku.UserServiceArgs args=new Shizuku.UserServiceArgs(new ComponentName("org.taskdeck.app",TaskBackend.class.getName()))
-        .daemon(false).processNameSuffix("tasks").debuggable(false).version(3);
+        .daemon(false).processNameSuffix("tasks").debuggable(false).version(4);
     private final ServiceConnection connection=new ServiceConnection() {
         @Override public void onServiceConnected(ComponentName name,IBinder binder) {
             binding=false;

@@ -19,4 +19,8 @@ public class TaskOrderTest {
         assertEquals(List.of(c,b,a),TaskOrder.arrange(all,"ram",t->false));
         assertEquals(List.of(a,b,c),TaskOrder.arrange(all,"alphabetical",t->false));
     }
+    @Test public void protectedLauncherIsVisibleButOtherInfrastructureIsHidden() throws Exception {
+        var launcher=task("Wave",0,10,true).put("launcher",true); var core=task("Keyboard",1,20,true); var game=task("Game",2,30,false);
+        assertEquals(List.of(game,launcher),TaskOrder.arrange(List.of(launcher,core,game),"recent",TaskOrder::mandatory));
+    }
 }

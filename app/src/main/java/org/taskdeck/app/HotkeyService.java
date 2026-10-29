@@ -15,7 +15,7 @@ public class HotkeyService extends AccessibilityService {
         gate.configure(ShortcutKeys.decode(prefs.getString("shortcutChord","")));
         ChordGate.Result result=gate.update(event.getDeviceId(),ShortcutKeys.id(event),event.getAction()==KeyEvent.ACTION_DOWN,event.getRepeatCount(),prefs.getBoolean("shortcutEnabled",false) && !TaskDeckApp.recordingShortcut);
         if(result==ChordGate.Result.TRIGGER){
-            try { startActivity(new Intent(this,SwitcherActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP)); }
+            try { startActivity(new Intent(this,SwitcherActivity.class).putExtra("controllerEntry",true).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP)); }
             catch(RuntimeException ignored){ /* Still consume the complete captured down/up pair. */ }
         }
         return result!=ChordGate.Result.PASS;

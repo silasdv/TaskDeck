@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0-prototype
+
+- Fixed empty/all-protected deck entry: controller focus starts on Refresh, horizontal toolbar navigation no longer resets to nowhere, and Down cannot enter a nonexistent card. Shortcut entry restores controller mode after previous touch use.
+- HOME and Wave are visible protected launcher cards, including a launcher shortcut when Android omits HOME from recents. Other infrastructure remains in the background summary. Opening a launcher uses HOME or its launch intent rather than startActivityFromRecents on a HOME task.
+- Combine recent and running task IDs where supported; this can reveal Settings/other excluded-recents activities. A process without its own task is not presented as a closable task.
+- Small right-hand RAM summary explains system/cache usage and lists the top three protected/taskless app memory samples plus the remaining count. Missing samples are n/a, not zero.
+- Neutral menu icons, proper Setup gear, SNES palette for circular face-button badges and a rectangular R1 badge. R1 is labeled “Close other apps”; action labels describe their outcome.
+- Two-column landscape setup, connection and recording screens without scrolling; Back is separated from the title. Portrait retains scrolling for accessibility.
+- UserService version 4, versionCode 4; no new permissions.
+
 ## 0.3.0-prototype
 
 - Separate touch/controller modes: first tap activates; explicit rounded controller focus on setup controls and sort choices.
