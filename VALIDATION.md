@@ -1,4 +1,18 @@
-# Validation — 1.1.6
+# Validation — 1.1.7
+
+30 October 2026. versionName 1.1.7, versionCode 117; UserService protocol 8 unchanged. Existing release key retained.
+
+- testDebugUnitTest: **135 passed**, zero failures/errors/skips.
+- lintRelease: **0 errors, 35 warnings**.
+- assembleRelease and bundleRelease: passed.
+
+Checks cover progressively shrinking square Thumb boxes at 100/80/70/60/50%, odd-sized swapped groups and matching RAM navigation, direct style selection, restored headings and removed Reset. Existing compact landscape setup/settings fit, palette navigation, full label rendering and dock regressions pass.
+
+These simulated layout/input and fake IPC checks do not certify native RP6 rendering, hover/drag, firmware/controller routing, Shizuku or notifications. Physical acceptance is documented in DEVICE-TEST.md.
+
+---
+
+# Historical validation — 1.1.6
 
 30 October 2026. versionName 1.1.6, versionCode 116; UserService protocol remains 8. Existing release key retained.
 

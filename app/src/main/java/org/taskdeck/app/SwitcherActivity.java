@@ -36,7 +36,7 @@ public class SwitcherActivity extends Activity {
     private TextView status,memory,recordLive,recordSaved,backgroundInfo;
     private LinearLayout formMain,formInfo,memoryBars,systemRamPanel,systemRamChart;
     private int settingsCategory,ramPage;
-    private final List<Button> categories=new ArrayList<>(),colorDots=new ArrayList<>(),setupThemes=new ArrayList<>();
+    private final List<Button> categories=new ArrayList<>(),colorDots=new ArrayList<>(),setupThemes=new ArrayList<>(),dockStyleChoices=new ArrayList<>();
     private int colorColumns=13;
     private final List<JSONObject> backgroundApps=new ArrayList<>();
     private Button saveChord;
@@ -122,7 +122,7 @@ public class SwitcherActivity extends Activity {
         if(next==Page.APPS){ resetSelection=true; selection.first(); }
         if(protectionPopup!=null) protectionPopup.dismiss(); pageScroll=null;
         stopStick(); feedback=""; TaskDeckApp.recordingShortcut=next==Page.CHORD || next==Page.CONFIRM || next==Page.BIND; page=next; toolZone=false; dockZone=false; dock=null; ramButton=null; pagePrevious=null; pageNext=null;
-        controls.clear(); controlIndex=-1; tools.clear(); cards.clear(); cardRow=null; rail=null; appScroll=null; appGrid=null; appContent=null; compactMemory=null; operationInfo=null; memoryBars=null; systemRamPanel=null; systemRamChart=null; categories.clear(); colorDots.clear(); setupThemes.clear(); setupPrevious=null; setupNext=null; renderWidth=0; renderHeight=0; status=null; memory=null;
+        controls.clear(); controlIndex=-1; tools.clear(); cards.clear(); cardRow=null; rail=null; appScroll=null; appGrid=null; appContent=null; compactMemory=null; operationInfo=null; memoryBars=null; systemRamPanel=null; systemRamChart=null; categories.clear(); colorDots.clear(); setupThemes.clear(); dockStyleChoices.clear(); setupPrevious=null; setupNext=null; renderWidth=0; renderHeight=0; status=null; memory=null;
         theme=DeckTheme.resolve(prefs().getString("theme","dark"),getResources().getConfiguration().uiMode).withAccent(prefs().getString("accentColor","theme"));
         if(iconAccent!=theme.accent){ iconCache.evictAll(); iconAccent=theme.accent; }
         root=new LinearLayout(this); root.setOrientation(LinearLayout.VERTICAL); root.setBackgroundColor(theme.background); root.setPadding(dp(12),dp(6),dp(12),dp(6));
@@ -173,7 +173,7 @@ public class SwitcherActivity extends Activity {
     private void createDock(){
         dock=new QuickAccessDock(this,prefs(),new QuickAccessDock.Host(){
             public Drawable icon(String pkg){ return appIcon(pkg); } public String label(String pkg){ return launchLabel(pkg); } public boolean running(String pkg){ return processReported(pkg); } public boolean current(String pkg){ return isCurrent(pkg); }
-            public void launch(String pkg){ dockZone=true; toolZone=false; dockIndex=Math.max(0,QuickAccess.read(prefs()).indexOf(pkg)); launchFavorite(pkg); }
+            public void launch(String pkg){ dockZone=true; toolZone=false; dockIndex=Math.max(0,QuickAccess.displayOrder(prefs(),QuickAccess.read(prefs())).indexOf(pkg)); launchFavorite(pkg); }
             public void options(String pkg){ dockOptions(pkg); } public void add(){ showPicker(); } public void changed(){ renderDock(); }
             public boolean controller(){ return controllerMode; }
             public void touch(){ setInputMode(false); dockZone=false; if(dock!=null) dock.blur(); }
@@ -199,16 +199,16 @@ public class SwitcherActivity extends Activity {
             if(next!=0&&next!=axis[0]){ int value=dialog.getListView().getSelectedItemPosition(); if(value<0) value=dialog.getListView().getCheckedItemPosition(); dialog.getListView().setSelection(Math.max(0,Math.min(labels.length-1,value+next))); } axis[0]=next; return true; }); }); dialog.show();
     }
     private void dockOptions(String pkg){
-        choice("Quick Access",new String[]{"Open "+launchLabel(pkg),"Move left","Move right","Remove from Quick Access"},-1,index->{ if(index==0){ launchFavorite(pkg); return; } List<String> order=QuickAccess.read(prefs()); int position=order.indexOf(pkg); if(index==3) order.remove(pkg); else order=QuickAccess.move(order,pkg,position+(index==1?-1:1)); QuickAccess.save(prefs(),order); dockIndex=Math.max(0,order.indexOf(pkg)); renderDock(); });
+        choice("Quick Access",new String[]{"Open "+launchLabel(pkg),"Move left","Move right","Remove from Quick Access"},-1,index->{ if(index==0){ launchFavorite(pkg); return; } List<String> order=QuickAccess.displayOrder(prefs(),QuickAccess.read(prefs())); int position=order.indexOf(pkg); if(index==3) order.remove(pkg); else order=QuickAccess.move(order,pkg,position+(index==1?-1:1)); QuickAccess.saveDisplayOrder(prefs(),order); dockIndex=Math.max(0,order.indexOf(pkg)); renderDock(); });
     }
     private void dockStylePage(){
-        formPage("Dock style & size"); String[] styles={"Floating","Compact","Shelf","Thumb corners"},styleKeys={"floating","compact","shelf","thumb"}; int current=Math.max(0,Arrays.asList(styleKeys).indexOf(prefs().getString("dockStyle","thumb")));
-        button(formMain,"Style: "+styles[current],()->choice("Dock style",styles,current,index->{ prefs().edit().putString("dockStyle",styleKeys[index]).apply(); show(Page.DOCKSTYLE); }));
-        String[] themes={"Follow app","Light","Dark","OLED"},themeKeys={"app","light","dark","oled"}; int chosen=Math.max(0,Arrays.asList(themeKeys).indexOf(prefs().getString("dockTheme","app")));
-        button(formMain,"Theme: "+themes[chosen],()->choice("Dock theme",themes,chosen,index->{ prefs().edit().putString("dockTheme",themeKeys[index]).apply(); show(Page.DOCKSTYLE); }));
-        note(formMain,"Size: "+QuickAccess.size(prefs())+"%"); LinearLayout sizes=row(formMain);
-        button(sizes,"− Size",()->{ prefs().edit().putInt("dockSize",Math.max(60,QuickAccess.size(prefs())-10)).apply(); show(Page.DOCKSTYLE); }); button(sizes,"Size +",()->{ prefs().edit().putInt("dockSize",Math.min(160,QuickAccess.size(prefs())+10)).apply(); show(Page.DOCKSTYLE); });
-        text(formInfo,"Live preview",20,false); note(formInfo,"Actual app icons, at the same size and bottom position as your dock. Preview changes never alter your favorites."); LinearLayout counts=row(formInfo); previewMinus=button(counts,"− Apps",()->{ previewCount=Math.max(1,previewCount-1); renderPreview(); }); previewPlus=button(counts,"Apps +",()->{ if(previewApps!=null) previewCount=Math.min(previewApps.size(),previewCount+1); renderPreview(); }); dockPreview(root);
+        formPage("Dock style"); String[] styles={"Floating","Compact","Shelf","Thumb corners"},keys={"floating","compact","shelf","thumb"}; LinearLayout choices=null;
+        for(int i=0;i<styles.length;i++){ if(i%2==0) choices=row(formMain); String key=keys[i]; Button option=button(choices,styles[i],()->{prefs().edit().putString("dockStyle",key).apply();show(Page.DOCKSTYLE);});option.setSelected(key.equals(prefs().getString("dockStyle","thumb"))); dockStyleChoices.add(option); }
+        if("thumb".equals(prefs().getString("dockStyle","thumb"))) toggle(formMain,"Swap sides",prefs().getBoolean("dockSwapSides",false),()->{prefs().edit().putBoolean("dockSwapSides",!prefs().getBoolean("dockSwapSides",false)).apply();show(Page.DOCKSTYLE);});
+        note(formInfo,"Size: "+QuickAccess.size(prefs())+"%"); LinearLayout sizes=row(formInfo);
+        button(sizes,"− Size",()->{prefs().edit().putInt("dockSize",Math.max(50,QuickAccess.size(prefs())-10)).apply();show(Page.DOCKSTYLE);});button(sizes,"Size +",()->{prefs().edit().putInt("dockSize",Math.min(160,QuickAccess.size(prefs())+10)).apply();show(Page.DOCKSTYLE);});
+        LinearLayout counts=row(formInfo);previewMinus=button(counts,"− Apps",()->{previewCount=Math.max(1,previewCount-1);renderPreview();});previewPlus=button(counts,"Apps +",()->{if(previewApps!=null)previewCount=Math.min(previewApps.size(),previewCount+1);renderPreview();});
+        smallNote(formInfo,"Touch: hold and drag dock apps to reorder.");dockPreview(root);
     }
     private void dockBehaviorPage(){
         formPage("Dock behavior"); boolean focus="focus".equals(prefs().getString("dockBehavior","always"));
@@ -516,7 +516,7 @@ public class SwitcherActivity extends Activity {
         settingsCategory=Math.max(0,Math.min(names.length-1,settingsCategory));
         if(landscape()){ ((LinearLayout.LayoutParams)formMain.getLayoutParams()).weight=.7f; ((LinearLayout.LayoutParams)formInfo.getLayoutParams()).weight=1.7f; }
         for(int i=0;i<names.length;i++){ final int category=i; Button item=button(formMain,names[i],()->{ settingsCategory=category; controlIndex=-1; show(Page.SETTINGS); if(controllerMode&&controls.size()>1+names.length) focusControl(1+names.length); }); item.setSelected(i==settingsCategory); if(i==0&&app.backend!=null){ Drawable check=new ActionGlyph("check",successColor()); check.setBounds(0,0,dp(18),dp(18)); item.setCompoundDrawables(check,null,null,null); item.setContentDescription("Connection: connected"); } categories.add(item); item.setMinHeight(dp(44)); item.setMinimumHeight(dp(44)); item.setLayoutParams(new LinearLayout.LayoutParams(-1,dp(44))); }
-        if(settingsCategory!=2&&settingsCategory!=5) text(formInfo,names[settingsCategory],18,false).setTypeface(null,Typeface.BOLD);
+        TextView sectionTitle=text(formInfo,names[settingsCategory],18,false); sectionTitle.setPadding(0,0,0,0); sectionTitle.setTypeface(null,Typeface.BOLD);
         if(settingsCategory==0){
             TextView connection=smallNote(formInfo,app.backend==null?"Shizuku disconnected":"✓ Shizuku connected"); if(app.backend!=null) connection.setTextColor(successColor());
             button(formInfo,app.backend==null?"Connect Shizuku":"Connection settings",()->show(Page.CONNECT));
@@ -542,7 +542,7 @@ public class SwitcherActivity extends Activity {
             LinearLayout actions=row(formInfo); button(actions,"Test feedback",this::testFeedback); button(actions,"Permissions",()->startActivity(new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE,getPackageName())));
             smallNote(formInfo,"Notifications "+(notificationsAllowed("ram_results")?"allowed":"blocked")+". Android controls banner visibility.");
         } else {
-            smallNote(formInfo,"TaskDeck "+versionName()+" · by SilasDV"); smallNote(formInfo,"Free and open source · MIT license"); smallNote(formInfo,"Vibecoded with OpenAI Codex, guided by SilasDV.");
+            smallNote(formInfo,"TaskDeck "+versionName()+" · by SilasDV"); smallNote(formInfo,"Free and open source · MIT · Vibecoded with OpenAI Codex.");
             button(formInfo,"Support SilasDV on Ko-fi",()->openLink("https://ko-fi.com/silasdv")); button(formInfo,"GitHub project",()->openLink("https://github.com/silasdv/TaskDeck"));
         }
     }
@@ -568,9 +568,9 @@ public class SwitcherActivity extends Activity {
     private Button pagingButton(LinearLayout parent,String action,String label,Runnable callback){ Button b=button(parent,label,callback); if(action.equals("page_next")) ((LinearLayout.LayoutParams)b.getLayoutParams()).rightMargin=0; String hint=ControllerBindings.badge(prefs(),action); Drawable badge=new ControllerBadge(hint,theme.text); badge.setBounds(0,0,dp(hint.length()>1&&!ControllerBadge.symbol(hint)?28:20),dp(20)); b.setCompoundDrawables(badge,null,null,null); b.setContentDescription(label+": "+hint); return b; }
     private void pagingMappingPage(){ formPage("Page navigation"); pagingButton(formMain,"page_previous","Previous page",()->{ bindingAction="page_previous"; show(Page.BIND); }); pagingButton(formMain,"page_next","Next page",()->{ bindingAction="page_next"; show(Page.BIND); }); note(formInfo,"Applies to app selection, Last action, RAM details and window pages. Main-screen actions are independent. Confirm and Back stay reserved."); }
     private void accentColors(LinearLayout parent){
-        colorColumns=8; LinearLayout heading=row(parent); TextView title=text(heading,"Accent Colors",12,false); title.setPadding(0,dp(2),0,0); title.setLayoutParams(new LinearLayout.LayoutParams(0,-2,1)); Button reset=button(heading,"Reset",()->{ prefs().edit().remove("accentColor").apply(); show(Page.SETTINGS); }); reset.setTextSize(11); reset.setMinHeight(dp(24)); reset.setMinimumHeight(dp(24)); reset.setPadding(dp(8),0,dp(8),0); reset.setCompoundDrawables(null,null,null,null); reset.setLayoutParams(new LinearLayout.LayoutParams(-2,dp(24))); reset.setContentDescription("Restore theme accent");
-        AccentPalette palette=new AccentPalette(this); parent.addView(palette,new LinearLayout.LayoutParams(-1,landscape()?0:-2,landscape()?1:0));
-        for(int i=0;i<DeckTheme.ACCENT_KEYS.length;i++){ String key=DeckTheme.ACCENT_KEYS[i],name=DeckTheme.ACCENT_NAMES[i]; Button dot=button(parent,"",()->{ prefs().edit().putString("accentColor",key).apply(); show(Page.SETTINGS); }); parent.removeView(dot); dot.setTag("accent:"+key); dot.setContentDescription(name+" accent"); dot.setTooltipText(name); dot.setPadding(0,0,0,0); dot.setMinHeight(0); dot.setMinimumHeight(0); dot.setCompoundDrawables(null,null,null,null); int color=key.equals("theme")?DeckTheme.resolve(prefs().getString("theme","dark"),getResources().getConfiguration().uiMode).accent:DeckTheme.accentColor(key); dot.setBackground(new AccentDot(color,theme.text,getResources().getDisplayMetrics().density)); dot.setSelected(key.equals(prefs().getString("accentColor","theme"))); colorDots.add(dot); GridLayout.LayoutParams size=new GridLayout.LayoutParams(GridLayout.spec(i/8),GridLayout.spec(i%8)); size.width=dp(48); size.height=dp(48); palette.addView(dot,size); }
+        colorColumns=8; TextView title=text(parent,"Accent Colors",12,false); title.setPadding(0,dp(2),0,dp(2));
+        AccentPalette palette=new AccentPalette(this); FrameLayout paletteArea=new FrameLayout(this); parent.addView(paletteArea,new LinearLayout.LayoutParams(-1,landscape()?0:-2,landscape()?1:0)); paletteArea.addView(palette,new FrameLayout.LayoutParams(-1,-2,Gravity.TOP));
+        for(int i=0;i<DeckTheme.ACCENT_KEYS.length;i++){ String key=DeckTheme.ACCENT_KEYS[i],name=DeckTheme.ACCENT_NAMES[i]; Button dot=button(parent,"",()->{ prefs().edit().putString("accentColor",key).apply(); show(Page.SETTINGS); }); parent.removeView(dot); dot.setTag("accent:"+key); dot.setContentDescription(name+" accent"); dot.setTooltipText(name); dot.setPadding(0,0,0,0); dot.setMinHeight(0); dot.setMinimumHeight(0); dot.setCompoundDrawables(null,null,null,null); int color=key.equals("theme")?DeckTheme.resolve(prefs().getString("theme","dark"),getResources().getConfiguration().uiMode).accent:DeckTheme.accentColor(key); dot.setBackground(new AccentDot(color,theme.accent,theme.surface,theme.selected,getResources().getDisplayMetrics().density)); dot.setSelected(key.equals(prefs().getString("accentColor","theme"))); colorDots.add(dot); GridLayout.LayoutParams size=new GridLayout.LayoutParams(GridLayout.spec(i/8),GridLayout.spec(i%8)); size.width=dp(48); size.height=dp(48); palette.addView(dot,size); }
     }
     private void boundMenuButtons(LinearLayout pane){
         if(pane==null||!inside(pane,root)||page==Page.APPS||page==Page.PICKER||page==Page.SETTINGS&&pane==formMain) return;
@@ -1037,6 +1037,7 @@ public class SwitcherActivity extends Activity {
     private boolean inside(View view,ViewGroup parent){ for(android.view.ViewParent p=view.getParent();p instanceof View;p=p.getParent()) if(p==parent) return true; return false; }
     private void navigate(int direction){
         if(page!=Page.APPS){
+            if(page==Page.DOCKSTYLE&&controlIndex>=0&&controlIndex<controls.size()&&dockStyleChoices.contains(controls.get(controlIndex))){int index=dockStyleChoices.indexOf(controls.get(controlIndex)),next=index;if(direction==1&&index%2==1){for(int i=0;i<controls.size();i++)if(inside(controls.get(i),formInfo)){focusControl(i);return;}}if(direction==-2){if(index<2){focusControl(0);return;}next-=2;}else if(direction==2){if(index>=2){focusControl(controls.indexOf(dockStyleChoices.get(3))+1);return;}next+=2;}else if(direction==-1&&index%2==1)next--;else if(direction==1&&index%2==0)next++;focusControl(controls.indexOf(dockStyleChoices.get(next)));return;}
             if(page==Page.SETUP&&(setupStep==1||setupStep==5)&&controlIndex>=0&&controlIndex<controls.size()&&setupThemes.contains(controls.get(controlIndex))){ int index=setupThemes.indexOf(controls.get(controlIndex)),next=index; if(direction==-2){ if(index<2){ focusControl(0); return; } next-=2; } else if(direction==2){ if(index+2>=setupThemes.size()){ focusControl(setupStep==1?controls.indexOf(setupThemes.get(setupThemes.size()-1))+1:controls.indexOf(setupNext)); return; } next+=2; } else if(direction==-1&&index%2==1) next--; else if(direction==1&&index%2==0) next++; focusControl(controls.indexOf(setupThemes.get(next))); return; }
             if(page==Page.PICKER&&pickerSearch!=null&&pickerSearch.hasFocus()){ if(direction==2&&!pickerOptions.isEmpty()){ pickerSearch.clearFocus(); getSystemService(android.view.inputmethod.InputMethodManager.class).hideSoftInputFromWindow(pickerSearch.getWindowToken(),0); focusControl(controls.indexOf(pickerOptions.get(0))); } return; }
             if(page==Page.SETTINGS&&controlIndex>=0&&controlIndex<controls.size()&&colorDots.contains(controls.get(controlIndex))){ colorColumns=((GridLayout)colorDots.get(0).getParent()).getColumnCount(); int index=colorDots.indexOf(controls.get(controlIndex)),next=index; if(direction==-1){ if(index%colorColumns==0){ focusControl(1+settingsCategory); return; } next--; } else if(direction==1&&index%colorColumns<colorColumns-1) next++; else if(direction==-2) next-=colorColumns; else if(direction==2) next+=colorColumns; if(next<0) focusControl(controls.indexOf(colorDots.get(0))-1); else if(next<colorDots.size()) focusControl(controls.indexOf(colorDots.get(next))); return; }
@@ -1071,12 +1072,12 @@ public class SwitcherActivity extends Activity {
         }
         if(tools.isEmpty()) return;
         if(dockZone&&dock!=null){
-            if(direction==-2){ boolean rightCorner=landscape()&&"thumb".equals(prefs().getString("dockStyle","thumb"))&&dock.items.size()>1&&dockIndex>=(dock.items.size()+1)/2; dockZone=false; toolZone=rightCorner||cards.isEmpty(); if(rightCorner) toolIndex=tools.indexOf(ramButton); if("focus".equals(prefs().getString("dockBehavior","always"))) dock.expand(false); markSelection(); }
+            if(direction==-2){ boolean rightCorner=landscape()&&"thumb".equals(prefs().getString("dockStyle","thumb"))&&dock.items.size()>0&&dockIndex>=QuickAccess.leftCount(prefs(),dock.items.size()); dockZone=false; toolZone=rightCorner||cards.isEmpty(); if(rightCorner) toolIndex=tools.indexOf(ramButton); if("focus".equals(prefs().getString("dockBehavior","always"))) dock.expand(false); markSelection(); }
             else if(direction==1||direction==-1){ dockIndex=Math.max(0,Math.min(dock.items.size()-1,dockIndex+direction)); dock.focusItem(dockIndex); } return;
         }
         if(toolZone&&toolIndex==tools.indexOf(ramButton)){
             if(direction==-2){ toolIndex=tools.indexOf(findSettingsTool()); markSelection(); return; }
-            if((direction==1||direction==2)&&dock!=null){ dockZone=true; toolZone=false; dockIndex="thumb".equals(prefs().getString("dockStyle","thumb"))?Math.min(Math.max(0,dock.items.size()-1),(dock.items.size()+1)/2):Math.max(0,dock.items.size()-1); dock.expand(true); markSelection(); return; }
+            if((direction==1||direction==2)&&dock!=null){ dockZone=true; toolZone=false; dockIndex="thumb".equals(prefs().getString("dockStyle","thumb"))?Math.min(Math.max(0,dock.items.size()-1),QuickAccess.leftCount(prefs(),dock.items.size())):Math.max(0,dock.items.size()-1); dock.expand(true); markSelection(); return; }
             if(direction==-1){ toolZone=cards.isEmpty(); if(toolZone) toolIndex=0; markSelection(); return; }
         }
         if(!toolZone&&direction==1&&(!"cards".equals(viewMode())&&selection.index()%Math.max(1,gridColumns)==Math.max(1,gridColumns)-1)&&landscape()){ toolZone=true; toolIndex=tools.indexOf(ramButton); markSelection(); return; }

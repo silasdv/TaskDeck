@@ -1,3 +1,11 @@
+# 1.1.7 targeted acceptance
+
+- With Orange accent, navigate all sixteen swatch boxes: focused border must be orange, distinct from the filled selected box. Check close row/heading spacing and no Reset. Appearance/About headings remain visible.
+- At 100/80/70/60/50%, compare Thumb corner box dimensions, icon centering, hover clearance and task space; boxes must progressively shrink.
+- Choose all dock styles directly using touch, D-pad and stick; no style/theme popup. Dock follows the app theme.
+- Swap sides with 1, 2, 3 and 4 favorites: entire groups move, internal order persists, RAM enters the right group and launching selects the correct package. Drag, Move left/right and remove must work after swapping.
+- Check preview and actual dock match; touch-drag guidance remains readable on compact landscape.
+
 # 1.1.6 targeted acceptance
 
 - Visit right Thumb dock → RAM → Tasks → Down using D-pad and stick: leftmost favorite must be selected. RAM Down/Right must still enter the right group.

@@ -1,4 +1,4 @@
-# Usability review — TaskDeck 1.1.6
+# Usability review — TaskDeck 1.1.7
 
 Reviewed against [Jakob Nielsen’s ten usability heuristics](https://www.nngroup.com/articles/ten-usability-heuristics/), before the release build. This is a source/layout review with regression checks, not a moderated user study or physical RP6 acceptance.
 
@@ -6,12 +6,12 @@ Reviewed against [Jakob Nielsen’s ten usability heuristics](https://www.nngrou
 | --- | --- | --- |
 | Visibility of system status | Live connection/permission checks, explicit required/optional Setup steps, Current badge, inline empty states and Last action. Incomplete optional steps now say Skip for now. | Firmware may suppress notifications; confirm actual delivery on device. |
 | Match with the real world | A/B/X/Y and PlayStation labels, MB, named actions; Setup now lets users choose labels before calibration. | Android key mappings may differ from printed buttons; calibration is not universal detection. |
-| User control and freedom | Back returns from Settings content to categories before exit; optional Setup steps can be skipped; reset accent and individual remapping are available. | Closing cannot recover unsaved app state. No false undo promise. |
+| User control and freedom | Back returns from Settings content to categories before exit; optional Setup steps can be skipped; direct color selection and individual remapping are available. | Closing cannot recover unsaved app state. No false undo promise. |
 | Consistency and standards | Tasks Down always enters the left dock; RAM Down/Right enters the right dock. Setup theme choices use a two-by-two grid and spatial controller navigation. | Physical input/IME routing needs RP6 verification. |
 | Error prevention | Confirm/Back/navigation remain reserved during chord capture; required-service protection and backend rechecks retained. | User-authorized closing remains immediate, as requested. |
-| Recognition rather than recall | Visible page hints, inline label choices and sixteen large color swatches; selected and focused swatches have distinct rings. | Swatches retain accessible names/tooltips, although visible color labels are intentionally omitted. |
+| Recognition rather than recall | Visible page hints, inline label choices and sixteen large color swatches; selected swatches use filled boxes and focus uses a stronger accent border. | Swatches retain accessible names/tooltips, although visible color labels are intentionally omitted. |
 | Flexibility and efficiency | First-touch actions, D-pad/stick navigation, mapped controls, shortcuts and quick-access favorites retained. | Native firmware gesture replacement is outside this app. |
-| Aesthetic and minimalist design | Palette uses complete responsive rows. Buttons use measured text widths/padding and wrapping, rather than narrow caps or smaller text. Redundant Appearance/About pane headings removed. | Large system fonts/native rendering still need device review. |
+| Aesthetic and minimalist design | Palette uses complete responsive rows with close vertical spacing and swatch boxes. Buttons use measured text widths/padding and wrapping, rather than narrow caps or smaller text. Appearance/About headings remain consistent with other categories. | Large system fonts/native rendering still need device review. |
 | Recognize, diagnose and recover from errors | Friendly summaries distinguish connection interruption, denied access and unavailable apps; detailed Last action remains available. No destructive auto-retry. | Native backend errors may contain additional technical details. |
 | Help and documentation | USER-FLOW.md rewritten as one current guide; Setup and DEVICE-TEST describe actual limits and recovery. | No claim that all firmware behaves identically. |
 

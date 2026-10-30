@@ -1,3 +1,11 @@
+# 1.1.7
+
+- Replace white swatch rings with rounded boxes, selected accent-tinted fill and stronger accent-colored controller focus; tighten row/heading spacing and remove Reset.
+- Restore Appearance and About category headings.
+- Scale Thumb corner boxes with their icons down to 50%, rather than retaining the old fixed minimum box.
+- Replace the dock-style popup with inline choices; dock theme follows the app.
+- Add Swap sides for Thumb corners, preserving odd group sizes, with touch-drag guidance and matching navigation/preview.
+
 # 1.1.6
 
 - Reset Tasks → dock entry to the leftmost item, regardless of the previously visited right corner; retain RAM → right-corner routing.

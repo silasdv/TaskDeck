@@ -28,7 +28,7 @@ public final class QuickAccessDock extends LinearLayout {
     private GradientDrawable rounded(int color){ GradientDrawable shape=new GradientDrawable(); shape.setColor(color); shape.setCornerRadius(dp(18)); return shape; }
     public boolean isExpanded(){ return expanded; }
     public void expand(boolean value){ if(expanded!=value){ expanded=value; render(); } }
-    public void update(DeckTheme appTheme){ String choice=prefs.getString("dockTheme","app"); theme="app".equals(choice)?appTheme:DeckTheme.named(choice).withAccent(prefs.getString("accentColor","theme")); if(!dragging) render(); }
+    public void update(DeckTheme appTheme){ theme=appTheme; if(!dragging) render(); }
     public String selectedPackage(){ return selected>=0&&selected<packages.size()?packages.get(selected):""; }
     public void blur(){ focused=false; highlight(-2); }
     public void focusItem(int index){ focused=true; if(!expanded) expand(true); if(items.isEmpty()) return; selected=Math.max(0,Math.min(index,items.size()-1)); View item=items.get(selected); item.requestFocus(); highlight(selected); item.requestRectangleOnScreen(new Rect(0,0,item.getWidth(),item.getHeight()),false); }
@@ -45,14 +45,14 @@ public final class QuickAccessDock extends LinearLayout {
         if(preview==null&&!dragging&&QuickAccess.read(prefs).isEmpty()){
             TextView add=new TextView(getContext()); add.setText("+  Add apps to Quick Access"); add.setTextColor(theme.muted); add.setTextSize(11); add.setGravity(Gravity.CENTER); add.setPadding(dp(14),dp(7),dp(14),dp(7)); add.setBackground(rounded(theme.surface)); add.setFocusable(true); add.setFocusableInTouchMode(host.controller()); add.setDefaultFocusHighlightEnabled(false); add.setContentDescription("Add apps to Quick Access"); add.setOnClickListener(v->host.add()); add.setOnHoverListener((v,event)->{ if(event.getActionMasked()==MotionEvent.ACTION_HOVER_ENTER) highlight(0); else if(event.getActionMasked()==MotionEvent.ACTION_HOVER_EXIT) highlight(-2); return false; }); add.setOnFocusChangeListener((v,focus)->{ if(focus){ selected=0; highlight(0); } }); addView(add,new LayoutParams(-2,dp(48))); items.add(add); packages.add(""); highlight(focused?0:-2); return;
         }
-        String style=prefs.getString("dockStyle","thumb"); boolean thumbs="thumb".equals(style); individualBoxes=thumbs; int icon=Math.round(("compact".equals(style)?26:thumbs?34:32)*QuickAccess.size(prefs)/100f),cell=Math.max(thumbs?60:48,(int)Math.ceil(icon*1.12f)+24);
+        String style=prefs.getString("dockStyle","thumb"); boolean thumbs="thumb".equals(style); individualBoxes=thumbs; int icon=Math.round(("compact".equals(style)?26:thumbs?34:32)*QuickAccess.size(prefs)/100f),cell=thumbs?Math.max(24,Math.round(72*QuickAccess.size(prefs)/100f)-12):Math.max(Math.round(48*QuickAccess.size(prefs)/100f),(int)Math.ceil(icon*1.12f)+12);
         scroll=new HorizontalScrollView(getContext()); scroll.setHorizontalScrollBarEnabled(false); scroll.setClipChildren(false); scroll.setClipToPadding(false); scroll.setFillViewport(true); addView(scroll,new LayoutParams(-1,dp(cell+20)));
         LinearLayout center=new LinearLayout(getContext()); center.setGravity(Gravity.CENTER); center.setClipChildren(false); center.setPadding(0,dp(4),0,dp(4)); scroll.addView(center,new HorizontalScrollView.LayoutParams(-1,-1));
         icons=new LinearLayout(getContext()); icons.setGravity(Gravity.CENTER); icons.setClipChildren(false); icons.setPadding(dp(6),dp(6),dp(6),dp(6)); GradientDrawable shell=rounded(theme.surface); shell.setCornerRadius(dp(24)); shell.setStroke(dp(1),theme.raised); icons.setBackground(shell);
         center.addView(icons,new LayoutParams("shelf".equals(style)||thumbs?-1:-2,-1));
         List<String> order=preview!=null?preview:dragging&&dragOrder!=null?dragOrder:QuickAccess.read(prefs);
         if(thumbs){
-            icons.setBackgroundColor(Color.TRANSPARENT); icons.setPadding(0,0,0,0); split=(order.size()+1)/2;
+            order=QuickAccess.displayOrder(prefs,order); icons.setBackgroundColor(Color.TRANSPARENT); icons.setPadding(0,0,0,0); split=QuickAccess.leftCount(prefs,order.size());
             leftScroll=new HorizontalScrollView(getContext()); rightScroll=new HorizontalScrollView(getContext()); for(HorizontalScrollView side:new HorizontalScrollView[]{leftScroll,rightScroll}){ side.setHorizontalScrollBarEnabled(false); side.setFillViewport(true); side.setClipChildren(false); }
             LayoutParams leftSize=new LayoutParams(0,-1,1); leftSize.rightMargin=dp(12); icons.addView(leftScroll,leftSize); icons.addView(rightScroll,new LayoutParams(0,-1,1));
             FrameLayout leftFrame=new FrameLayout(getContext()),rightFrame=new FrameLayout(getContext()); leftScroll.addView(leftFrame,new HorizontalScrollView.LayoutParams(-2,-1)); rightScroll.addView(rightFrame,new HorizontalScrollView.LayoutParams(-2,-1));
@@ -82,7 +82,7 @@ public final class QuickAccessDock extends LinearLayout {
         if(event.getAction()==DragEvent.ACTION_DRAG_LOCATION){
             int[] xy=new int[2]; getLocationOnScreen(xy); float screen=xy[0]+event.getX(); int nearest=-1; float distance=Float.MAX_VALUE;
             for(int i=0;i<items.size();i++){ Rect rect=new Rect(); if(items.get(i).getGlobalVisibleRect(rect)){ float delta=Math.abs(screen-rect.exactCenterX()); if(delta<distance){ nearest=i; distance=delta; } } }
-            if(nearest>=0&&dragOrder.indexOf(draggingPackage)!=nearest){ dragOrder=QuickAccess.move(dragOrder,draggingPackage,nearest); render(); }
+            if(nearest>=0){ List<String> visible=QuickAccess.displayOrder(prefs,dragOrder); if(visible.indexOf(draggingPackage)!=nearest){ dragOrder=QuickAccess.storageOrder(prefs,QuickAccess.move(visible,draggingPackage,nearest)); render(); } }
             HorizontalScrollView edge=leftScroll==null?scroll:event.getX()<getWidth()/2f?leftScroll:rightScroll;
             long now=android.os.SystemClock.uptimeMillis(); if(now-lastScroll>80&&edge!=null){ int[] edgeXY=new int[2]; edge.getLocationOnScreen(edgeXY); float local=screen-edgeXY[0]; if(local<dp(40)) edge.scrollBy(-dp(20),0); else if(local>edge.getWidth()-dp(40)) edge.scrollBy(dp(20),0); lastScroll=now; } return true;
         }

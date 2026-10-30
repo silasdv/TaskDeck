@@ -1,4 +1,4 @@
-# TaskDeck user flow — 1.1.6
+# TaskDeck user flow — 1.1.7
 
 ## First launch
 
@@ -22,11 +22,11 @@ The Current badge is separate and green. Favorites are shortcuts, not synthetic 
 
 Categories sit beside content in landscape. Confirm enters content; Back first returns to categories, then exits Settings. D-pad/stick supports adjacent options. Buttons in a group have equal widths based on actual content with padding, wrapping and height when necessary; no arbitrary narrow cap or ellipsis hides the action.
 
-Appearance includes theme, grouping, stay-open behavior and sixteen color dots in complete responsive rows. Dots use the remaining area, have accessible names/tooltips and show stored selection with an inner ring and focus with an outer ring. Reset restores the theme accent. Semantic Current/success colors remain green.
+Appearance includes theme, grouping, stay-open behavior and sixteen color dots in complete responsive rows. Dots use compact, closely spaced rows with rounded boxes and accessible names/tooltips. The selected box has an accent-tinted fill; controller focus has a stronger accent-colored border. There is no Reset button. Appearance and About retain their category headings. Semantic Current/success colors remain green.
 
 ## Quick Access and reports
 
-Dock settings offer style, size, theme and behavior with the real bottom-position preview. Thumb corners is default. Add-app selection is alphabetical, four items per page, with search and visible icons. The preview count does not change favorites. Controller Previous/Next page mappings are independent of main actions. Last action page controls align to opposite edges. Long press/Select opens item options; touch drag or Move left/right reorders favorites.
+Dock settings offer inline style choices, 50–160% size and behavior with the real bottom-position preview. Thumb corners is default; Swap sides exchanges the left/right groups without changing their internal order. The dock follows the app theme. Both boxes and icons shrink below 80%; touch hold-and-drag reorders apps. Add-app selection is alphabetical, four items per page, with search and visible icons. The preview count does not change favorites. Controller Previous/Next page mappings are independent of main actions. Last action page controls align to opposite edges. Long press/Select opens item options; touch drag or Move left/right reorders favorites.
 
 ## Recovery and limits
 

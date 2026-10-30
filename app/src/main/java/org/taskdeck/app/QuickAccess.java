@@ -12,5 +12,9 @@ public final class QuickAccess {
     public static void save(SharedPreferences prefs,List<String> values){ prefs.edit().putString("quickAccess",new JSONArray(new LinkedHashSet<>(values)).toString()).apply(); }
     public static void toggle(SharedPreferences prefs,String name){ List<String> values=read(prefs); if(!values.remove(name)) values.add(name); save(prefs,values); }
     public static List<String> move(List<String> source,String name,int target){ List<String> values=new ArrayList<>(source); if(values.remove(name)) values.add(Math.max(0,Math.min(target,values.size())),name); return values; }
-    public static int size(SharedPreferences prefs){ return Math.max(60,Math.min(160,prefs.getInt("dockSize",100))); }
+    public static int leftCount(SharedPreferences prefs,int count){ return prefs.getBoolean("dockSwapSides",false)?count/2:(count+1)/2; }
+    public static List<String> displayOrder(SharedPreferences prefs,List<String> source){ List<String> values=new ArrayList<>(source);if("thumb".equals(prefs.getString("dockStyle","thumb"))&&prefs.getBoolean("dockSwapSides",false)) Collections.rotate(values,-(values.size()+1)/2);return values; }
+    public static List<String> storageOrder(SharedPreferences prefs,List<String> order){List<String> values=new ArrayList<>(order);if("thumb".equals(prefs.getString("dockStyle","thumb"))&&prefs.getBoolean("dockSwapSides",false)) Collections.rotate(values,(values.size()+1)/2);return values;}
+    public static void saveDisplayOrder(SharedPreferences prefs,List<String> order){save(prefs,storageOrder(prefs,order));}
+    public static int size(SharedPreferences prefs){ return Math.max(50,Math.min(160,prefs.getInt("dockSize",100))); }
 }
