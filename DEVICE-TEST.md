@@ -1,3 +1,15 @@
+# 1.1.9 physical acceptance
+
+- Both pickers: centered icon/name groups, comfortable bottom padding and equal row/column border gaps; check native fonts and larger system text.
+- Always show Dock checkbox: first touch and Confirm; off means on-navigation behavior, not transparency.
+- About actions align vertically and fit without scrolling.
+- Setup download links and adjacent permission reasons; verify external-page returns.
+- D-pad/stick Right into Accent Colors, Left back to the originating theme/control.
+- Protection: only setup Previous/Finish use L1/R1; app arrows page separately.
+- Three vertical styles, Thumb corners first; old Compact becomes Floating. Saved preview apps retain order/sides before alphabetical extras.
+
+Physical checks remain pending; simulation is not native RP6 certification.
+
 # 1.1.8 targeted physical acceptance
 
 - Five-page fresh/redo setup, permissions first, no nested capture. Denied shortcut access disables recording; granting enables it after return.

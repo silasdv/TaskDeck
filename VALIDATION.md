@@ -1,4 +1,18 @@
-# Validation — 1.1.8
+# Validation — 1.1.9
+
+30 October 2026. versionName 1.1.9, versionCode 119; UserService 9 unchanged. Existing release key retained.
+
+- testDebugUnitTest: **147 passed**, zero failures/errors/skips.
+- lintRelease: **0 errors, 32 warnings**.
+- assembleRelease and bundleRelease: passed.
+
+New coverage verifies measured label padding and equal six-dp border gaps in both picker contexts; setup D-pad/stick cross-pane accent navigation and return; official Shizuku download intents and adjacent permission reasons; exactly one setup shoulder-label pair with separate protection app paging; saved-Dock-first preview order/sides and alphabetical extras; and the three vertical styles. Visibility coverage now checks the compact checkbox using touch/Confirm rather than the removed slider. Existing short-landscape layout, hotkey persistence and core controller checks pass.
+
+These are simulated Android geometry/input and fake-IPC checks. Native RP6 font rendering, real permission/browser returns, controller routing, Shizuku, haptics and notifications remain physical acceptance cases in DEVICE-TEST.md. No absolute compatibility or performance claim is made.
+
+---
+
+# Historical validation — 1.1.8
 
 30 October 2026. versionName 1.1.8, versionCode 118; UserService version 9. Existing release key retained.
 

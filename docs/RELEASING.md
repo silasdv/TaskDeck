@@ -31,3 +31,5 @@ Version 1.1.6 uses versionCode 116 and the same release key. Signed local assets
 Version 1.1.7 uses versionCode 117 and the existing release key. Prepare signed assets locally; no implied publication.
 
 Version 1.1.8 uses versionCode 118, UserService 9 and the existing release key. VIBRATE supports optional close feedback. INTERNET remains absent. Signed assets are prepared locally, without implied publication.
+
+Version 1.1.9 uses versionCode 119, UserService 9 and the existing release key. Assets are prepared locally.

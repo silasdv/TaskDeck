@@ -1,3 +1,12 @@
+# 1.1.9
+
+- Center picker icons/names using measured text layout and equalize border gaps in both pickers.
+- Replace visibility slider with Always show Dock checkbox; stack About actions.
+- Add Shizuku Play/GitHub downloads and adjacent Required/Optional permission reasons.
+- Fix Setup Appearance cross-pane navigation and separate protection paging from the single setup L1/R1 pair.
+- Three equal vertical styles: Thumb corners, Floating, Shelf; Compact migrates to Floating.
+- Preview saved Dock order/sides first, then alphabetical extras without displacing saved sides.
+
 # 1.1.8
 
 - Five unnested setup pages, permissions before hotkeys, inline capture/save-on-release and calibrated checkmarks; Redo Setup added.

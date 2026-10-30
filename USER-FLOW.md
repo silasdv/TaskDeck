@@ -1,4 +1,4 @@
-# TaskDeck user flow — 1.1.8
+# TaskDeck user flow — 1.1.9
 
 ## Setup
 
@@ -18,8 +18,10 @@ Tasks Up → Refresh → toolbar; Tasks Right → RAM details. RAM Up → Settin
 
 Use Dock consistently. Add-app selection has eight alphabetical tiles in two rows of four, search, paging, Clear Dock and an icon-only strip of selected apps on the right. Image layers sit above the buttons. Adding an app gives an app-named toast. A picker page needs no scrolling.
 
-Style choices use equal-size grid tiles and distinct vector previews. Size is 50–160%, scaling boxes and icons. Thumb corners supports Swap sides and touch-hold dragging. Independent left/right plus/minus controls sit above the bottom preview; preview edits do not change saved apps. The Dock follows app theme. Visibility is a slider, with controller Left/Right and Confirm support. Internal menus use TaskDeck panels; system permission interfaces remain Android/Shizuku-owned.
+Style choices are three equal-size vertical controls: Thumb corners, Floating, Shelf. Compact migrates to Floating. Size is 50–160%, scaling boxes and icons. Thumb corners supports Swap sides and touch-hold dragging. Independent left/right plus/minus controls sit above the bottom preview; preview edits do not change saved apps. The Dock follows app theme. Always show Dock is a compact touch/Confirm checkbox. Off reveals the Dock on navigation/tap; it is not transparency. Internal menus use TaskDeck panels; system permission interfaces remain Android/Shizuku-owned.
 
 ## Limits
 
 Required services stay protected. No automatic destructive replay, fake permission grant or closing undo promise. RAM is estimated MB and does not prove a speed gain. Native RP6 fonts, transition appearance, controller routing, real permission returns, haptics, Shizuku and notifications still need physical acceptance.
+
+Picker icon/name groups are centered with matching border gaps. Setup download links include Google Play and GitHub; each permission has an adjacent reason. Setup Appearance Right enters colors; Left returns to the originating choice. Protection app paging uses arrows separately from setup L1/R1. About stacks its three actions. Preview starts from saved apps/sides, then alphabetical extras.

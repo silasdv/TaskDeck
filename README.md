@@ -2,7 +2,7 @@
 
 **A controller-first Android task manager for gaming handhelds, with full touch support.**
 
-TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **1.1.8**, Android 10+, using Shizuku.
+TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **1.1.9**, Android 10+, using Shizuku.
 
 ## Vibecoded
 
@@ -37,7 +37,7 @@ Closing is immediate, with no confirmation dialog. Use disposable app state for 
 
 Android 10+ and **Shizuku 13+** are required. Root is not required. Android 11+ can start Shizuku with wireless debugging; Android 10 needs its documented computer setup. Firmware permissions vary.
 
-1. Download the signed APK from the supplied local release package (see [public Releases](https://github.com/silasdv/TaskDeck/releases) for published versions) and install it. **Earlier 0.x test builds used a different key: uninstall one first, after noting your settings/mappings. Uninstalling clears app data.** Version 1.1.8 uses the same dedicated release key as 1.0 and installs over it, retaining settings.
+1. Download the signed APK from the supplied local release package (see [public Releases](https://github.com/silasdv/TaskDeck/releases) for published versions) and install it. **Earlier 0.x test builds used a different key: uninstall one first, after noting your settings/mappings. Uninstalling clears app data.** Version 1.1.9 uses the same dedicated release key as 1.0 and installs over it, retaining settings.
 2. Install Shizuku from its [official download page](https://shizuku.rikka.app/download/) and follow the [official setup guide](https://shizuku.rikka.app/guide/setup/). Pairing is not the same as starting Shizuku. Without root, start it again after reboot.
 3. Setup has five unnested pages: Permissions, Controller, Shortcuts, Appearance and App protection. Shizuku connection is required. Shortcut-service access is required to record hotkeys; notifications are optional. L1/R1 navigate.
 4. Controller calibration and both shortcut recordings stay inline. Hold and release a chord to save; completed deck and Quick Swap Apps recordings show checkmarks. Appearance includes accent selection and optional close vibration. Protection lets users choose locks. Completion draws for 800 ms and opens the deck after roughly 950 ms total. Settings > About > Redo Setup preserves configuration.
@@ -61,7 +61,7 @@ The full interaction plan is in [USER-FLOW.md](USER-FLOW.md).
 
 Pin launchable apps with Select or touch long-press on a task card. Add installed apps in Settings > Dock even when they are not open. Favorites are shortcuts, separate from task cards and protection: pinning does not lock an app or fabricate an open task.
 
-**Thumb corners is the default** when no style was explicitly chosen. Choose Floating, Compact, Shelf, or Thumb corners; Settings shows a full-width, original-size preview at the actual bottom dock position. It uses distinct installed apps; Separate left/right Apps + / − Apps controls sit above the preview and never change saved Dock apps. Thumb corners splits favorites into bottom-left and bottom-right groups, with larger touch targets and independent horizontal scrolling for overflow. Dock size ranges from **50–160%**, with boxes and icons both scaling below 80%. An empty dock offers a compact, labeled **+ Add apps to Dock** button with bounded focus. The dock follows the app theme; the app supports **Automatic** theme following Android. Style choices form an equal-size two-by-two grid with distinct vector previews. Dock visibility is a touch/controller slider. Thumb corners offers **Swap sides**, including uneven groups. Hold and drag on the touchscreen to reorder individual apps.
+**Thumb corners is the default** when no style was explicitly chosen. Choose Thumb corners (default), Floating or Shelf; Settings shows a full-width, original-size preview at the actual bottom dock position. It starts with saved Dock apps in their actual order and sides, then alphabetical extras; Separate left/right Apps + / − Apps controls sit above the preview and never change saved Dock apps. Thumb corners splits favorites into bottom-left and bottom-right groups, with larger touch targets and independent horizontal scrolling for overflow. Dock size ranges from **50–160%**, with boxes and icons both scaling below 80%. An empty dock offers a compact, labeled **+ Add apps to Dock** button with bounded focus. The dock follows the app theme; the app supports **Automatic** theme following Android. Style choices are equal-size vertical buttons, with Thumb corners first. Always show Dock is a compact checkbox; off means reveal on navigation/tap. Old Compact choices migrate to Floating. Thumb corners offers **Swap sides**, including uneven groups. Hold and drag on the touchscreen to reorder individual apps.
 
 The dock has no visible heading. Thumb corners uses a separate bordered box for each app, with 8dp spacing; Current uses the same green as task cards. Growing the dock reduces task space. Idle selection/app-count status text is omitted; actionable errors remain visible.
 
@@ -130,3 +130,5 @@ No network permission, advertising, analytics or usage-history logging. See [Pri
 TaskDeck is free and open source. Optional tips: **[ko-fi.com/silasdv](https://ko-fi.com/silasdv)**. The in-app link opens your browser.
 
 UserService version 9 refreshes the revised launcher policy. VIBRATE supports opt-in short close feedback; INTERNET remains absent. App menus use TaskDeck-styled panels, while Android/Shizuku own permission interfaces.
+
+Picker icon/name groups are centered using measured text layout; border gaps match across rows and columns. Setup offers direct Google Play and GitHub Shizuku downloads with adjacent Required/Optional reasons. Right from setup themes enters Accent Colors and Left returns. Protection uses separate app-page arrows, leaving only one setup L1/R1 pair. About actions are stacked vertically.

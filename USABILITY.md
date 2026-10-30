@@ -1,4 +1,4 @@
-# Usability review — TaskDeck 1.1.8
+# Usability review — TaskDeck 1.1.9
 
 Source/layout review using [Nielsen’s ten usability heuristics](https://www.nngroup.com/articles/ten-usability-heuristics/); not a physical RP6 certification or moderated user study.
 
@@ -7,12 +7,14 @@ Source/layout review using [Nielsen’s ten usability heuristics](https://www.nn
 | Visibility | Live permissions, calibrated checkmarks, Current badge, added-app toast and Dock icon strip; no redundant confirmed banner. | Real notification/permission behavior. |
 | Familiar language | Dock and Quick Swap Apps consistently; explicit actions and MB. | Firmware key reports may differ. |
 | User control | Inline recording, cancellation, Redo Setup, Clear Dock and explicit locks. | Closing cannot restore unsaved app state. |
-| Consistency | Accent focus, equal style grid, controller paging and spatial Dock routes. | Native rendering and hardware navigation. |
+| Consistency | Accent focus, equal vertical style controls, controller paging and spatial Dock routes. | Native rendering and hardware navigation. |
 | Error prevention | Permissions precede and gate hotkeys; conflicts rejected; required services protected. | Partial chords can reach games. |
 | Recognition | Eight app icons, vector style previews, Select hint and completion checkmarks. | Large Dock sets make the icon strip smaller. |
 | Efficiency | First touch, mapped controls, search, eight-app pages and Fit all transitions. | Global shortcut/firmware routing. |
-| Minimalism | Five setup pages, no nested recorder, visibility slider, no Last action in Settings or Android-style app selection dialogs. | System permission interfaces remain outside app styling. |
+| Minimalism | Five setup pages, no nested recorder, Always show Dock checkbox, no Last action in Settings or Android-style app selection dialogs. | System permission interfaces remain outside app styling. |
 | Recovery | Friendly inline errors and official Shizuku links; no destructive auto-retry. | Firmware-specific restrictions. |
 | Help | Permissions/protection explained, visible drag hint and current flow/checklist. | No universal compatibility guarantee. |
 
 Completion drawing is slower (800 ms), with about 150 ms further hold. Ordinary apps/launchers are no longer automatically locked. Simulated checks cover selected state, layout and input behavior, not actual motor feedback or Shizuku firmware behavior.
+
+Reported geometry/navigation fixes: measured centered picker groups and equal gaps, single setup shoulder pair, explicit accent cross-pane routes, adjacent permission reasons/downloads and faithful saved-Dock previews.
