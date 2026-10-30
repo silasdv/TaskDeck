@@ -1,3 +1,11 @@
+# 1.1.6
+
+- Reset Tasks → dock entry to the leftmost item, regardless of the previously visited right corner; retain RAM → right-corner routing.
+- Expand accent selection to sixteen larger swatches in complete responsive rows, with distinct stored-selection/focus rings and theme reset.
+- Measure menu labels and compound content with generous horizontal padding; allow wrapping/height instead of narrow caps, ellipsis or font shrinking.
+- Clarify required/optional Setup steps, offer inline A/B/X/Y or PlayStation labels before calibration and use a two-by-two theme grid.
+- Improve common recovery summaries and consolidate the current interaction guide; record the Nielsen heuristic and Setup audit.
+
 # Changelog
 
 ## 1.1.5

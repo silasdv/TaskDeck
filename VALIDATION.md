@@ -1,4 +1,18 @@
-# Validation — 1.1.5
+# Validation — 1.1.6
+
+30 October 2026. versionName 1.1.6, versionCode 116; UserService protocol remains 8. Existing release key retained.
+
+- testDebugUnitTest: **131 passed**, zero failures/errors/skips.
+- lintRelease: **0 errors, 35 warnings**, including English strings and existing private-API/dependency/accessibility/backup/drawing guidance.
+- assembleRelease and bundleRelease: passed.
+
+New coverage exercises the complete right-dock → RAM → Tasks → left-dock round trip with D-pad and stick; full rendered menu labels without ellipsis at normal/1.3 font scale; sixteen-color complete rows and larger cells; Setup optional-step wording, PlayStation label selection before calibration and readable two-row themes. Existing compact-landscape step/menu fit, permissions and navigation regressions also pass.
+
+USABILITY.md records the ten-heuristic and Setup review, implemented responses and remaining limits. These simulated Android layouts/input and fake IPC checks do not establish native RP6 glyph rendering, firmware/IME routing, drag/hover, actual permission returns, Shizuku reliability or notification delivery. Physical acceptance remains in DEVICE-TEST.md. No universal compatibility or performance claim is made.
+
+---
+
+# Historical validation — 1.1.5
 
 30 October 2026. versionName 1.1.5, versionCode 115; UserService protocol remains 8. Existing release key retained.
 

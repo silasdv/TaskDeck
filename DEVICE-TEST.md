@@ -1,3 +1,14 @@
+# 1.1.6 targeted acceptance
+
+- Visit right Thumb dock → RAM → Tasks → Down using D-pad and stick: leftmost favorite must be selected. RAM Down/Right must still enter the right group.
+- Appearance: sixteen larger colors in complete rows; selected inner ring and focused outer ring remain distinguishable. Reset restores theme accent; Current remains green. Check portrait reflow.
+- Mapping, Shortcuts, Dock Behavior and Appearance: full labels at normal and larger Android font sizes; equal group widths, padding, no clipped text. Check native RP6 font/insets.
+- First-launch Setup: connection stays incomplete until genuinely connected; optional controller/access steps say Skip for now. Choose PlayStation labels before Cross calibration. Check two-by-two themes and L1/R1/D-pad/stick routes.
+- Return from Android permission screens without granting, then with granting: completion must reflect actual state. Completion animation holds before deck, with optional Confirm skip.
+- Disconnect/revoke Shizuku and remove a favorite app: friendly recovery summary, no replayed destructive request.
+
+These are pending physical checks, not results claimed from simulation.
+
 # Version 1.1.5 acceptance additions
 
 - RAM Details Down/Right selects right Thumb corner; Up returns to RAM Details. Empty/one-app docks retain accessible fallback.
