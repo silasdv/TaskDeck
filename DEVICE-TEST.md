@@ -1,3 +1,11 @@
+# Version 1.1.3 acceptance additions
+
+- Verify 8dp border gaps in Cards/Fit/Grid/List, especially toolbar to tasks and RAM Details to dock. Check system insets, larger fonts, empty/collapsed docks and portrait.
+- Face badges slightly larger, with unchanged text and button/background dimensions. Verify PlayStation labels and remapped shoulders.
+- System RAM card contains system totals/usage; app diagrams remain scaled to total physical RAM and controller RAM details remain accessible.
+
+---
+
 # Version 1.1.2 acceptance additions
 
 - Four picker tiles, L1/R1 pages, search, mapped Back and touch activation. Previous page at the first page must not exit.

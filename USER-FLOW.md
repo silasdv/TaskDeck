@@ -1,4 +1,4 @@
-# User flow — 1.1.2
+# User flow — 1.1.3
 
 ## Main screen
 
@@ -47,3 +47,9 @@ The outlined green Current badge is the top item of a task card, above both icon
 Live preview sits at the bottom, at real dock width/height, using distinct installed launchable apps. Apps + / − Apps changes the sample count only. Style, theme and size update this preview. The actual and preview dock reserve measured height; the weighted content above shrinks as dock size increases.
 
 Confirm on a Settings category enters the right content pane. Fit all and Recent remain defaults for unset choices; saved choices persist. Dock heading, idle selected-item text and task count are omitted; feedback errors and RAM information remain.
+
+## Spacing revision 1.1.3
+
+Main borders use an 8dp gap: toolbar to task/RAM areas, between task cards, task area to RAM sidebar and RAM Details to the dock shell. Dock internal safety padding is included in this spacing. System RAM has its own rounded background and usage chart, separate from app estimates. Portrait uses a matching system-summary surface.
+
+Face-button badges grow from 16 to 20dp. Horizontal inset compensation preserves the button envelope; text, background shape, height and shoulder-badge size remain unchanged.

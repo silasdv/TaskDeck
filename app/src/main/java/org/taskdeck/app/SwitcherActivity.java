@@ -17,6 +17,7 @@ import java.util.*;
 /** Explicit card selection never depends on ListView focus or Android's touch mode. */
 public class SwitcherActivity extends Activity {
     enum Page { APPS, SETUP, CONNECT, CHORD, CONFIRM, SHORTCUTS, RESULTS, WINDOWS, SETTINGS, MEMORY, COMPLETE, MAPPING, BIND, DOCKSTYLE, DOCKBEHAVIOR, PICKER }
+    private static final int DECK_GAP=8;
     private TaskDeckApp app;
     private Page page;
     private DeckTheme theme;
@@ -33,7 +34,7 @@ public class SwitcherActivity extends Activity {
     private int gridColumns=1,renderWidth,renderHeight,iconAccent;
     private HorizontalScrollView rail;
     private TextView status,memory,recordLive,recordSaved,backgroundInfo;
-    private LinearLayout formMain,formInfo,memoryBars;
+    private LinearLayout formMain,formInfo,memoryBars,systemRamPanel,systemRamChart;
     private int settingsCategory,ramPage;
     private final List<Button> categories=new ArrayList<>();
     private final List<JSONObject> backgroundApps=new ArrayList<>();
@@ -119,7 +120,7 @@ public class SwitcherActivity extends Activity {
         if(next==Page.APPS){ resetSelection=true; selection.first(); }
         if(protectionPopup!=null) protectionPopup.dismiss(); pageScroll=null;
         stopStick(); feedback=""; TaskDeckApp.recordingShortcut=next==Page.CHORD || next==Page.CONFIRM || next==Page.BIND; page=next; toolZone=false; dockZone=false; dock=null; ramButton=null;
-        controls.clear(); controlIndex=-1; tools.clear(); cards.clear(); cardRow=null; rail=null; appScroll=null; appGrid=null; appContent=null; compactMemory=null; operationInfo=null; memoryBars=null; categories.clear(); setupPrevious=null; setupNext=null; renderWidth=0; renderHeight=0; status=null; memory=null;
+        controls.clear(); controlIndex=-1; tools.clear(); cards.clear(); cardRow=null; rail=null; appScroll=null; appGrid=null; appContent=null; compactMemory=null; operationInfo=null; memoryBars=null; systemRamPanel=null; systemRamChart=null; categories.clear(); setupPrevious=null; setupNext=null; renderWidth=0; renderHeight=0; status=null; memory=null;
         theme=DeckTheme.resolve(prefs().getString("theme","dark"),getResources().getConfiguration().uiMode);
         if(iconAccent!=theme.accent){ iconCache.evictAll(); iconAccent=theme.accent; }
         root=new LinearLayout(this); root.setOrientation(LinearLayout.VERTICAL); root.setBackgroundColor(theme.background); root.setPadding(dp(12),dp(6),dp(12),dp(6));
@@ -152,9 +153,9 @@ public class SwitcherActivity extends Activity {
     private String actionFor(String key){ switch(key){ case "A":return "open"; case "B":return "exit"; case "X":return "close"; case "Y":return "clear"; default:return "others"; } }
     private Button controllerButton(LinearLayout parent,String key,String label,String icon,Runnable action){
         String printed=ControllerBindings.badge(prefs(),actionFor(key)); Button b=compactButton(button(parent,label,action));
-        Drawable badge=new ControllerBadge(printed,theme.text); boolean shoulder=printed.length()>1&&!ControllerBadge.symbol(printed); badge.setBounds(0,0,dp(shoulder?21:16),dp(16));
-        b.setCompoundDrawables(badge,null,null,null); b.setCompoundDrawablePadding(dp(3)); String full=ControllerBindings.NAMES[Arrays.asList(ControllerBindings.ACTIONS).indexOf(actionFor(key))]; b.setContentDescription(printed+": "+full); b.setTooltipText(full); b.setTextSize(key.equals("R1")?9:9.5f); b.setPadding(dp(9),dp(4),dp(9),dp(4)); b.setSingleLine(true);
-        ((LinearLayout.LayoutParams)b.getLayoutParams()).rightMargin=dp(4); return b;
+        Drawable badge=new ControllerBadge(printed,theme.text); boolean shoulder=printed.length()>1&&!ControllerBadge.symbol(printed); badge.setBounds(0,0,dp(shoulder?21:20),dp(shoulder?16:20));
+        b.setCompoundDrawables(badge,null,null,null); b.setCompoundDrawablePadding(dp(3)); String full=ControllerBindings.NAMES[Arrays.asList(ControllerBindings.ACTIONS).indexOf(actionFor(key))]; b.setContentDescription(printed+": "+full); b.setTooltipText(full); b.setTextSize(key.equals("R1")?9:9.5f); b.setPadding(dp(shoulder?9:7),dp(4),dp(shoulder?9:7),dp(4)); b.setSingleLine(true);
+        ((LinearLayout.LayoutParams)b.getLayoutParams()).rightMargin=dp(DECK_GAP); return b;
     }
 
     private void applySystemBars(){
@@ -176,7 +177,7 @@ public class SwitcherActivity extends Activity {
             public void touch(){ setInputMode(false); dockZone=false; if(dock!=null) dock.blur(); }
         }); root.addView(dock,new LinearLayout.LayoutParams(-1,-2)); renderDock();
     }
-    private void renderDock(){ if(dock==null||page!=Page.APPS) return; dock.update(theme); if(dockZone&&controllerMode){ dockIndex=Math.max(0,Math.min(dock.items.size()-1,dockIndex)); dock.focusItem(dockIndex); } }
+    private void renderDock(){ if(dock==null||page!=Page.APPS) return; ((LinearLayout.LayoutParams)dock.getLayoutParams()).topMargin=dp(QuickAccess.read(prefs()).isEmpty()?DECK_GAP:DECK_GAP-4); dock.update(theme); if(dockZone&&controllerMode){ dockIndex=Math.max(0,Math.min(dock.items.size()-1,dockIndex)); dock.focusItem(dockIndex); } }
     private void launchFavorite(String pkg){
         if(busy) return; if(app.backend!=null) for(JSONObject task:rawTasks) if(pkg.equals(task.optString("package"))){ openWindow(task); return; }
         Intent intent=getPackageManager().getLaunchIntentForPackage(pkg); if(intent==null){ feedback="App is no longer installed or has no launchable screen. Select it to remove the shortcut."; updateStatus(); return; }
@@ -276,6 +277,7 @@ public class SwitcherActivity extends Activity {
     }
     private void finishSetupAnimation(){ if(page!=Page.COMPLETE) return; show(Page.APPS); if(app.backend!=null) refresh(); }
 
+    private GradientDrawable ramSurface(){ GradientDrawable shape=rounded(theme.surface); shape.setStroke(dp(1),theme.raised); return shape; }
     private int sidebarWidth(){ return getResources().getConfiguration().screenWidthDp>=760?180:152; }
     private Drawable appIcon(String name){
         Drawable.ConstantState cached=iconCache.get(name); if(cached!=null) return cached.newDrawable(getResources()).mutate();
@@ -298,19 +300,21 @@ public class SwitcherActivity extends Activity {
         controllerButton(actions,"A","Open","open",this::openSelected); controllerButton(actions,"B","Exit","exit",this::finish); controllerButton(actions,"X","Close","close",this::closeSelected);
         controllerButton(actions,"Y","Close all","all",this::closeAll); controllerButton(actions,"R1","Close all but current","others",this::closeOthers);
         Button settings=compactButton(button(header,"Settings",()->show(Page.SETTINGS))); settings.setText(""); settings.setContentDescription("Settings"); settings.setTooltipText("Settings"); settings.setGravity(Gravity.CENTER); settings.setCompoundDrawablePadding(0); ((LinearLayout.LayoutParams)settings.getLayoutParams()).width=dp(36); roundSettings(settings); tools.add(settings);
-        LinearLayout stats=row(root); status=text(stats,"",11,true); status.setPadding(0,0,0,0); status.setLayoutParams(new LinearLayout.LayoutParams(0,-2,1)); compactMemory=text(stats,"",11,true); compactMemory.setPadding(0,0,0,0); status.setVisibility(View.GONE); status.setMaxLines(1); status.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        LinearLayout stats=row(root); stats.setOrientation(LinearLayout.VERTICAL); status=text(stats,"",11,true); status.setPadding(0,0,0,0); status.setLayoutParams(new LinearLayout.LayoutParams(-1,-2)); compactMemory=text(stats,"",11,true); compactMemory.setPadding(dp(10),dp(8),dp(10),dp(8)); compactMemory.setBackground(ramSurface()); compactMemory.setLayoutParams(new LinearLayout.LayoutParams(-1,-2)); status.setVisibility(View.GONE); status.setMaxLines(1); status.setEllipsize(android.text.TextUtils.TruncateAt.END);
         operationInfo=text(root,"",12,true); operationInfo.setMaxLines(2); operationInfo.setEllipsize(android.text.TextUtils.TruncateAt.END); updateOperationInfo();
-        LinearLayout deck=row(root); deck.setLayoutParams(new LinearLayout.LayoutParams(-1,0,1)); deck.setGravity(Gravity.TOP);
+        LinearLayout deck=row(root); LinearLayout.LayoutParams deckSize=new LinearLayout.LayoutParams(-1,0,1); deckSize.topMargin=dp(DECK_GAP); deck.setLayoutParams(deckSize); deck.setGravity(Gravity.TOP);
         appContent=new FrameLayout(this); deck.addView(appContent,new LinearLayout.LayoutParams(0,-1,1));
-        sidebar=new LinearLayout(this); sidebar.setOrientation(LinearLayout.VERTICAL); sidebar.setPadding(dp(12),0,0,0);
-        if(landscape()) deck.addView(sidebar,new LinearLayout.LayoutParams(dp(sidebarWidth()),-1)); else root.addView(sidebar);
+        sidebar=new LinearLayout(this); sidebar.setOrientation(LinearLayout.VERTICAL); sidebar.setPadding(0,0,0,0);
+        if(landscape()){ LinearLayout.LayoutParams sideSize=new LinearLayout.LayoutParams(dp(sidebarWidth()),-1); sideSize.leftMargin=dp(DECK_GAP); deck.addView(sidebar,sideSize); } else root.addView(sidebar);
         appContent.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,or,ob)->{ if(r-l>0&&b-t>0&&(r-l!=renderWidth||b-t!=renderHeight)){ renderWidth=r-l; renderHeight=b-t; renderCards(); } });
-        memory=text(sidebar,"",11,false); memory.setPadding(0,0,0,0);
-        memoryBars=new LinearLayout(this); memoryBars.setOrientation(LinearLayout.VERTICAL); sidebar.addView(memoryBars,new LinearLayout.LayoutParams(-1,0,1));
+        systemRamPanel=new LinearLayout(this); systemRamPanel.setOrientation(LinearLayout.VERTICAL); systemRamPanel.setBackground(ramSurface()); systemRamPanel.setPadding(dp(10),dp(10),dp(10),dp(10)); systemRamPanel.setContentDescription("System RAM information"); sidebar.addView(systemRamPanel,new LinearLayout.LayoutParams(-1,-2));
+        memory=text(systemRamPanel,"",11,false); memory.setPadding(0,0,0,0); systemRamChart=new LinearLayout(this); systemRamChart.setOrientation(LinearLayout.VERTICAL); systemRamPanel.addView(systemRamChart);
+        memoryBars=new LinearLayout(this); memoryBars.setOrientation(LinearLayout.VERTICAL); LinearLayout.LayoutParams appRamSize=new LinearLayout.LayoutParams(-1,0,1); appRamSize.topMargin=dp(DECK_GAP); appRamSize.bottomMargin=dp(DECK_GAP); sidebar.addView(memoryBars,appRamSize);
         backgroundInfo=new TextView(this); backgroundInfo.setVisibility(View.GONE); sidebar.addView(backgroundInfo);
-        Button allRam=button(landscape()?sidebar:header,"RAM details",()->{ ramPage=0; show(Page.MEMORY); }); ramButton=allRam; tools.add(allRam); compactButton(allRam);
+        Button allRam=button(landscape()?sidebar:header,"RAM details",()->{ ramPage=0; show(Page.MEMORY); }); ramButton=allRam; tools.add(allRam); compactButton(allRam); ((LinearLayout.LayoutParams)allRam.getLayoutParams()).rightMargin=0; if(landscape()) ((LinearLayout.LayoutParams)allRam.getLayoutParams()).width=-1;
         if(!landscape()){ header.removeView(allRam); header.addView(allRam,3); tools.remove(allRam); tools.add(3,allRam); allRam.setText("RAM"); }
         sidebar.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,or,ob)->{ if(b-t!=ob-ot) updateBackground(); });
+        for(Button tool:tools){ if(tool!=settings&&tool!=allRam) ((LinearLayout.LayoutParams)tool.getLayoutParams()).rightMargin=dp(DECK_GAP); } ((LinearLayout.LayoutParams)settings.getLayoutParams()).rightMargin=0;
         updateStatus(); updateMemory(); renderCards();
         createDock();
     }
@@ -328,21 +332,21 @@ public class SwitcherActivity extends Activity {
             gridColumns=list?1:fit?Math.max(1,(int)Math.ceil(Math.sqrt(Math.max(1,tasks.size())*available/(double)Math.max(1,height)*1.2))):Math.max(2,available/128);
             appGrid=new GridLayout(this); appGrid.setColumnCount(gridColumns); appGrid.setAlignmentMode(GridLayout.ALIGN_BOUNDS);
             int minimum=Math.max(52,(int)Math.ceil(prefs().getInt("minLabelSp",12)*getResources().getDisplayMetrics().scaledDensity/getResources().getDisplayMetrics().density*1.4)+32);
-            fitOverflow=fit&&height/Math.max(1,(tasks.size()+gridColumns-1)/gridColumns)-6<minimum;
+            fitOverflow=fit&&(height-DECK_GAP*(Math.max(1,(tasks.size()+gridColumns-1)/gridColumns)-1))/Math.max(1,(tasks.size()+gridColumns-1)/gridColumns)<minimum;
             if(fit&&!fitOverflow) appContent.addView(appGrid,new FrameLayout.LayoutParams(-1,-1));
             else { appScroll=new ScrollView(this); appContent.addView(appScroll,new FrameLayout.LayoutParams(-1,-1)); appScroll.addView(appGrid,new ScrollView.LayoutParams(-1,-2)); }
         }
         if(tasks.isEmpty()){ if(!horizontal){ appContent.removeAllViews(); appContent.addView(cardRow,new FrameLayout.LayoutParams(-1,-1)); } text(cardRow,app.backend==null?"Settings → Connection to load apps":"Nothing to close",20,true); if(!dockZone){ toolZone=true; toolIndex=0; } markSelection(); return; }
 
-        int width=horizontal?dp(Math.max(116,Math.min(190,available/3-14))):dp(Math.max(1,available/gridColumns-6));
+        int width=horizontal?dp(Math.max(116,Math.min(190,available/3-14))):dp(Math.max(1,(available-DECK_GAP*(gridColumns-1))/gridColumns));
         int minLabel=prefs().getInt("minLabelSp",12),minimum=Math.max(52,(int)Math.ceil(minLabel*getResources().getDisplayMetrics().scaledDensity/getResources().getDisplayMetrics().density*1.4)+32);
-        int cellHeight=horizontal?-1:dp(list?Math.max(58,minimum+18):fit?Math.max(minimum,height/Math.max(1,(tasks.size()+gridColumns-1)/gridColumns)-6):Math.max(104,Math.min(144,height/2-6)));
+        int cellHeight=horizontal?-1:dp(list?Math.max(58,minimum+18):fit?Math.max(minimum,(height-DECK_GAP*(Math.max(1,(tasks.size()+gridColumns-1)/gridColumns)-1))/Math.max(1,(tasks.size()+gridColumns-1)/gridColumns)):Math.max(104,Math.min(144,height/2-6)));
         boolean compact=getResources().getConfiguration().screenHeightDp<440;
         boolean tiny=fit&&cellHeight<dp(minimum+48),micro=fit&&cellHeight<dp(minimum+18);
         for(JSONObject task:tasks){
             LinearLayout card=new LinearLayout(this); card.setOrientation(LinearLayout.VERTICAL); card.setGravity(list?Gravity.CENTER_VERTICAL:Gravity.CENTER); card.setPadding(dp(horizontal?12:5),dp(horizontal?(compact?6:14):2),dp(horizontal?12:5),dp(horizontal?(compact?6:14):2)); card.setFocusableInTouchMode(controllerMode); card.setDefaultFocusHighlightEnabled(false);
-            if(horizontal){ LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(width,-1); p.setMargins(dp(2),dp(8),dp(12),dp(8)); cardRow.addView(card,p); }
-            else { GridLayout.LayoutParams p=new GridLayout.LayoutParams(); p.width=width; p.height=cellHeight; p.setMargins(dp(3),dp(3),dp(3),dp(3)); appGrid.addView(card,p); }
+            if(horizontal){ LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(width,-1); p.setMargins(0,0,cards.size()<tasks.size()-1?dp(DECK_GAP):0,0); cardRow.addView(card,p); }
+            else { GridLayout.LayoutParams p=new GridLayout.LayoutParams(); p.width=width; p.height=cellHeight; p.setMargins(0,0,cards.size()%gridColumns<gridColumns-1?dp(DECK_GAP):0,cards.size()/gridColumns<(tasks.size()-1)/gridColumns?dp(DECK_GAP):0); appGrid.addView(card,p); }
             if(isCurrent(task.optString("package"))){ TextView current=text(card,"Current",9,false); current.setTag("currentBadge"); current.setTextColor(successColor()); GradientDrawable chip=rounded(theme.surface); chip.setStroke(dp(1),successColor()); current.setBackground(chip); current.setGravity(Gravity.CENTER); current.setPadding(dp(6),dp(1),dp(6),dp(1)); LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-2,dp(18)); cp.gravity=Gravity.CENTER_HORIZONTAL; cp.bottomMargin=dp(3); current.setLayoutParams(cp); current.setContentDescription("Current app: "+task.optString("label")); }
             LinearLayout body=new LinearLayout(this); body.setOrientation(list?LinearLayout.HORIZONTAL:LinearLayout.VERTICAL); body.setGravity(Gravity.CENTER); card.addView(body,new LinearLayout.LayoutParams(-1,0,1));
             ImageView icon=new ImageView(this); icon.setImageDrawable(appIcon(task.optString("package"))); icon.setContentDescription(task.optString("label")); int iconSize=horizontal?(compact?40:60):list?30:24; if(tiny) icon.setVisibility(View.GONE); body.addView(icon,new LinearLayout.LayoutParams(dp(iconSize),dp(iconSize)));
@@ -636,10 +640,10 @@ public class SwitcherActivity extends Activity {
     private void updateBackground(){
         if(backgroundInfo==null||memoryBars==null) return;
         List<JSONObject> entries=ramEntries(); memoryBars.removeAllViews(); ActivityManager.MemoryInfo info=new ActivityManager.MemoryInfo(); getSystemService(ActivityManager.class).getMemoryInfo(info);
-        chart(memoryBars,"Used RAM",info.totalMem-info.availMem,info.totalMem);
+        if(systemRamChart!=null){ systemRamChart.removeAllViews(); chart(systemRamChart,"Used RAM",info.totalMem-info.availMem,info.totalMem); }
         TextView title=text(memoryBars,"App RAM · approximate",11,false); title.setPadding(0,dp(3),0,dp(1));
         int height=memoryBars.getHeight()>0?Math.round(memoryBars.getHeight()/getResources().getDisplayMetrics().density):100;
-        int limit=Math.max(1,(height-50)/(chartLabelHeight()+8)); long max=info.totalMem/1024;
+        int limit=Math.max(1,(height-24)/(chartLabelHeight()+8)); long max=info.totalMem/1024;
         for(int i=0;i<Math.min(entries.size(),limit);i++){ JSONObject task=entries.get(i); long kb=task.optLong("pssKb",-1); chart(memoryBars,task.optString("label")+" · "+(kb>=0?MemoryUnits.pss(kb)+" MB":"unavailable"),kb,max); }
         if(entries.isEmpty()) smallNote(memoryBars,"No app sample yet");
         StringBuilder value=new StringBuilder("System & cache also use RAM.\nCan't close here");

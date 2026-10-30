@@ -1,4 +1,18 @@
-# Validation — 1.1.2
+# Validation — 1.1.3
+
+30 October 2026. versionName 1.1.3, versionCode 113; UserService protocol remains 8. Same release key.
+
+- testDebugUnitTest: **116 passed**, zero failures/errors/skips.
+- lintRelease: **0 errors, 32 warnings**, including existing English-string/private-API/dependency/accessibility/backup/drawing guidance.
+- assembleRelease and bundleRelease: passed.
+
+New geometry checks verify 8dp toolbar-to-card/System-RAM gaps and RAM-Details-to-dock-shell gaps in all four task views. Face badges are 20dp, with unchanged 9.5sp text, 36dp button height, background drawable and compensated horizontal inset; shoulder badge stays 16dp high. Memory fixture verifies the system card still represents half of total RAM at 500/1000 and the leading app PSS at 6/1000. Existing input, preview, task/protection and lifecycle regressions remain covered.
+
+Simulated geometry/fake IPC do not replace RP6 visual, font/inset, native drag/controller, Shizuku and notification acceptance. See DEVICE-TEST.md. No universal compatibility/performance claim.
+
+---
+
+# Historical validation — 1.1.2
 
 30 October 2026. versionName 1.1.2, versionCode 112; UserService protocol remains 8. Same release key as previous releases.
 

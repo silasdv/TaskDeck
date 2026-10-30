@@ -2,7 +2,7 @@
 
 **A controller-first Android task manager for gaming handhelds, with full touch support.**
 
-TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **1.1.2**, Android 10+, using Shizuku.
+TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **1.1.3**, Android 10+, using Shizuku.
 
 ## Vibecoded
 
@@ -27,7 +27,7 @@ All six actions can be remapped in Settings > Controller > Button mapping. The t
 - **Fit all** is the default. View offers exactly four presets: Fit all, Grid, List and Cards. There is no custom layout editor. Explicit preset choices are preserved. Fit all scrolls if the minimum readable size cannot fit the full set.
 - Sort offers Recent, RAM size and Alphabetical in an outlined popup. Locked apps sort last, keeping eligible apps first.
 - App windows group into one card by default, with a count and one package-wide RAM sample. Disable Group app windows in Settings > Appearance for individual task cards. A grouped X targets all represented windows; separate cards target one window.
-- Compact toolbar: Refresh, Sort, View and an icon-only Settings control. No brand heading, mode tabs, Connect shortcut or Diagnostics screen uses deck space. Main-screen buttons use compact 36dp controls with smaller labels; Settings keeps larger controls.
+- Compact toolbar: Refresh, Sort, View and an icon-only Settings control. No brand heading, mode tabs, Connect shortcut or Diagnostics screen uses deck space. Main-screen buttons use compact 36dp controls with 20dp face-button badges and unchanged text/background dimensions; Settings keeps larger controls.
 
 Closing is immediate, with no confirmation dialog. Use disposable app state for testing; unsaved game progress is not saved automatically.
 
@@ -35,7 +35,7 @@ Closing is immediate, with no confirmation dialog. Use disposable app state for 
 
 Android 10+ and **Shizuku 13+** are required. Root is not required. Android 11+ can start Shizuku with wireless debugging; Android 10 needs its documented computer setup. Firmware permissions vary.
 
-1. Download **[TaskDeck-1.1.2.apk](https://github.com/silasdv/TaskDeck/releases/tag/v1.1.2)** from Releases and install it. **Earlier 0.x test builds used a different key: uninstall one first, after noting your settings/mappings. Uninstalling clears app data.** Version 1.1.2 uses the same dedicated release key as 1.0 and installs over it, retaining settings.
+1. Download **[TaskDeck-1.1.3.apk](https://github.com/silasdv/TaskDeck/releases/tag/v1.1.3)** from Releases and install it. **Earlier 0.x test builds used a different key: uninstall one first, after noting your settings/mappings. Uninstalling clears app data.** Version 1.1.3 uses the same dedicated release key as 1.0 and installs over it, retaining settings.
 2. Install Shizuku from its [official download page](https://shizuku.rikka.app/download/) and follow the [official setup guide](https://shizuku.rikka.app/guide/setup/). Pairing is not the same as starting Shizuku. Without root, start it again after reboot.
 3. First launch walks through eight focused screens: connection, confirm calibration, open-menu shortcut, direct-switch shortcut, shortcut-service access, appearance, closing behavior and notifications. Controller steps are separate; optional steps can be skipped with Next. L1 goes back; R1 goes forward.
 4. Finish saves setup completion and draws a completion checkmark with about 1.5 seconds of hold time (Confirm continues immediately) before opening the deck. Later launches go directly to the deck. **Settings is a category list, not a repeated setup wizard.**
@@ -85,7 +85,7 @@ If both rear buttons report identical key AND scan codes, assign different digit
 
 All displayed memory uses **decimal MB: 1 MB = 1,000,000 bytes**. Android PSS input is KiB and is converted, not relabeled. Unknown samples are unavailable, never zero.
 
-The deck shows used/total system RAM and a system usage bar, without an available/free RAM counter. Every app bar uses the same denominator: total physical RAM. App PSS is converted from KiB to this common scale, rather than making the largest process look like 100% of RAM. Visible sidebar entries adapt to the available height. **RAM details** exposes every reported entry through paginated charts, without a fixed three-entry cutoff. Values and text descriptions accompany colors; app PSS is not a decomposition of total system RAM and should not be added to match system usage. Android, services, shared pages and cache account for other usage.
+The deck uses consistent 8dp gaps between main borders. A dedicated rounded System RAM card contains used/total memory and its system usage bar, without an available/free RAM counter. Every app bar uses the same denominator: total physical RAM. App PSS is converted from KiB to this common scale, rather than making the largest process look like 100% of RAM. Visible sidebar entries adapt to the available height. **RAM details** exposes every reported entry through paginated charts, without a fixed three-entry cutoff. Values and text descriptions accompany colors; app PSS is not a decomposition of total system RAM and should not be added to match system usage. Android, services, shared pages and cache account for other usage.
 
 Task listing completes independently of RAM sampling. A slow or unavailable sample does not disable opening/closing. Old samples are discarded after refresh or catalog changes. Ordinary task removal is not evidence that an app process stopped.
 
@@ -111,7 +111,7 @@ Build with JDK 17, Android SDK 35 / Build Tools 35.0.0 and Gradle 8.11.1:
 ./gradlew testDebugUnitTest lintRelease assembleRelease bundleRelease
 ```
 
-Windows uses gradlew.bat. Set ANDROID_HOME or local.properties. See [Release signing](docs/RELEASING.md) for signing configuration. Keys/passwords live in ignored `.local/` and are never included in source archives. Without release signing material, the release artifact is unsigned. Application versionCode is 112; UserService implementation remains 8.
+Windows uses gradlew.bat. Set ANDROID_HOME or local.properties. See [Release signing](docs/RELEASING.md) for signing configuration. Keys/passwords live in ignored `.local/` and are never included in source archives. Without release signing material, the release artifact is unsigned. Application versionCode is 113; UserService implementation remains 8.
 
 See [VALIDATION.md](VALIDATION.md) for automated results and [DEVICE-TEST.md](DEVICE-TEST.md) for outstanding hardware checks. UI tests use fake IPC; actual RP6 Shizuku behavior, controller routing and visible RAM banners are not proven by them.
 

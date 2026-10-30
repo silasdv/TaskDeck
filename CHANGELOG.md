@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.3
+
+- Consistent 8dp main border spacing across toolbar/tasks, cards, RAM sidebar and dock.
+- Face badges increased to 20dp while preserving text and button/background dimensions; shoulder badge unchanged.
+- Dedicated System RAM background card with its own usage chart; app estimates stay separate. Matching portrait summary surface.
+- VersionCode 113; same release key.
+
 ## 1.1.2
 
 - Four app tiles per picker page with search and L1/R1 paging; Back remains a separate action.
