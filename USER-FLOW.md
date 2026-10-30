@@ -1,4 +1,4 @@
-# User flow — 1.1.4
+# User flow — 1.1.5
 
 ## Main screen
 
@@ -63,3 +63,11 @@ Thumb corners has one bordered box per favorite, separated by 8dp. Corner contai
 Page-navigation mappings are independent of main actions. Previous/Next show controller badges, default L1/R1; the same bindings work in picker, Last action, RAM and window pages. Bind capture can be cancelled with Confirm/Back. Setup retains its fixed L1/R1 flow.
 
 Appearance > Accent color has a four-column palette of round swatches: Theme and twelve colors. It updates focus, selection and charts across app/dock; semantic Current/status green is preserved. Main toolbar and RAM/dock transitions use explicit directions. Back from Settings content first returns to its category; Back from the category exits.
+
+## Simplification revision 1.1.5
+
+Accent Colors lives directly in Appearance. Dots have no visible color names or rectangular background; selected/focused rings, accessible names and tooltips remain. Rows adapt to pane width and support controller movement. Legacy saved Accent-page state redirects to Appearance.
+
+Main RAM Details Down/Right enters the right Thumb corner; Up from that corner returns to RAM Details in landscape. Last action Previous/Next sit at opposite footer edges. Picker icons remain visible and scale down to fit short tiles with their names.
+
+Direct menu buttons share a width based on the longest label in their pane, capped below the pane width. This covers Appearance toggles, Mapping, Shortcuts, Dock Behavior and Notifications. Theme choices retain extra left/right padding.

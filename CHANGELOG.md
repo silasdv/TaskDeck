@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.5
+
+- RAM Details Down selects the right Thumb corner; Up returns from that corner.
+- Accent Colors inline in Appearance: color-only dots, no rectangular backgrounds, with selection/focus rings and accessible names.
+- Responsive picker icons stay visible in short tiles. Last action page controls align left/right.
+- Shared content-based button widths per menu pane; additional theme-button horizontal padding.
+- VersionCode 115, same release key. Physical RP6 acceptance remains open.
+
 ## 1.1.4
 
 - Bounded picker ImageViews, matching App RAM frame, centered Current badge/icon group and a labeled empty-dock action with bounded focus.

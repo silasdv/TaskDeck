@@ -1,3 +1,13 @@
+# Version 1.1.5 acceptance additions
+
+- RAM Details Down/Right selects right Thumb corner; Up returns to RAM Details. Empty/one-app docks retain accessible fallback.
+- Appearance has inline color dots, no color names/rectangular swatch backgrounds, recognizable selected/focus rings. Check portrait reflow, controller movement and touch targets.
+- Picker icons remain visible at short landscape heights with system bars/search keyboard and stay within tile borders beside their names.
+- Last action Previous/Next align left/right; controller bindings still work.
+- Menu buttons have matching, limited widths per pane and full readable labels: Appearance, Mapping, Shortcuts, Dock Behavior, Notifications. Light/Dark/OLED/Auto have more horizontal padding.
+
+---
+
 # Version 1.1.4 acceptance additions
 
 - Four picker tile icons stay inside borders across actual app/adaptive icons, search keyboard, font scale and insets. Empty dock Add apps label keeps fully rounded focus.

@@ -1,4 +1,18 @@
-# Validation — 1.1.4
+# Validation — 1.1.5
+
+30 October 2026. versionName 1.1.5, versionCode 115; UserService protocol remains 8. Existing release key retained.
+
+- testDebugUnitTest: **127 passed**, zero failures/errors/skips.
+- lintRelease: **0 errors, 34 warnings**, including English strings and existing private-API/dependency/accessibility/backup/drawing guidance.
+- assembleRelease and bundleRelease: passed.
+
+Added coverage checks RAM Details Down to the right dock and the reverse Up route; Last action footer alignment; short-height picker icon visibility/containment; equal content-bounded widths in Mapping, Shortcuts, Dock Behavior and Appearance; extra theme padding; inline label-free accent dots with controller selection; system-bar-inset fit and portrait reflow without hidden choices. Existing regressions remain covered.
+
+These are simulated layout/input and fake-IPC checks, not a pixel-level physical RP6 review. Native drag/hover, firmware/IME routing, actual Shizuku behavior, font/insets and notification delivery remain device acceptance cases in DEVICE-TEST.md. No universal compatibility or performance claim is made.
+
+---
+
+# Historical validation — 1.1.4
 
 30 October 2026. versionName 1.1.4, versionCode 114; UserService protocol remains 8. Existing release signing key retained.
 
