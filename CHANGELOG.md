@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.2
+
+- Four app tiles per picker page with search and L1/R1 paging; Back remains a separate action.
+- Original-size bottom dock preview with distinct installed apps and sample-count plus/minus controls.
+- Current badge above icon/name; shared green Current dock fill/outline/dot. Symmetric sparse-dock padding and no empty corner shell.
+- Confirm enters Settings content; removed dock heading and idle selection/task-count labels. Dock sizing reserves space from the task area. Fit all/Recent stay the defaults for unset choices.
+- VersionCode 112, same release key; physical RP6 acceptance remains required.
+
 ## 1.1.1
 
 - Alphabetical full-width app picker with large icons, plain names, selected favorite state, search and L1/R1 paging/back.

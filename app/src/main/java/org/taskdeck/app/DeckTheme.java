@@ -13,5 +13,6 @@ public final class DeckTheme {
         if("oled".equals(name)) return new DeckTheme("#000000","#101014","#202028","#FFFFFF","#B4B6C8","#B59AFF","#251A3B");
         return new DeckTheme("#101725","#1A263A","#28364D","#F1F6FF","#AABBD2","#6EE7D0","#163F45");
     }
+    public int currentColor(){ return background==named("light").background?Color.rgb(22,130,68):Color.rgb(82,217,151); }
     public static DeckTheme resolve(String name,int mode){ return named("auto".equals(name)?((mode&android.content.res.Configuration.UI_MODE_NIGHT_MASK)==android.content.res.Configuration.UI_MODE_NIGHT_YES?"dark":"light"):name); }
 }

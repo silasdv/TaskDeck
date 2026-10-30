@@ -1,3 +1,13 @@
+# Version 1.1.2 acceptance additions
+
+- Four picker tiles, L1/R1 pages, search, mapped Back and touch activation. Previous page at the first page must not exit.
+- Current badge above icon/name in all views; green dock fill/outline/dot on OLED, Dark and Light.
+- One/two/three favorites: shell corners align with focus bubbles; no empty right bubble for a single favorite. Check hover/controller and insets at 60–160%.
+- Bottom preview shows different real apps at original size. Plus/minus must not pin/unpin actual favorites. Growing preview/dock shrinks content above. Check compact landscape and font scaling.
+- Confirm on Settings category enters the right pane. Idle counts/selection labels and dock heading are absent; errors remain readable.
+
+---
+
 # Version 1.1.1 acceptance additions
 
 - Picker: large icons/plain names, alphabetical order, search/no results, selection persistence, L1/R1 pages, L1 Back on first page, mapped Back. First touch executes after controller; D-pad/stick Down leaves search for results without a second touch.

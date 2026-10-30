@@ -17,3 +17,5 @@ Run the hardware acceptance checklist and describe unresolved firmware limitatio
 Version 1.1 uses versionCode 110 and the same dedicated release key as 1.0. Keep v1.0 assets immutable; publish updates under a new tag. Quick Access/native drag and firmware behavior remain device acceptance cases.
 
 Version 1.1.1 uses versionCode 111 and the same release key. Signed APK/AAB, source ZIP and checksums are prepared locally; publishing is a separate step.
+
+Version 1.1.2 uses versionCode 112 and the same release key. APK, AAB, source ZIP and checksums are prepared locally; existing published assets remain unchanged.

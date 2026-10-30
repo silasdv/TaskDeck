@@ -1,4 +1,4 @@
-# User flow — 1.1.1
+# User flow — 1.1.2
 
 ## Main screen
 
@@ -37,3 +37,13 @@ Thumb corners is the default for an unset style; explicit choices stay unchanged
 The installed-app picker is a full-width alphabetical icon/name list, six entries per page with scrolling as needed. Search filters in place and keeps typing focus; Down returns to results. A selected row denotes an existing favorite. L1 previous (Back from page one), R1 next, mapped Back and a visible Back control remain available without touching the screen. Search is also controller-focusable.
 
 Current is a separate colored badge beside the app name, or below it on narrow cards. Fit preserves enough row height for readable content and scrolls when necessary. Header actions and Refresh/Sort/View/RAM details use full-height backgrounds and increased padding. Horizontal form navigation crosses aligned panes, including action mapping to Labels; horizontal option groups retain their own left/right order.
+
+## Dock interaction revision 1.1.2
+
+The picker now shows four alphabetical tiles per page instead of a scrolling list. L1/R1 moves through pages; L1 does nothing at the first page. Mapped Back and the visible Back button exit. Search remains; its results keep four tile slots and no Add prefixes.
+
+The outlined green Current badge is the top item of a task card, above both icon and name in every task view. Dock Current fill/outline/dot use the same shared green. Six-dp shell padding surrounds square focus bubbles; the empty opposite corner has no phantom shell when only one favorite exists.
+
+Live preview sits at the bottom, at real dock width/height, using distinct installed launchable apps. Apps + / − Apps changes the sample count only. Style, theme and size update this preview. The actual and preview dock reserve measured height; the weighted content above shrinks as dock size increases.
+
+Confirm on a Settings category enters the right content pane. Fit all and Recent remain defaults for unset choices; saved choices persist. Dock heading, idle selected-item text and task count are omitted; feedback errors and RAM information remain.

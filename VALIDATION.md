@@ -1,4 +1,18 @@
-# Validation — 1.1.1
+# Validation — 1.1.2
+
+30 October 2026. versionName 1.1.2, versionCode 112; UserService protocol remains 8. Same release key as previous releases.
+
+- testDebugUnitTest: **114 passed**, zero failures/errors/skips.
+- lintRelease: **0 errors, 32 warnings** (English UI strings, physical corner alignment/programmatic views and existing private-API/dependency/accessibility/backup/drawing guidance).
+- assembleRelease and bundleRelease: passed.
+
+Coverage includes four picker tiles/search/L1-R1 pages; Current badge above icon/name in Cards, Grid, List and Fit; Confirm entering Settings content; one/two-item shell inset symmetry and shared green Current color; distinct installed-app previews without changing favorites; real and preview dock size equality; task area shrinking as dock size grows; hidden idle selection/count labels; plus/minus preview counts one/two/three in all four dock styles at 160% on simulated 640×360dp landscape. Existing regressions remain covered.
+
+These are simulated layout/input checks with fake IPC, not physical RP6 execution or a pixel-level visual review. Native hover/drag, firmware key routing/origin, real Shizuku operations, notifications, font scaling and system insets remain DEVICE-TEST.md acceptance cases. No universal compatibility or performance claim is made.
+
+---
+
+# Historical validation — 1.1.1
 
 30 October 2026. versionName 1.1.1, versionCode 111; UserService protocol remains 8. Same release key as 1.0/1.1.
 
