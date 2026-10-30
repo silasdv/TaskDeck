@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.4
+
+- Bounded picker ImageViews, matching App RAM frame, centered Current badge/icon group and a labeled empty-dock action with bounded focus.
+- Individual app boxes in Thumb corners, maintaining independent scrolling and reorder support.
+- Round accent-color palette under Appearance; twelve colors plus original-theme reset. Semantic Current green stays independent.
+- Outlined page-button hints and separate remapping across picker, Last action, RAM and windows. Last action starts on an enabled control.
+- Explicit toolbar/RAM/right-dock controller paths. Settings Back returns from content to categories before closing.
+- VersionCode 114; same release key. Hardware acceptance remains required.
+
 ## 1.1.3
 
 - Consistent 8dp main border spacing across toolbar/tasks, cards, RAM sidebar and dock.

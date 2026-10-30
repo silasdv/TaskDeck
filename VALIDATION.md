@@ -1,4 +1,18 @@
-# Validation — 1.1.3
+# Validation — 1.1.4
+
+30 October 2026. versionName 1.1.4, versionCode 114; UserService protocol remains 8. Existing release signing key retained.
+
+- testDebugUnitTest: **123 passed**, zero failures/errors/skips.
+- lintRelease: **0 errors, 33 warnings**, including English strings and existing private-API/dependency/accessibility/backup/drawing guidance.
+- assembleRelease and bundleRelease: passed.
+
+New checks cover bounded picker ImageViews rather than compound icons; centered Current badge/icon spacing; independent Thumb corner boxes; bounded, labeled empty-dock focus; separate page-navigation mappings and controller badges, Last action paging and binding cancellation; round accent swatches/persistence/semantic green and compact system-bar-inset fit; D-pad/stick routes to toolbar/Settings/RAM/right dock; and Settings Back returning to categories before closing. Existing task/protection, RAM denominator, preview and lifecycle regressions remain covered.
+
+Checks use simulated Android geometry and fake IPC. They are not a physical RP6 run or pixel-level review. Native drag/hover, actual controller/IME routing, font/insets, Shizuku and notification delivery remain DEVICE-TEST.md acceptance cases. No universal compatibility or performance claim is made.
+
+---
+
+# Historical validation — 1.1.3
 
 30 October 2026. versionName 1.1.3, versionCode 113; UserService protocol remains 8. Same release key.
 

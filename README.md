@@ -2,7 +2,7 @@
 
 **A controller-first Android task manager for gaming handhelds, with full touch support.**
 
-TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **1.1.3**, Android 10+, using Shizuku.
+TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **1.1.4**, Android 10+, using Shizuku.
 
 ## Vibecoded
 
@@ -22,7 +22,7 @@ One main screen combines app selection, task closing and RAM information. It sta
 | R1 | Close all but current: retain the app used before opening TaskDeck |
 | Select / Share | Protection, Quick Access pinning, window and launcher-restart options |
 
-All six actions can be remapped in Settings > Controller > Button mapping. The top-right action hints, immediately before Settings, follow Open–Exit–Close–Close all–Close all but current and displays the actual mapped button labels.
+All six main actions can be remapped in Settings > Controller > Button mapping. **Page navigation** adds separate Previous/Next mappings (L1/R1 by default) for app selection, Last action, RAM details and window pages; their hints show actual bindings in button outlines. Confirm/Back remain reserved when assigning page navigation. The top-right action hints, immediately before Settings, follow Open–Exit–Close–Close all–Close all but current and displays the actual mapped button labels.
 
 - **Fit all** is the default. View offers exactly four presets: Fit all, Grid, List and Cards. There is no custom layout editor. Explicit preset choices are preserved. Fit all scrolls if the minimum readable size cannot fit the full set.
 - Sort offers Recent, RAM size and Alphabetical in an outlined popup. Locked apps sort last, keeping eligible apps first.
@@ -35,7 +35,7 @@ Closing is immediate, with no confirmation dialog. Use disposable app state for 
 
 Android 10+ and **Shizuku 13+** are required. Root is not required. Android 11+ can start Shizuku with wireless debugging; Android 10 needs its documented computer setup. Firmware permissions vary.
 
-1. Download **[TaskDeck-1.1.3.apk](https://github.com/silasdv/TaskDeck/releases/tag/v1.1.3)** from Releases and install it. **Earlier 0.x test builds used a different key: uninstall one first, after noting your settings/mappings. Uninstalling clears app data.** Version 1.1.3 uses the same dedicated release key as 1.0 and installs over it, retaining settings.
+1. Download **[TaskDeck-1.1.4.apk](https://github.com/silasdv/TaskDeck/releases/tag/v1.1.4)** from Releases and install it. **Earlier 0.x test builds used a different key: uninstall one first, after noting your settings/mappings. Uninstalling clears app data.** Version 1.1.4 uses the same dedicated release key as 1.0 and installs over it, retaining settings.
 2. Install Shizuku from its [official download page](https://shizuku.rikka.app/download/) and follow the [official setup guide](https://shizuku.rikka.app/guide/setup/). Pairing is not the same as starting Shizuku. Without root, start it again after reboot.
 3. First launch walks through eight focused screens: connection, confirm calibration, open-menu shortcut, direct-switch shortcut, shortcut-service access, appearance, closing behavior and notifications. Controller steps are separate; optional steps can be skipped with Next. L1 goes back; R1 goes forward.
 4. Finish saves setup completion and draws a completion checkmark with about 1.5 seconds of hold time (Confirm continues immediately) before opening the deck. Later launches go directly to the deck. **Settings is a category list, not a repeated setup wizard.**
@@ -47,7 +47,9 @@ Settings has Connection, Controller, Appearance, Dock, Notifications and About c
 
 **Stay open after clearing** is a stable-label toggle. Highlighted **On** keeps the deck open after bulk clearing. Outlined **Off** returns HOME for Close all, or to the retained app for Close all but current. Errors and unverified results keep the deck open. Empty bulk actions still follow the chosen exit behavior.
 
-Closing behavior lives in Appearance, beside grouping and themes. A green checkmark on Connection indicates an active backend. About shows version/developer information, GitHub and an optional Ko-fi link. RAM feedback and the notification shortcut use the same On/Off convention. Notifications also contains Test feedback and Android permission settings. Android controls actual heads-up/banner visibility. Connection > Last action names confirmed, failed and unverified outcomes for every attempted app/window. Reports are held only in memory.
+Closing behavior lives in Appearance, beside grouping, themes and **Accent color**. Accent color offers round swatches for Theme, Red, Green, Blue, White, Purple, Cyan, Violet, Pink, Orange, Amber, Teal and Lime. Theme restores the original accent; Current/status colors retain their meaning. A green checkmark on Connection indicates an active backend. About shows version/developer information, GitHub and an optional Ko-fi link. RAM feedback and the notification shortcut use the same On/Off convention. Notifications also contains Test feedback and Android permission settings. Android controls actual heads-up/banner visibility. Connection > Last action names confirmed, failed and unverified outcomes for every attempted app/window. Reports are held only in memory.
+
+Controller navigation: Up from the top task row selects Refresh; Left/Right moves through the toolbar. Right from the task edge reaches RAM details; Up there reaches Settings and Right enters the right dock group. In Settings, Confirm enters a category’s content; Back returns to categories before a second Back exits.
 
 The full interaction plan is in [USER-FLOW.md](USER-FLOW.md).
 
@@ -55,11 +57,11 @@ The full interaction plan is in [USER-FLOW.md](USER-FLOW.md).
 
 Pin launchable apps with Select or touch long-press on a task card. Add installed apps in Settings > Dock even when they are not open. Favorites are shortcuts, separate from task cards and protection: pinning does not lock an app or fabricate an open task.
 
-**Thumb corners is the default** when no style was explicitly chosen. Choose Floating, Compact, Shelf, or Thumb corners; Settings shows a full-width, original-size preview at the actual bottom dock position. It uses distinct installed apps; Apps + / − Apps changes the preview count without changing favorites. Thumb corners splits favorites into bottom-left and bottom-right groups, with larger touch targets and independent horizontal scrolling for overflow. Dock size ranges from **60–160%**. Dock themes can follow the app or use Light, Dark or OLED; the app also supports **Automatic** theme following Android.
+**Thumb corners is the default** when no style was explicitly chosen. Choose Floating, Compact, Shelf, or Thumb corners; Settings shows a full-width, original-size preview at the actual bottom dock position. It uses distinct installed apps; Apps + / − Apps changes the preview count without changing favorites. Thumb corners splits favorites into bottom-left and bottom-right groups, with larger touch targets and independent horizontal scrolling for overflow. Dock size ranges from **60–160%**. An empty dock offers a compact, labeled **+ Add apps to Quick Access** button with bounded focus. Dock themes can follow the app or use Light, Dark or OLED; the app also supports **Automatic** theme following Android.
 
-The dock has no visible heading. Uniform shell padding aligns focus bubbles even with one/two favorites; Current uses the same green as task cards. Growing the dock reduces task space. Idle selection/app-count status text is omitted; actionable errors remain visible.
+The dock has no visible heading. Thumb corners uses a separate bordered box for each app, with 8dp spacing; Current uses the same green as task cards. Growing the dock reduces task space. Idle selection/app-count status text is omitted; actionable errors remain visible.
 
-Dock behavior offers always visible or show on navigation/tap, focus/hover magnification and optional running indicators. Indicators use reported process data; an ordinary recent task alone does not prove an app is running. The app used before TaskDeck is marked **Current**, with a separate green outlined badge above its icon/name when Android reports that origin; selecting another card does not change it.
+Dock behavior offers always visible or show on navigation/tap, focus/hover magnification and optional running indicators. Indicators use reported process data; an ordinary recent task alone does not prove an app is running. The app used before TaskDeck is marked **Current**, with a separate green outlined badge grouped just above its icon/name when Android reports that origin; selecting another card does not change it.
 
 Touch-hold and drag to reorder; dropping outside cancels the reorder. Controller: Down from the last app row enters Quick Access, Left/Right selects, Confirm launches, Up returns. Select opens Open, Move left, Move right and Remove options. Removing a favorite never uninstalls or closes it. Installed-app selection shows four alphabetical icon/name tiles per page, with search. Selected tiles indicate favorites. L1/R1 change pages; mapped Back or the visible Back button exits. Down from search returns to results.
 
@@ -85,7 +87,7 @@ If both rear buttons report identical key AND scan codes, assign different digit
 
 All displayed memory uses **decimal MB: 1 MB = 1,000,000 bytes**. Android PSS input is KiB and is converted, not relabeled. Unknown samples are unavailable, never zero.
 
-The deck uses consistent 8dp gaps between main borders. A dedicated rounded System RAM card contains used/total memory and its system usage bar, without an available/free RAM counter. Every app bar uses the same denominator: total physical RAM. App PSS is converted from KiB to this common scale, rather than making the largest process look like 100% of RAM. Visible sidebar entries adapt to the available height. **RAM details** exposes every reported entry through paginated charts, without a fixed three-entry cutoff. Values and text descriptions accompany colors; app PSS is not a decomposition of total system RAM and should not be added to match system usage. Android, services, shared pages and cache account for other usage.
+The deck uses consistent 8dp gaps between main borders. Matching rounded System RAM and App RAM cards separate system totals from per-app estimates. The System RAM card contains used/total memory and its system usage bar, without an available/free RAM counter. Short sidebars show only the estimates that fit inside the card; RAM details exposes the rest. Every app bar uses the same denominator: total physical RAM. App PSS is converted from KiB to this common scale, rather than making the largest process look like 100% of RAM. Visible sidebar entries adapt to the available height. **RAM details** exposes every reported entry through paginated charts, without a fixed three-entry cutoff. Values and text descriptions accompany colors; app PSS is not a decomposition of total system RAM and should not be added to match system usage. Android, services, shared pages and cache account for other usage.
 
 Task listing completes independently of RAM sampling. A slow or unavailable sample does not disable opening/closing. Old samples are discarded after refresh or catalog changes. Ordinary task removal is not evidence that an app process stopped.
 
@@ -111,7 +113,7 @@ Build with JDK 17, Android SDK 35 / Build Tools 35.0.0 and Gradle 8.11.1:
 ./gradlew testDebugUnitTest lintRelease assembleRelease bundleRelease
 ```
 
-Windows uses gradlew.bat. Set ANDROID_HOME or local.properties. See [Release signing](docs/RELEASING.md) for signing configuration. Keys/passwords live in ignored `.local/` and are never included in source archives. Without release signing material, the release artifact is unsigned. Application versionCode is 113; UserService implementation remains 8.
+Windows uses gradlew.bat. Set ANDROID_HOME or local.properties. See [Release signing](docs/RELEASING.md) for signing configuration. Keys/passwords live in ignored `.local/` and are never included in source archives. Without release signing material, the release artifact is unsigned. Application versionCode is 114; UserService implementation remains 8.
 
 See [VALIDATION.md](VALIDATION.md) for automated results and [DEVICE-TEST.md](DEVICE-TEST.md) for outstanding hardware checks. UI tests use fake IPC; actual RP6 Shizuku behavior, controller routing and visible RAM banners are not proven by them.
 

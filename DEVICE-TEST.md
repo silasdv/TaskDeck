@@ -1,3 +1,14 @@
+# Version 1.1.4 acceptance additions
+
+- Four picker tile icons stay inside borders across actual app/adaptive icons, search keyboard, font scale and insets. Empty dock Add apps label keeps fully rounded focus.
+- Current badge sits close above the task icon, centered as a group. Thumb corners has four independent boxes for four apps; test drag/reorder/overflow and Current green.
+- Matching System/App RAM surfaces, no chart overflow at short heights, full RAM details available.
+- Previous/Next controller badges follow remapping in picker, Last action, RAM and windows. Assign L2/R2, test pages/end limits and cancel capture with Back. Main actions remain unchanged.
+- Accent palette in Light/Dark/OLED/Automatic; verify colors/contrast, round swatches, persistence and semantic Current green.
+- Up from tasks reaches Refresh; Right traverses toolbar; task-edge Right reaches RAM details, Up reaches Settings, Right reaches right dock. Check D-pad/stick and empty decks. Back from Settings content returns to categories before exiting.
+
+---
+
 # Version 1.1.3 acceptance additions
 
 - Verify 8dp border gaps in Cards/Fit/Grid/List, especially toolbar to tasks and RAM Details to dock. Check system insets, larger fonts, empty/collapsed docks and portrait.

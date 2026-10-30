@@ -21,3 +21,5 @@ Version 1.1.1 uses versionCode 111 and the same release key. Signed APK/AAB, sou
 Version 1.1.2 uses versionCode 112 and the same release key. APK, AAB, source ZIP and checksums are prepared locally; existing published assets remain unchanged.
 
 Version 1.1.3 uses versionCode 113 and the same release key. Signed assets and source archive are prepared locally.
+
+Version 1.1.4 uses versionCode 114 and the same release key. Signed APK/AAB, clean source ZIP and checksums are prepared locally; existing published assets remain unchanged.

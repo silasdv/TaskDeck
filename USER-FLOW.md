@@ -1,4 +1,4 @@
-# User flow — 1.1.3
+# User flow — 1.1.4
 
 ## Main screen
 
@@ -53,3 +53,13 @@ Confirm on a Settings category enters the right content pane. Fit all and Recent
 Main borders use an 8dp gap: toolbar to task/RAM areas, between task cards, task area to RAM sidebar and RAM Details to the dock shell. Dock internal safety padding is included in this spacing. System RAM has its own rounded background and usage chart, separate from app estimates. Portrait uses a matching system-summary surface.
 
 Face-button badges grow from 16 to 20dp. Horizontal inset compensation preserves the button envelope; text, background shape, height and shoulder-badge size remain unchanged.
+
+## Interaction revision 1.1.4
+
+The picker uses fixed, fit-centered ImageViews inside the tiles rather than top compound drawables. Small tile heights hide the icon to preserve the name. Current badge and task contents form one centered group; the badge stays close above the icon. App RAM has the same surface/border/padding as System RAM; only rows that fit are shown, with full details still available.
+
+Thumb corners has one bordered box per favorite, separated by 8dp. Corner container backgrounds are transparent. The empty dock is a wrap-content labeled Add apps button; its focus does not magnify the whole label or clip its corners.
+
+Page-navigation mappings are independent of main actions. Previous/Next show controller badges, default L1/R1; the same bindings work in picker, Last action, RAM and window pages. Bind capture can be cancelled with Confirm/Back. Setup retains its fixed L1/R1 flow.
+
+Appearance > Accent color has a four-column palette of round swatches: Theme and twelve colors. It updates focus, selection and charts across app/dock; semantic Current/status green is preserved. Main toolbar and RAM/dock transitions use explicit directions. Back from Settings content first returns to its category; Back from the category exits.
