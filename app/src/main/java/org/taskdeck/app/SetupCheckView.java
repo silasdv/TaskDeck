@@ -12,7 +12,7 @@ public final class SetupCheckView extends View {
     private float progress;
     private ValueAnimator animation;
     public SetupCheckView(Context context,int color){ super(context); this.color=color; setContentDescription("Setup complete"); setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_YES); }
-    public void play(){ animation=ValueAnimator.ofFloat(0,1); animation.setDuration(380); animation.addUpdateListener(a->{ progress=(float)a.getAnimatedValue(); invalidate(); }); animation.start(); }
+    public void play(){ animation=ValueAnimator.ofFloat(0,1); animation.setDuration(800); animation.addUpdateListener(a->{ progress=(float)a.getAnimatedValue(); invalidate(); }); animation.start(); }
     @Override protected void onDetachedFromWindow(){ if(animation!=null) animation.cancel(); super.onDetachedFromWindow(); }
     @Override protected void onDraw(Canvas canvas){
         super.onDraw(canvas); float size=Math.min(getWidth(),getHeight()),x=(getWidth()-size)/2,y=(getHeight()-size)/2;

@@ -1,24 +1,18 @@
-# Usability review — TaskDeck 1.1.7
+# Usability review — TaskDeck 1.1.8
 
-Reviewed against [Jakob Nielsen’s ten usability heuristics](https://www.nngroup.com/articles/ten-usability-heuristics/), before the release build. This is a source/layout review with regression checks, not a moderated user study or physical RP6 acceptance.
+Source/layout review using [Nielsen’s ten usability heuristics](https://www.nngroup.com/articles/ten-usability-heuristics/); not a physical RP6 certification or moderated user study.
 
-| Heuristic | Finding and response | Remaining limits |
+| Heuristic | Current response | Remaining acceptance |
 | --- | --- | --- |
-| Visibility of system status | Live connection/permission checks, explicit required/optional Setup steps, Current badge, inline empty states and Last action. Incomplete optional steps now say Skip for now. | Firmware may suppress notifications; confirm actual delivery on device. |
-| Match with the real world | A/B/X/Y and PlayStation labels, MB, named actions; Setup now lets users choose labels before calibration. | Android key mappings may differ from printed buttons; calibration is not universal detection. |
-| User control and freedom | Back returns from Settings content to categories before exit; optional Setup steps can be skipped; direct color selection and individual remapping are available. | Closing cannot recover unsaved app state. No false undo promise. |
-| Consistency and standards | Tasks Down always enters the left dock; RAM Down/Right enters the right dock. Setup theme choices use a two-by-two grid and spatial controller navigation. | Physical input/IME routing needs RP6 verification. |
-| Error prevention | Confirm/Back/navigation remain reserved during chord capture; required-service protection and backend rechecks retained. | User-authorized closing remains immediate, as requested. |
-| Recognition rather than recall | Visible page hints, inline label choices and sixteen large color swatches; selected swatches use filled boxes and focus uses a stronger accent border. | Swatches retain accessible names/tooltips, although visible color labels are intentionally omitted. |
-| Flexibility and efficiency | First-touch actions, D-pad/stick navigation, mapped controls, shortcuts and quick-access favorites retained. | Native firmware gesture replacement is outside this app. |
-| Aesthetic and minimalist design | Palette uses complete responsive rows with close vertical spacing and swatch boxes. Buttons use measured text widths/padding and wrapping, rather than narrow caps or smaller text. Appearance/About headings remain consistent with other categories. | Large system fonts/native rendering still need device review. |
-| Recognize, diagnose and recover from errors | Friendly summaries distinguish connection interruption, denied access and unavailable apps; detailed Last action remains available. No destructive auto-retry. | Native backend errors may contain additional technical details. |
-| Help and documentation | USER-FLOW.md rewritten as one current guide; Setup and DEVICE-TEST describe actual limits and recovery. | No claim that all firmware behaves identically. |
+| Visibility | Live permissions, calibrated checkmarks, Current badge, added-app toast and Dock icon strip; no redundant confirmed banner. | Real notification/permission behavior. |
+| Familiar language | Dock and Quick Swap Apps consistently; explicit actions and MB. | Firmware key reports may differ. |
+| User control | Inline recording, cancellation, Redo Setup, Clear Dock and explicit locks. | Closing cannot restore unsaved app state. |
+| Consistency | Accent focus, equal style grid, controller paging and spatial Dock routes. | Native rendering and hardware navigation. |
+| Error prevention | Permissions precede and gate hotkeys; conflicts rejected; required services protected. | Partial chords can reach games. |
+| Recognition | Eight app icons, vector style previews, Select hint and completion checkmarks. | Large Dock sets make the icon strip smaller. |
+| Efficiency | First touch, mapped controls, search, eight-app pages and Fit all transitions. | Global shortcut/firmware routing. |
+| Minimalism | Five setup pages, no nested recorder, visibility slider, no Last action in Settings or Android-style app selection dialogs. | System permission interfaces remain outside app styling. |
+| Recovery | Friendly inline errors and official Shizuku links; no destructive auto-retry. | Firmware-specific restrictions. |
+| Help | Permissions/protection explained, visible drag hint and current flow/checklist. | No universal compatibility guarantee. |
 
-## Setup audit
-
-Retained: eight focused steps, once-only onboarding, live permission checks, L1/R1 hints, reserved navigation during recording and completion animation with a deliberate hold. Fixed: missing label selection before PlayStation calibration; ambiguous optional progression; unclear required connection status; four theme choices squeezed into one row. Theme/profile choices now have spatial D-pad/stick routes. The completion animation was not shortened.
-
-Checks exercise compact landscape step fit, optional labels, PlayStation selection, rendered theme labels and existing permission/navigation paths. Full actual permission round trips, controller discovery and perceived animation duration remain hardware checks.
-
-An optional undo-remove-favorite idea is deferred; it is not needed for the approved navigation, sizing, palette or Setup corrections. App closing has no misleading undo or confirmation popup.
+Completion drawing is slower (800 ms), with about 150 ms further hold. Ordinary apps/launchers are no longer automatically locked. Simulated checks cover selected state, layout and input behavior, not actual motor feedback or Shizuku firmware behavior.

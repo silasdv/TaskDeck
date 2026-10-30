@@ -67,8 +67,6 @@ public class TaskBackend extends ITaskBackend.Stub {
         Set<String> result=inputMethods();
         Set<String> requiredKeyboards=new HashSet<>(result);
         if(result.isEmpty()) result.add("!input-method-discovery-unavailable");
-        result.addAll(launcherPackages(home()));
-        result.removeAll(unlockedLaunchers);
         result.addAll(requiredKeyboards);
         return result;
     }
@@ -81,7 +79,7 @@ public class TaskBackend extends ITaskBackend.Stub {
         String name=packageOf(task);
         int taskUser=task.getClass().getField("userId").getInt(task);
         // Protect every discovered IME; avoid ContentResolver, which is unsupported in UserService.
-        return !protectedPackages.contains("!input-method-discovery-unavailable") && !home.isEmpty() && TaskPolicy.canRemove(name,false,taskUser,user(),unlockedLaunchers.contains(name)?"":home,"",protectedPackages);
+        return !protectedPackages.contains("!input-method-discovery-unavailable") && !home.isEmpty() && TaskPolicy.canRemove(name,false,taskUser,user(),"","",protectedPackages);
     }
     private TaskInfo find(int id,String expected) throws Exception {
         for(TaskInfo task:tasks()) if(task.taskId==id && packageOf(task).equals(expected)) return task;
@@ -146,15 +144,15 @@ public class TaskBackend extends ITaskBackend.Stub {
             for(TaskInfo task:recent){
                 String name=packageOf(task); if(name.isEmpty()||name.equals(context.getPackageName())) continue;
                 ApplicationInfo info; try { info=app(name); } catch(PackageManager.NameNotFoundException ignored){ continue; }
-                boolean launcher=launchers.contains(name),mandatory=!removable(task,home,protectedApps)&&(!launcher||unlockedLaunchers.contains(name)),manual=userProtected.contains(name);
+                boolean launcher=launchers.contains(name),mandatory=!removable(task,home,protectedApps),manual=userProtected.contains(name);
                 String label=context.getPackageManager().getApplicationLabel(info).toString();
                 String window=task.taskDescription==null?"":String.valueOf(task.taskDescription.getLabel()); if(window.equals("null")||window.isEmpty()) window="Window "+task.taskId;
                 rows.put(new JSONObject().put("id",task.taskId).put("package",name).put("label",label).put("windowLabel",window)
-                    .put("recentRank",rank++).put("removable",!mandatory&&!manual&&(!launcher||unlockedLaunchers.contains(name))).put("mandatoryProtected",mandatory)
+                    .put("recentRank",rank++).put("removable",!mandatory&&!manual).put("mandatoryProtected",mandatory)
                     .put("userProtected",manual).put("launcher",launcher).put("home",name.equals(home)).put("pssKb",-1).put("memoryState","loading"));
             }
             String warning=home.isEmpty()?"HOME discovery unavailable":protectedApps.contains("!input-method-discovery-unavailable")?"Keyboard discovery unavailable":"";
-            return new JSONObject().put("uid",android.os.Process.myUid()).put("sdk",Build.VERSION.SDK_INT).put("backendVersion",8).put("tasks",rows)
+            return new JSONObject().put("uid",android.os.Process.myUid()).put("sdk",Build.VERSION.SDK_INT).put("backendVersion",9).put("tasks",rows)
                 .put("protectionWarning",warning).put("previousTask",previousTask(recent,home)).toString();
         } catch(Exception failure){ return error(failure); }
     }
@@ -213,7 +211,7 @@ public class TaskBackend extends ITaskBackend.Stub {
             if(!launcherPackages(home()).contains(expected)) throw new SecurityException("Not an installed HOME launcher or recognized Wave frontend");
             Set<String> keyboards=inputMethods();
             if(keyboards.isEmpty()||!TaskPolicy.canRemove(expected,false,user(),user(),"","",keyboards)) throw new SecurityException("Required service protection");
-            if(!forRestart&&(!unlockedLaunchers.contains(expected)||userProtected.contains(expected))) throw new SecurityException("Launcher is locked");
+            if(!forRestart&&userProtected.contains(expected)) throw new SecurityException("Launcher is locked");
             Set<Integer> originalTasks=new HashSet<>(); for(TaskInfo task:tasks()) if(expected.equals(packageOf(task))) originalTasks.add(task.taskId);
             Set<Integer> before; try { before=launcherPids(expected); } catch(Exception unavailable){ before=null; }
             Object am=Class.forName("android.app.ActivityManager").getDeclaredMethod("getService").invoke(null);

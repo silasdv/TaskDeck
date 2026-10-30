@@ -10,7 +10,7 @@ public final class ActionGlyph extends Drawable {
     public ActionGlyph(String kind,int color){ this.kind=kind; this.color=color; }
     public static String kind(String label){
         String s=label.toLowerCase(Locale.ROOT);
-        if(s.contains("quick access")||s.startsWith("pin ")||s.startsWith("unpin ")) return "pin";
+        if(s.contains("dock")||s.startsWith("pin ")||s.startsWith("unpin ")) return "pin";
         if(s.equals("dock")) return "grid";
         if(s.equals("auto")) return "theme";
         if(s.contains("feedback")) return "notify";

@@ -19,7 +19,8 @@ public final class QuickAccessDock extends LinearLayout {
     private DeckTheme theme; private LinearLayout icons,thumbLeft,thumbRight; private HorizontalScrollView scroll,leftScroll,rightScroll; private int split;
     public final List<View> items=new ArrayList<>(); private final List<String> packages=new ArrayList<>();
     private boolean expanded=true,dragging,focused; private String draggingPackage; private List<String> dragOrder;
-    private List<String> preview;
+    private List<String> preview; private int previewSplit=-1;
+    public void previewSplit(int count){previewSplit=count;}
     public void preview(List<String> values){ preview=new ArrayList<>(values); expanded=true; }
     private boolean individualBoxes;
     private int selected=-1; private long lastScroll;
@@ -41,9 +42,9 @@ public final class QuickAccessDock extends LinearLayout {
     }
     private void render(){
         if(theme==null) return; int offset=scroll==null?0:scroll.getScrollX(),leftOffset=leftScroll==null?0:leftScroll.getScrollX(),rightOffset=rightScroll==null?-1:rightScroll.getScrollX(); removeAllViews(); items.clear(); packages.clear(); thumbLeft=null; thumbRight=null; leftScroll=null; rightScroll=null;
-        if(!expanded){ TextView handle=new TextView(getContext()); handle.setText("↑"); handle.setTextColor(theme.muted); handle.setTextSize(11); handle.setGravity(Gravity.CENTER); handle.setPadding(dp(12),dp(5),dp(12),dp(5)); handle.setContentDescription("Show Quick Access dock"); handle.setOnClickListener(v->{ host.touch(); expand(true); }); addView(handle); return; }
+        if(!expanded){ TextView handle=new TextView(getContext()); handle.setText("↑"); handle.setTextColor(theme.muted); handle.setTextSize(11); handle.setGravity(Gravity.CENTER); handle.setPadding(dp(12),dp(5),dp(12),dp(5)); handle.setContentDescription("Show Dock dock"); handle.setOnClickListener(v->{ host.touch(); expand(true); }); addView(handle); return; }
         if(preview==null&&!dragging&&QuickAccess.read(prefs).isEmpty()){
-            TextView add=new TextView(getContext()); add.setText("+  Add apps to Quick Access"); add.setTextColor(theme.muted); add.setTextSize(11); add.setGravity(Gravity.CENTER); add.setPadding(dp(14),dp(7),dp(14),dp(7)); add.setBackground(rounded(theme.surface)); add.setFocusable(true); add.setFocusableInTouchMode(host.controller()); add.setDefaultFocusHighlightEnabled(false); add.setContentDescription("Add apps to Quick Access"); add.setOnClickListener(v->host.add()); add.setOnHoverListener((v,event)->{ if(event.getActionMasked()==MotionEvent.ACTION_HOVER_ENTER) highlight(0); else if(event.getActionMasked()==MotionEvent.ACTION_HOVER_EXIT) highlight(-2); return false; }); add.setOnFocusChangeListener((v,focus)->{ if(focus){ selected=0; highlight(0); } }); addView(add,new LayoutParams(-2,dp(48))); items.add(add); packages.add(""); highlight(focused?0:-2); return;
+            TextView add=new TextView(getContext()); add.setText("+  Add apps to Dock"); add.setTextColor(theme.muted); add.setTextSize(11); add.setGravity(Gravity.CENTER); add.setPadding(dp(14),dp(7),dp(14),dp(7)); add.setBackground(rounded(theme.surface)); add.setFocusable(true); add.setFocusableInTouchMode(host.controller()); add.setDefaultFocusHighlightEnabled(false); add.setContentDescription("Add apps to Dock"); add.setOnClickListener(v->host.add()); add.setOnHoverListener((v,event)->{ if(event.getActionMasked()==MotionEvent.ACTION_HOVER_ENTER) highlight(0); else if(event.getActionMasked()==MotionEvent.ACTION_HOVER_EXIT) highlight(-2); return false; }); add.setOnFocusChangeListener((v,focus)->{ if(focus){ selected=0; highlight(0); } }); addView(add,new LayoutParams(-2,dp(48))); items.add(add); packages.add(""); highlight(focused?0:-2); return;
         }
         String style=prefs.getString("dockStyle","thumb"); boolean thumbs="thumb".equals(style); individualBoxes=thumbs; int icon=Math.round(("compact".equals(style)?26:thumbs?34:32)*QuickAccess.size(prefs)/100f),cell=thumbs?Math.max(24,Math.round(72*QuickAccess.size(prefs)/100f)-12):Math.max(Math.round(48*QuickAccess.size(prefs)/100f),(int)Math.ceil(icon*1.12f)+12);
         scroll=new HorizontalScrollView(getContext()); scroll.setHorizontalScrollBarEnabled(false); scroll.setClipChildren(false); scroll.setClipToPadding(false); scroll.setFillViewport(true); addView(scroll,new LayoutParams(-1,dp(cell+20)));
@@ -52,7 +53,7 @@ public final class QuickAccessDock extends LinearLayout {
         center.addView(icons,new LayoutParams("shelf".equals(style)||thumbs?-1:-2,-1));
         List<String> order=preview!=null?preview:dragging&&dragOrder!=null?dragOrder:QuickAccess.read(prefs);
         if(thumbs){
-            order=QuickAccess.displayOrder(prefs,order); icons.setBackgroundColor(Color.TRANSPARENT); icons.setPadding(0,0,0,0); split=QuickAccess.leftCount(prefs,order.size());
+            order=QuickAccess.displayOrder(prefs,order); icons.setBackgroundColor(Color.TRANSPARENT); icons.setPadding(0,0,0,0); split=preview!=null&&previewSplit>=0?Math.min(order.size(),previewSplit):QuickAccess.leftCount(prefs,order.size());
             leftScroll=new HorizontalScrollView(getContext()); rightScroll=new HorizontalScrollView(getContext()); for(HorizontalScrollView side:new HorizontalScrollView[]{leftScroll,rightScroll}){ side.setHorizontalScrollBarEnabled(false); side.setFillViewport(true); side.setClipChildren(false); }
             LayoutParams leftSize=new LayoutParams(0,-1,1); leftSize.rightMargin=dp(12); icons.addView(leftScroll,leftSize); icons.addView(rightScroll,new LayoutParams(0,-1,1));
             FrameLayout leftFrame=new FrameLayout(getContext()),rightFrame=new FrameLayout(getContext()); leftScroll.addView(leftFrame,new HorizontalScrollView.LayoutParams(-2,-1)); rightScroll.addView(rightFrame,new HorizontalScrollView.LayoutParams(-2,-1));
@@ -67,14 +68,14 @@ public final class QuickAccessDock extends LinearLayout {
     }
     private void addItem(String pkg,int icon,int cell){
         FrameLayout item=new FrameLayout(getContext()); item.setFocusable(true); item.setFocusableInTouchMode(host.controller()); item.setDefaultFocusHighlightEnabled(false); item.setClipChildren(false); item.setTag(pkg);
-        String name=pkg.isEmpty()?"Add apps to Quick Access":host.label(pkg); boolean running=!pkg.isEmpty()&&host.running(pkg),current=!pkg.isEmpty()&&host.current(pkg);
+        String name=pkg.isEmpty()?"Add apps to Dock":host.label(pkg); boolean running=!pkg.isEmpty()&&host.running(pkg),current=!pkg.isEmpty()&&host.current(pkg);
         ImageView image=new ImageView(getContext()); image.setImageDrawable(pkg.isEmpty()?new ActionGlyph("plus",theme.text):host.icon(pkg)); image.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO); item.addView(image,new FrameLayout.LayoutParams(dp(icon),dp(icon),Gravity.CENTER));
         View indicator=new View(getContext()); GradientDrawable dot=new GradientDrawable(); dot.setShape(GradientDrawable.OVAL); dot.setColor(current?currentColor():theme.muted); indicator.setBackground(dot); FrameLayout.LayoutParams point=new FrameLayout.LayoutParams(dp(current?8:4),dp(4),Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL); point.bottomMargin=dp(5); item.addView(indicator,point); indicator.setVisibility(prefs.getBoolean("dockIndicators",true)&&(running||current)?VISIBLE:INVISIBLE);
         item.setContentDescription(name+(current?", Current app":running?", running":"")); item.setTooltipText(name); LinearLayout target=thumbLeft==null?icons:items.size()<split?thumbLeft:thumbRight; LayoutParams itemSize=new LayoutParams(dp(cell+(thumbLeft!=null?12:0)),-1); if(thumbLeft!=null&&target.getChildCount()>0) itemSize.leftMargin=dp(8); target.addView(item,itemSize); packages.add(pkg); items.add(item);
         item.setOnClickListener(v->{ selected=items.indexOf(item); if(pkg.isEmpty()) host.add(); else host.launch(pkg); });
         item.setOnFocusChangeListener((v,focused)->{ if(focused){ selected=items.indexOf(v); highlight(selected); } });
         item.setOnHoverListener((v,event)->{ if(event.getActionMasked()==MotionEvent.ACTION_HOVER_ENTER) highlight(items.indexOf(v)); else if(event.getActionMasked()==MotionEvent.ACTION_HOVER_EXIT) highlight(-2); return false; });
-        item.setOnLongClickListener(v->{ if(preview!=null) return false; if(pkg.isEmpty()){ host.add(); return true; } host.touch(); dragging=true; draggingPackage=pkg; dragOrder=QuickAccess.read(prefs); boolean started=v.startDragAndDrop(ClipData.newPlainText("TaskDeck Quick Access",pkg),new View.DragShadowBuilder(v),pkg,0); if(!started){ dragging=false; dragOrder=null; } return started; });
+        item.setOnLongClickListener(v->{ if(preview!=null) return false; if(pkg.isEmpty()){ host.add(); return true; } host.touch(); dragging=true; draggingPackage=pkg; dragOrder=QuickAccess.read(prefs); boolean started=v.startDragAndDrop(ClipData.newPlainText("TaskDeck Dock",pkg),new View.DragShadowBuilder(v),pkg,0); if(!started){ dragging=false; dragOrder=null; } return started; });
     }
     private boolean drag(View view,DragEvent event){
         if(event.getAction()==DragEvent.ACTION_DRAG_STARTED) return event.getLocalState() instanceof String&&QuickAccess.read(prefs).contains((String)event.getLocalState());

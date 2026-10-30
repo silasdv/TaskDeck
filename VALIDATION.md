@@ -1,4 +1,18 @@
-# Validation — 1.1.7
+# Validation — 1.1.8
+
+30 October 2026. versionName 1.1.8, versionCode 118; UserService version 9. Existing release key retained.
+
+- testDebugUnitTest: **142 passed**, zero failures/errors/skips.
+- lintRelease: **0 errors, 33 warnings**.
+- assembleRelease and bundleRelease: passed.
+
+New regressions cover live-permission gating and save-on-release of both setup hotkeys across recreation; eight picker tiles with images above disabled native button elevation; named added toast and Clear Dock/icon strip; optional ordinary-launcher protection and absence of successful-close banners; independent preview sides/Swap sides; vibration checkbox and a simulated 20 ms vibration request; controller Left/Right visibility slider; and Redo Setup preserving configuration. Existing compact landscape settings/setup fit and controller tests remain covered. Older test fixtures explicitly protect their launcher rather than assuming the app does so by default.
+
+Fit all transitions use stable task transition names and respect Android's animations-enabled setting. Native animation appearance and hit targets still need physical review. All checks use simulated Android layouts/input and fake IPC, not actual RP6 firmware, motor feedback, permission flow, Shizuku or notification delivery. DEVICE-TEST.md lists pending physical acceptance. No universal compatibility/performance claim is made.
+
+---
+
+# Historical validation — 1.1.7
 
 30 October 2026. versionName 1.1.7, versionCode 117; UserService protocol 8 unchanged. Existing release key retained.
 

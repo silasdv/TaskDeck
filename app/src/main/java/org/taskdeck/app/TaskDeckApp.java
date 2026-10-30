@@ -24,7 +24,7 @@ public class TaskDeckApp extends Application {
     private boolean binding,pendingPermissionRequest;
     private int connectionGeneration;
     private final Shizuku.UserServiceArgs args=new Shizuku.UserServiceArgs(new ComponentName("org.taskdeck.app",TaskBackend.class.getName()))
-        .daemon(false).processNameSuffix("tasks").debuggable(false).version(8);
+        .daemon(false).processNameSuffix("tasks").debuggable(false).version(9);
     private int pendingRamCount;
     private long ramBefore;
     public volatile String lastMemoryMessage="";
@@ -79,7 +79,7 @@ public class TaskDeckApp extends Application {
         if(pendingRequests.get()>0){ android.widget.Toast.makeText(this,"Wait for the current action to finish",android.widget.Toast.LENGTH_SHORT).show(); return; }
         ITaskBackend service=backend;
         if(service==null){ android.widget.Toast.makeText(this,"Connect TaskDeck to Shizuku first",android.widget.Toast.LENGTH_LONG).show(); connect(false); return; }
-        request("Direct app switch",5000,()->new JSONObject(service.switchPreviousTask()),result->{
+        request("Quick Swap Apps",5000,()->new JSONObject(service.switchPreviousTask()),result->{
             if(result.has("error")){ android.widget.Toast.makeText(this,result.optString("error"),android.widget.Toast.LENGTH_LONG).show(); return; }
             if(result.optBoolean("home")) try { startActivity(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).setPackage(result.optString("package")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); }
             catch(RuntimeException denied){ android.widget.Toast.makeText(this,"Android blocked the HOME switch",android.widget.Toast.LENGTH_LONG).show(); }

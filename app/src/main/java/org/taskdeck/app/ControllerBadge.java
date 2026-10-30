@@ -12,7 +12,7 @@ public final class ControllerBadge extends Drawable {
     public static boolean symbol(String key){ return key.equals("Cross")||key.equals("Circle")||key.equals("Square")||key.equals("Triangle"); }
     @Override public void draw(Canvas c){
         Rect b=getBounds(); boolean ps=symbol(key),shoulder=key.length()>1&&!ps; Paint p=new Paint(Paint.ANTI_ALIAS_FLAG);
-        p.setColor(color(key,neutral)); p.setStyle(shoulder||ps?Paint.Style.STROKE:Paint.Style.FILL); p.setStrokeWidth(Math.max(1.5f,b.height()*.07f)); p.setStrokeCap(Paint.Cap.ROUND); p.setStrokeJoin(Paint.Join.ROUND);
+        p.setColor(ps?Color.WHITE:color(key,neutral)); p.setStyle(shoulder||ps?Paint.Style.STROKE:Paint.Style.FILL); p.setStrokeWidth(Math.max(1.5f,b.height()*.07f)); p.setStrokeCap(Paint.Cap.ROUND); p.setStrokeJoin(Paint.Join.ROUND);
         float x=b.exactCenterX(),y=b.exactCenterY(),r=b.height()*.27f;
         if(ps){
             if(key.equals("Cross")){ c.drawLine(x-r,y-r,x+r,y+r,p); c.drawLine(x+r,y-r,x-r,y+r,p); }
@@ -22,7 +22,7 @@ public final class ControllerBadge extends Drawable {
             return;
         }
         if(shoulder) c.drawRoundRect(new RectF(b.left+1,b.top+1,b.right-1,b.bottom-1),5,5,p); else c.drawCircle(x,y,b.height()/2f-1,p);
-        p.setStyle(Paint.Style.FILL); p.setColor(shoulder?neutral:key.equals("B")?Color.rgb(35,30,10):Color.WHITE);
+        p.setStyle(Paint.Style.FILL); p.setColor(shoulder?neutral:Color.WHITE);
         if(key.equals("Start")){ Path play=new Path(); play.moveTo(x-r*.6f,y-r); play.lineTo(x+r,y); play.lineTo(x-r*.6f,y+r); play.close(); c.drawPath(play,p); return; }
         if(key.equals("Options")){ p.setStyle(Paint.Style.STROKE); for(int i=-1;i<=1;i++) c.drawLine(x-r,y+i*r*.65f,x+r,y+i*r*.65f,p); return; }
         p.setTypeface(Typeface.DEFAULT_BOLD); p.setTextSize(b.height()*(shoulder?(key.length()>2?.33f:.44f):.57f)); p.setTextAlign(Paint.Align.CENTER); c.drawText(key,x,y-(p.ascent()+p.descent())/2,p);

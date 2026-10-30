@@ -28,7 +28,7 @@ public class SwitcherActivity extends Activity {
     private TextView compactMemory;
     private QuickAccessDock dock; private Page pickerReturn=Page.SETTINGS; private boolean dockZone; private int dockIndex,pickerPage;
     private Button ramButton,pickerPrevious,pickerNext,pagePrevious,pageNext; private List<JSONObject> pickerApps;
-    private List<String> previewApps; private int previewCount=-1; private LinearLayout previewHost; private QuickAccessDock previewDock; private Button previewMinus,previewPlus;
+    private List<String> previewApps; private int previewCount=-1,previewLeft=-1,previewRight=-1; private LinearLayout previewHost; private QuickAccessDock previewDock; private Button previewMinus,previewPlus,previewRightMinus,previewRightPlus;
     private String pickerQuery=""; private LinearLayout pickerRows; private EditText pickerSearch; private final List<Button> pickerOptions=new ArrayList<>();
     private Button setupPrevious,setupNext;
     private int gridColumns=1,renderWidth,renderHeight,iconAccent;
@@ -43,6 +43,7 @@ public class SwitcherActivity extends Activity {
     private PopupWindow protectionPopup;
     private ScrollView pageScroll;
     private boolean pendingRefresh,controllerMode=true,resetSelection=true,captureEntry=true;
+    private SeekBar visibilitySlider; private boolean inlineCapture,inlineConfirm,setupProtection; private LinearLayout pickerRail;
     private int setupStep,controlIndex=-1,catalogGeneration,detailsPage;
     private boolean recordingQuickSwitch,readError,fitOverflow;
     private String memoryStatus="Not sampled";
@@ -73,7 +74,7 @@ public class SwitcherActivity extends Activity {
         Button b=new Button(this); b.setText(value); b.setAllCaps(false); b.setTextSize(13); b.setTextColor(theme.text); b.setFocusableInTouchMode(controllerMode); b.setDefaultFocusHighlightEnabled(false);
         String kind=ActionGlyph.kind(value); int tint=ActionGlyph.color(kind,theme); b.setTextColor(tint);
         Drawable glyph=new ActionGlyph(kind,tint); glyph.setBounds(0,0,dp(18),dp(18)); b.setCompoundDrawables(glyph,null,null,null); b.setCompoundDrawablePadding(dp(7)); b.setMinWidth(0); b.setMinimumWidth(0);
-        StateListDrawable bg=new StateListDrawable(); GradientDrawable focused=rounded(theme.selected); focused.setStroke(dp(3),tint);
+        StateListDrawable bg=new StateListDrawable(); GradientDrawable focused=rounded(theme.selected); focused.setStroke(dp(3),theme.accent);
         GradientDrawable selected=rounded(theme.selected); selected.setStroke(dp(1),theme.accent);
         bg.addState(new int[]{android.R.attr.state_activated},focused); bg.addState(new int[]{android.R.attr.state_focused},focused); bg.addState(new int[]{android.R.attr.state_pressed},rounded(theme.selected)); bg.addState(new int[]{android.R.attr.state_selected},selected); bg.addState(new int[]{},rounded(theme.raised));
         boolean compact=getResources().getConfiguration().screenHeightDp<440;
@@ -97,12 +98,13 @@ public class SwitcherActivity extends Activity {
         if(initial==Page.BIND) initial=Page.MAPPING; if(initial==Page.ACCENT){ initial=Page.SETTINGS; settingsCategory=2; }
         if(initial==Page.SETUP&&prefs().getBoolean("setupComplete",false)) initial=Page.SETTINGS;
         if(getLastNonConfigurationInstance() instanceof JSONObject){ entryTask=(JSONObject)getLastNonConfigurationInstance(); captureEntry=false; }
+        if(state!=null){recordingQuickSwitch=state.getBoolean("recordingQuickSwap");inlineCapture=state.getBoolean("inlineCapture");inlineConfirm=state.getBoolean("inlineConfirm");}
         show(initial); if(initial==Page.PICKER) showPicker();
     }
     @Override public Object onRetainNonConfigurationInstance(){ return entryTask; }
-    @Override public void onSaveInstanceState(Bundle out){ out.putString("page",page.name()); out.putInt("setupStep",setupStep); out.putInt("settingsCategory",settingsCategory); out.putInt("ramPage",ramPage); out.putString("pickerReturn",pickerReturn.name()); super.onSaveInstanceState(out); }
+    @Override public void onSaveInstanceState(Bundle out){ out.putString("page",page.name()); out.putInt("setupStep",setupStep); out.putInt("settingsCategory",settingsCategory); out.putInt("ramPage",ramPage); out.putString("pickerReturn",pickerReturn.name()); out.putBoolean("recordingQuickSwap",recordingQuickSwitch);out.putBoolean("inlineCapture",inlineCapture);out.putBoolean("inlineConfirm",inlineConfirm);super.onSaveInstanceState(out); }
     @Override protected void onResume(){
-        super.onResume(); TaskDeckApp.recordingShortcut=page==Page.CHORD || page==Page.CONFIRM || page==Page.BIND;
+        super.onResume(); TaskDeckApp.recordingShortcut=inlineCapture||inlineConfirm||page==Page.CHORD || page==Page.CONFIRM || page==Page.BIND;
         app.changed=this::connectionChanged; app.verifyLiveAccess(); if(page==Page.SETUP || page==Page.SETTINGS) show(page); updateStatus();
         if(app.backend!=null) refresh(); else app.connect(false);
     }
@@ -152,7 +154,7 @@ public class SwitcherActivity extends Activity {
         status=smallNote(formInfo,""); status.setVisibility(View.GONE);
     }
     private TextView note(LinearLayout parent,String value){ TextView v=text(parent,value,13,true); v.setPadding(0,dp(2),0,dp(2)); return v; }
-    private String actionFor(String key){ switch(key){ case "A":return "open"; case "B":return "exit"; case "X":return "close"; case "Y":return "clear"; default:return "others"; } }
+    private String actionFor(String key){ switch(key){ case "A":return "open"; case "B":return "exit"; case "X":return "close"; case "Y":return "clear"; case "Select":return "options"; default:return "others"; } }
     private Button controllerButton(LinearLayout parent,String key,String label,String icon,Runnable action){
         String printed=ControllerBindings.badge(prefs(),actionFor(key)); Button b=compactButton(button(parent,label,action));
         Drawable badge=new ControllerBadge(printed,theme.text); boolean shoulder=printed.length()>1&&!ControllerBadge.symbol(printed); badge.setBounds(0,0,dp(shoulder?21:20),dp(shoulder?16:20));
@@ -187,72 +189,71 @@ public class SwitcherActivity extends Activity {
     }
     private void pin(String pkg){
         if(!QuickAccess.read(prefs()).contains(pkg)&&getPackageManager().getLaunchIntentForPackage(pkg)==null){ feedback="This app has no launchable shortcut"; updateStatus(); return; }
-        QuickAccess.toggle(prefs(),pkg); renderDock();
+        boolean adding=!QuickAccess.read(prefs()).contains(pkg); QuickAccess.toggle(prefs(),pkg); if(adding) Toast.makeText(this,launchLabel(pkg)+" added to Dock",Toast.LENGTH_SHORT).show(); renderDock(); updatePickerRail();
     }
     private void choice(String title,String[] labels,int selected,java.util.function.IntConsumer picked){
-        AlertDialog.Builder builder=new AlertDialog.Builder(this).setTitle(title); DialogInterface.OnClickListener pick=(d,which)->{ d.dismiss(); picked.accept(which); }; if(selected<0) builder.setItems(labels,pick); else builder.setSingleChoiceItems(labels,selected,pick); AlertDialog dialog=builder.setNegativeButton("Cancel",null).create();
-        dialog.setOnKeyListener((d,key,event)->{ setInputMode(true);
-            if(key==ControllerBindings.code(prefs(),"exit")||key==KeyEvent.KEYCODE_BACK){ if(event.getAction()==0) d.dismiss(); return true; }
-            if(key==ControllerBindings.code(prefs(),"open")||key==KeyEvent.KEYCODE_DPAD_CENTER){ if(event.getAction()==0&&event.getRepeatCount()==0){ int value=dialog.getListView().getSelectedItemPosition(); if(value<0) value=dialog.getListView().getCheckedItemPosition(); d.dismiss(); picked.accept(Math.max(0,value)); } return true; } return false;
-        });
-        dialog.setOnShowListener(ignored->{ int[] axis={0}; dialog.getListView().setOnTouchListener((view,event)->{ if(event.getActionMasked()==MotionEvent.ACTION_DOWN) setInputMode(false); return false; }); dialog.getListView().setOnGenericMotionListener((view,event)->{ if(!event.isFromSource(InputDevice.SOURCE_JOYSTICK)) return false; setInputMode(true); float y=event.getAxisValue(MotionEvent.AXIS_HAT_Y); if(Math.abs(y)<.55f) y=event.getAxisValue(MotionEvent.AXIS_Y); int next=y>.55f?1:y<-.55f?-1:0;
-            if(next!=0&&next!=axis[0]){ int value=dialog.getListView().getSelectedItemPosition(); if(value<0) value=dialog.getListView().getCheckedItemPosition(); dialog.getListView().setSelection(Math.max(0,Math.min(labels.length-1,value+next))); } axis[0]=next; return true; }); }); dialog.show();
+        LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);panel.setPadding(dp(14),dp(10),dp(14),dp(10));panel.setBackground(ramSurface());text(panel,title,18,false);List<Button> choices=new ArrayList<>();int[] cursor={Math.max(0,selected)};
+        PopupWindow popup=new PopupWindow(panel,dp(Math.min(440,getResources().getConfiguration().screenWidthDp-32)),-2,true);protectionPopup=popup;
+        for(int i=0;i<labels.length;i++){final int index=i;Button option=button(panel,labels[i],()->{popup.dismiss();picked.accept(index);});option.setSelected(i==selected);option.setLayoutParams(new LinearLayout.LayoutParams(-1,dp(44)));option.setOnTouchListener((v,event)->{if(event.getActionMasked()==MotionEvent.ACTION_DOWN){setInputMode(false);v.setFocusableInTouchMode(false);for(Button item:choices)item.setActivated(false);}return false;});choices.add(option);}
+        popup.setBackgroundDrawable(ramSurface());popup.setOutsideTouchable(true);popup.setOnDismissListener(()->{controls.removeAll(choices);if(protectionPopup==popup)protectionPopup=null;});
+        View.OnKeyListener keys=(v,key,e)->{setInputMode(true);if(e.getAction()!=0)return true;if(key==ControllerBindings.code(prefs(),"exit")||key==KeyEvent.KEYCODE_BACK){popup.dismiss();return true;}if(key==ControllerBindings.code(prefs(),"open")||key==23){choices.get(cursor[0]).performClick();return true;}int delta=key==19||key==21?-1:key==20||key==22?1:0;cursor[0]=Math.max(0,Math.min(choices.size()-1,cursor[0]+delta));for(int i=0;i<choices.size();i++)choices.get(i).setActivated(i==cursor[0]);return true;};
+        panel.setOnKeyListener(keys);for(Button option:choices)option.setOnKeyListener(keys);panel.setFocusableInTouchMode(true);popup.showAtLocation(root,Gravity.CENTER,0,0);panel.requestFocus();if(controllerMode)choices.get(cursor[0]).setActivated(true);
+        panel.setOnGenericMotionListener(new View.OnGenericMotionListener(){int direction;public boolean onGenericMotion(View v,MotionEvent e){float y=e.getAxisValue(MotionEvent.AXIS_HAT_Y);if(Math.abs(y)<.55f)y=e.getAxisValue(MotionEvent.AXIS_Y);int next=y>.55?1:y<-.55?-1:0;if(next!=0&&next!=direction){cursor[0]=Math.max(0,Math.min(choices.size()-1,cursor[0]+next));for(int i=0;i<choices.size();i++)choices.get(i).setActivated(i==cursor[0]);}direction=next;return true;}});
     }
     private void dockOptions(String pkg){
-        choice("Quick Access",new String[]{"Open "+launchLabel(pkg),"Move left","Move right","Remove from Quick Access"},-1,index->{ if(index==0){ launchFavorite(pkg); return; } List<String> order=QuickAccess.displayOrder(prefs(),QuickAccess.read(prefs())); int position=order.indexOf(pkg); if(index==3) order.remove(pkg); else order=QuickAccess.move(order,pkg,position+(index==1?-1:1)); QuickAccess.saveDisplayOrder(prefs(),order); dockIndex=Math.max(0,order.indexOf(pkg)); renderDock(); });
+        choice("Dock",new String[]{"Open "+launchLabel(pkg),"Move left","Move right","Remove from Dock"},-1,index->{ if(index==0){ launchFavorite(pkg); return; } List<String> order=QuickAccess.displayOrder(prefs(),QuickAccess.read(prefs())); int position=order.indexOf(pkg); if(index==3) order.remove(pkg); else order=QuickAccess.move(order,pkg,position+(index==1?-1:1)); QuickAccess.saveDisplayOrder(prefs(),order); dockIndex=Math.max(0,order.indexOf(pkg)); renderDock(); });
     }
     private void dockStylePage(){
         formPage("Dock style"); String[] styles={"Floating","Compact","Shelf","Thumb corners"},keys={"floating","compact","shelf","thumb"}; LinearLayout choices=null;
-        for(int i=0;i<styles.length;i++){ if(i%2==0) choices=row(formMain); String key=keys[i]; Button option=button(choices,styles[i],()->{prefs().edit().putString("dockStyle",key).apply();show(Page.DOCKSTYLE);});option.setSelected(key.equals(prefs().getString("dockStyle","thumb"))); dockStyleChoices.add(option); }
-        if("thumb".equals(prefs().getString("dockStyle","thumb"))) toggle(formMain,"Swap sides",prefs().getBoolean("dockSwapSides",false),()->{prefs().edit().putBoolean("dockSwapSides",!prefs().getBoolean("dockSwapSides",false)).apply();show(Page.DOCKSTYLE);});
-        note(formInfo,"Size: "+QuickAccess.size(prefs())+"%"); LinearLayout sizes=row(formInfo);
+        for(int i=0;i<styles.length;i++){ if(i%2==0) choices=row(formMain); String key=keys[i]; Button option=button(choices,styles[i],()->{prefs().edit().putString("dockStyle",key).apply();show(Page.DOCKSTYLE);});option.setSelected(key.equals(prefs().getString("dockStyle","thumb"))); DockStyleIcon icon=new DockStyleIcon(key,theme.accent);icon.setBounds(0,0,dp(32),dp(20));compactButton(option);option.setCompoundDrawables(icon,null,null,null);option.setTextSize(12);option.setPadding(dp(6),dp(3),dp(6),dp(3));LinearLayout.LayoutParams cell=new LinearLayout.LayoutParams(0,dp(48),1);cell.setMargins(dp(2),dp(2),dp(2),dp(2));option.setLayoutParams(cell);dockStyleChoices.add(option); }
+        LinearLayout sizeHeading=row(formInfo);TextView sizeText=note(sizeHeading,"Size: "+QuickAccess.size(prefs())+"%");sizeText.setLayoutParams(new LinearLayout.LayoutParams(0,-2,1));if("thumb".equals(prefs().getString("dockStyle","thumb"))) toggle(sizeHeading,"Swap sides",prefs().getBoolean("dockSwapSides",false),()->{prefs().edit().putBoolean("dockSwapSides",!prefs().getBoolean("dockSwapSides",false)).apply();if(previewLeft>=0){int oldLeft=previewLeft;previewLeft=previewRight;previewRight=oldLeft;}show(Page.DOCKSTYLE);}); LinearLayout sizes=row(formInfo);
         button(sizes,"− Size",()->{prefs().edit().putInt("dockSize",Math.max(50,QuickAccess.size(prefs())-10)).apply();show(Page.DOCKSTYLE);});button(sizes,"Size +",()->{prefs().edit().putInt("dockSize",Math.min(160,QuickAccess.size(prefs())+10)).apply();show(Page.DOCKSTYLE);});
-        LinearLayout counts=row(formInfo);previewMinus=button(counts,"− Apps",()->{previewCount=Math.max(1,previewCount-1);renderPreview();});previewPlus=button(counts,"Apps +",()->{if(previewApps!=null)previewCount=Math.min(previewApps.size(),previewCount+1);renderPreview();});
-        smallNote(formInfo,"Touch: hold and drag dock apps to reorder.");dockPreview(root);
+        LinearLayout counts=row(root);previewMinus=button(counts,"− Apps",()->changePreview(-1,true));previewMinus.setContentDescription("Remove preview app from left");previewPlus=button(counts,"Apps +",()->changePreview(1,true));previewPlus.setContentDescription("Add preview app on left");TextView space=smallNote(counts,"Hold and drag dock apps to reorder");space.setGravity(Gravity.CENTER);space.setLayoutParams(new LinearLayout.LayoutParams(0,-2,1));previewRightMinus=button(counts,"− Apps",()->changePreview(-1,false));previewRightMinus.setContentDescription("Remove preview app from right");previewRightPlus=button(counts,"Apps +",()->changePreview(1,false));previewRightPlus.setContentDescription("Add preview app on right");dockPreview(root);
     }
     private void dockBehaviorPage(){
         formPage("Dock behavior"); boolean focus="focus".equals(prefs().getString("dockBehavior","always"));
-        button(formMain,"Visibility: "+(focus?"On navigation":"Always visible"),()->choice("Dock visibility",new String[]{"Always visible","Show on navigation / tap"},focus?1:0,index->{ prefs().edit().putString("dockBehavior",index==1?"focus":"always").apply(); show(Page.DOCKBEHAVIOR); }));
+        TextView visibility=note(formMain,focus?"Visibility: On navigation / tap":"Visibility: Always visible");SeekBar slider=new SeekBar(this);visibilitySlider=slider;slider.setMax(1);slider.setProgress(focus?0:1);slider.setFocusable(false);slider.setProgressTintList(android.content.res.ColorStateList.valueOf(theme.accent));slider.setThumbTintList(android.content.res.ColorStateList.valueOf(theme.accent));slider.setContentDescription("Dock visibility: on navigation or always visible");
+        Button sliderFocus=button(formMain,"",()->setDockVisibility(1-slider.getProgress(),visibility));formMain.removeView(sliderFocus);sliderFocus.setStateListAnimator(null);sliderFocus.setElevation(0);slider.setElevation(dp(1));sliderFocus.setTag("visibilitySlider");sliderFocus.setContentDescription("Dock visibility: Left for on navigation, Right for always visible");sliderFocus.setCompoundDrawables(null,null,null,null);FrameLayout track=new FrameLayout(this);track.addView(sliderFocus,new FrameLayout.LayoutParams(-1,-1));track.addView(slider,new FrameLayout.LayoutParams(-1,-1));formMain.addView(track,new LinearLayout.LayoutParams(-1,dp(44)));
+        slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar b,int value,boolean user){if(user)setDockVisibility(value,visibility);}public void onStartTrackingTouch(SeekBar b){}public void onStopTrackingTouch(SeekBar b){}});slider.setTag(visibility);
         toggle(formMain,"Magnify focused icons",prefs().getBoolean("dockMagnify",true),()->{ prefs().edit().putBoolean("dockMagnify",!prefs().getBoolean("dockMagnify",true)).apply(); show(Page.DOCKBEHAVIOR); }); toggle(formMain,"Running indicators",prefs().getBoolean("dockIndicators",true),()->{ prefs().edit().putBoolean("dockIndicators",!prefs().getBoolean("dockIndicators",true)).apply(); show(Page.DOCKBEHAVIOR); });
-        text(formInfo,"Touch and controller",20,false); note(formInfo,"Down from the last app row opens Quick Access. Up returns to the app list. On-navigation mode collapses it again when you leave it; touch its handle to reveal it."); note(formInfo,"Hold and drag icons to reorder. With a controller, press Select for move/remove options. Dots appear only when a process is reported, or for the Current app.");
+        text(formInfo,"Touch and controller",20,false); note(formInfo,"Down from the last app row opens Dock. Up returns to the app list. On-navigation mode collapses it again when you leave it; touch its handle to reveal it."); note(formInfo,"Hold and drag icons to reorder. With a controller, press Select for move/remove options. Dots appear only when a process is reported, or for the Current app.");
     }
+    private void setDockVisibility(int value,TextView label){prefs().edit().putString("dockBehavior",value==1?"always":"focus").apply();if(visibilitySlider!=null)visibilitySlider.setProgress(value);label.setText(value==1?"Visibility: Always visible":"Visibility: On navigation / tap");}
     private void showPicker(){
         if(page!=Page.PICKER) pickerReturn=page==Page.APPS?Page.APPS:Page.SETTINGS; pickerApps=null; pickerPage=0; pickerQuery=""; show(Page.PICKER);
+        loadPickerApps();
+    }
+    private void loadPickerApps(){
         app.requestMemory("Installed apps",5000,()->{ Map<String,JSONObject> launchers=new TreeMap<>(); Intent launcher=new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);
             for(android.content.pm.ResolveInfo info:getPackageManager().queryIntentActivities(launcher,0)) if(info.activityInfo!=null&&!getPackageName().equals(info.activityInfo.packageName)) launchers.put(info.activityInfo.packageName,new JSONObject().put("package",info.activityInfo.packageName).put("label",info.loadLabel(getPackageManager()).toString())); return new JSONObject().put("apps",new JSONArray(launchers.values()));
-        },result->{ if(page!=Page.PICKER||isDestroyed()) return; pickerApps=new ArrayList<>(); JSONArray values=result.optJSONArray("apps"); if(values!=null) for(int i=0;i<values.length();i++) if(values.optJSONObject(i)!=null) pickerApps.add(values.optJSONObject(i)); pickerApps.sort((a,b)->String.CASE_INSENSITIVE_ORDER.compare(a.optString("label"),b.optString("label"))); fillPicker(); if(result.has("error")){ feedback=result.optString("error"); updateStatus(); } });
+        },result->{ if(!pickerActive()||isDestroyed()) return; pickerApps=new ArrayList<>(); JSONArray values=result.optJSONArray("apps"); if(values!=null) for(int i=0;i<values.length();i++) if(values.optJSONObject(i)!=null) pickerApps.add(values.optJSONObject(i)); pickerApps.sort((a,b)->String.CASE_INSENSITIVE_ORDER.compare(a.optString("label"),b.optString("label"))); fillPicker(); if(result.has("error")){ feedback=result.optString("error"); updateStatus(); } });
     }
-    private void pickerPage(){
-        LinearLayout heading=row(root); TextView title=text(heading,"Choose apps",22,false); title.setLayoutParams(new LinearLayout.LayoutParams(0,-2,1)); button(heading,"Back",this::back);
-        LinearLayout search=row(root); pickerSearch=new EditText(this); pickerSearch.setSingleLine(true); pickerSearch.setTextSize(16); pickerSearch.setTextColor(theme.text); pickerSearch.setHintTextColor(theme.muted); pickerSearch.setHint("Search apps"); pickerSearch.setContentDescription("Search apps"); pickerSearch.setText(pickerQuery); search.addView(pickerSearch,new LinearLayout.LayoutParams(0,dp(48),1));
-        button(search,"Search",()->{ pickerSearch.requestFocus(); getSystemService(android.view.inputmethod.InputMethodManager.class).showSoftInput(pickerSearch,android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT); });
-        pickerRows=new LinearLayout(this); pickerRows.setOrientation(LinearLayout.HORIZONTAL); pickerRows.setGravity(Gravity.CENTER); root.addView(pickerRows,new LinearLayout.LayoutParams(-1,0,1));
-        LinearLayout navigation=row(root); pickerPrevious=pagingButton(navigation,"page_previous","Previous",()->pickerTurn(-1)); pagePrevious=pickerPrevious; TextView help=text(navigation,"Selected apps appear in Quick Access",11,true); help.setGravity(Gravity.CENTER); help.setLayoutParams(new LinearLayout.LayoutParams(0,-2,1)); pickerNext=pagingButton(navigation,"page_next","Next",()->pickerTurn(1)); pageNext=pickerNext;
-        pickerOptions.clear(); fillPicker();
-        pickerSearch.addTextChangedListener(new android.text.TextWatcher(){ public void beforeTextChanged(CharSequence s,int a,int c,int f){} public void onTextChanged(CharSequence value,int start,int before,int count){ pickerQuery=value.toString(); pickerPage=0; fillPicker(); } public void afterTextChanged(android.text.Editable e){} });
-        if(controllerMode&&!pickerOptions.isEmpty()) focusControl(controls.indexOf(pickerOptions.get(0)));
+    private boolean pickerActive(){return page==Page.PICKER||page==Page.SETUP&&setupStep==4;}
+    private void pickerPage(){ buildPicker(false); }
+    private void buildPicker(boolean protection){
+        setupProtection=protection;
+        if(!protection){LinearLayout heading=row(root);TextView title=text(heading,"Add apps to Dock",20,false);title.setLayoutParams(new LinearLayout.LayoutParams(0,-2,1));button(heading,"Back",this::back);}
+        LinearLayout search=row(root);pickerSearch=new EditText(this);pickerSearch.setSingleLine(true);pickerSearch.setTextSize(14);pickerSearch.setTextColor(theme.text);pickerSearch.setHintTextColor(theme.muted);pickerSearch.setHint("Search apps");pickerSearch.setContentDescription("Search apps");pickerSearch.setText(pickerQuery);search.addView(pickerSearch,new LinearLayout.LayoutParams(0,dp(40),1));
+        compactButton(button(search,"Search",()->{pickerSearch.requestFocus();getSystemService(android.view.inputmethod.InputMethodManager.class).showSoftInput(pickerSearch,android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);}));
+        compactButton(button(search,protection?"Unlock all":"Clear Dock",()->{if(protection)prefs().edit().putStringSet("protectedApps",new HashSet<>()).apply();else QuickAccess.save(prefs(),new ArrayList<>());fillPicker();}));
+        LinearLayout body=row(root);body.setLayoutParams(new LinearLayout.LayoutParams(-1,0,1));pickerRows=new LinearLayout(this);pickerRows.setOrientation(LinearLayout.VERTICAL);body.addView(pickerRows,new LinearLayout.LayoutParams(0,-1,1));pickerRail=new LinearLayout(this);pickerRail.setOrientation(LinearLayout.VERTICAL);body.addView(pickerRail,new LinearLayout.LayoutParams(dp(40),-1));pickerRail.setContentDescription(protection?"Locked apps":"Apps in Dock");
+        LinearLayout nav=row(root);pickerPrevious=pagingButton(nav,"page_previous","Previous",()->pickerTurn(-1));pagePrevious=pickerPrevious;TextView spacer=smallNote(nav,protection?"Only selected apps are locked. Required services stay protected.":"");spacer.setGravity(Gravity.CENTER);spacer.setLayoutParams(new LinearLayout.LayoutParams(0,-2,1));pickerNext=pagingButton(nav,"page_next","Next",()->pickerTurn(1));pageNext=pickerNext;
+        pickerOptions.clear();fillPicker();pickerSearch.addTextChangedListener(new android.text.TextWatcher(){public void beforeTextChanged(CharSequence v,int a,int c,int f){}public void onTextChanged(CharSequence v,int a,int b,int c){pickerQuery=v.toString();pickerPage=0;fillPicker();}public void afterTextChanged(android.text.Editable e){}});
     }
-    private void pickerTurn(int direction){
-        if(direction<0&&pickerPage==0) return;
-        if(direction>0&&(pickerNext==null||!pickerNext.isEnabled())) return;
-        pickerPage=Math.max(0,pickerPage+direction); controlIndex=-1; show(Page.PICKER);
+    private void pickerTurn(int direction){if(direction<0&&pickerPage==0||direction>0&&(pickerNext==null||!pickerNext.isEnabled()))return;pickerPage+=direction;controlIndex=-1;if(page==Page.SETUP){fillPicker();}else show(Page.PICKER);}
+    private void updatePickerRail(){
+        if(pickerRail==null||!pickerActive())return;pickerRail.removeAllViews();List<String> names=setupProtection?new ArrayList<>(protectedApps()):QuickAccess.displayOrder(prefs(),QuickAccess.read(prefs()));
+        for(String pkg:names){ImageView icon=new ImageView(this);icon.setImageDrawable(appIcon(pkg));icon.setScaleType(ImageView.ScaleType.FIT_CENTER);icon.setPadding(dp(4),dp(2),dp(4),dp(2));icon.setContentDescription(launchLabel(pkg));icon.setTooltipText(launchLabel(pkg));pickerRail.addView(icon,new LinearLayout.LayoutParams(-1,0,1));}
     }
     private void fillPicker(){
-        if(pickerRows==null) return; boolean editing=pickerSearch.hasFocus(); controls.removeAll(pickerOptions); pickerOptions.clear(); pickerRows.removeAllViews();
-        List<JSONObject> filtered=new ArrayList<>(); if(pickerApps!=null) for(JSONObject item:pickerApps) if(item.optString("label").toLowerCase(Locale.ROOT).contains(pickerQuery.toLowerCase(Locale.ROOT))) filtered.add(item);
-        filtered.sort((a,b)->String.CASE_INSENSITIVE_ORDER.compare(a.optString("label"),b.optString("label")));
-        int count=filtered.size(); pickerPage=Math.max(0,Math.min(pickerPage,Math.max(0,(count-1)/4)));
-        if(pickerApps==null) note(pickerRows,"Loading installed apps…"); else if(count==0) note(pickerRows,"No apps found");
-        int insert=controls.indexOf(pickerPrevious);
-        for(int i=pickerPage*4;i<Math.min(count,pickerPage*4+4);i++){
-            JSONObject item=filtered.get(i); String pkg=item.optString("package"),name=item.optString("label");
-            Button option=button(pickerRows,name,()->{ pin(pkg); for(Button row:pickerOptions){ String target=(String)row.getTag(); boolean selected=QuickAccess.read(prefs()).contains(target); row.setSelected(selected); row.setContentDescription(row.getText()+ (selected?", in Quick Access":", not in Quick Access")); } });
-            option.setTag(pkg); option.setGravity(Gravity.CENTER); option.setTextSize(16); option.setMaxLines(2); option.setEllipsize(android.text.TextUtils.TruncateAt.END); option.setPadding(dp(10),dp(60),dp(10),0); FrameLayout tileFrame=new FrameLayout(this); pickerRows.removeView(option); LinearLayout.LayoutParams tile=new LinearLayout.LayoutParams(0,-1,1); tile.setMargins(dp(4),dp(4),dp(4),dp(4)); pickerRows.addView(tileFrame,tile); tileFrame.addView(option,new FrameLayout.LayoutParams(-1,-1));
-            option.setCompoundDrawables(null,null,null,null); ImageView image=new ImageView(this); image.setTag("pickerIcon"); image.setImageDrawable(appIcon(pkg)); image.setScaleType(ImageView.ScaleType.FIT_CENTER); image.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO); FrameLayout.LayoutParams picture=new FrameLayout.LayoutParams(dp(48),dp(48),Gravity.CENTER); picture.topMargin=-dp(48); tileFrame.addView(image,picture); tileFrame.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,or,ob)->{ int height=b-t; int lines=height<dp(112)?1:2; option.setMaxLines(lines); android.graphics.Paint.FontMetrics metrics=option.getPaint().getFontMetrics(); int label=(int)Math.ceil(metrics.bottom-metrics.top)*lines; int iconSize=Math.max(dp(12),Math.min(dp(48),height-dp(24)-label)); FrameLayout.LayoutParams position=(FrameLayout.LayoutParams)image.getLayoutParams(); position.width=iconSize; position.height=iconSize; position.gravity=Gravity.TOP|Gravity.CENTER_HORIZONTAL; position.topMargin=Math.max(dp(8),(height-iconSize-dp(8)-label)/2); image.setLayoutParams(position); image.setVisibility(View.VISIBLE); option.setPadding(dp(10),iconSize+dp(8),dp(10),0); }); boolean selected=QuickAccess.read(prefs()).contains(pkg); option.setSelected(selected); option.setContentDescription(name+(selected?", in Quick Access":", not in Quick Access")); controls.remove(option); controls.add(insert++,option); pickerOptions.add(option);
+        if(pickerRows==null||!pickerActive())return;boolean editing=pickerSearch.hasFocus();controls.removeAll(pickerOptions);pickerOptions.clear();pickerRows.removeAllViews();List<JSONObject> filtered=new ArrayList<>();if(pickerApps!=null)for(JSONObject item:pickerApps)if(item.optString("label").toLowerCase(Locale.ROOT).contains(pickerQuery.toLowerCase(Locale.ROOT)))filtered.add(item);
+        filtered.sort((a,b)->String.CASE_INSENSITIVE_ORDER.compare(a.optString("label"),b.optString("label")));int count=filtered.size();pickerPage=Math.max(0,Math.min(pickerPage,Math.max(0,(count-1)/8)));int insert=controls.indexOf(pickerPrevious);if(count==0)note(pickerRows,pickerApps==null?"Loading apps…":"No apps found");LinearLayout line=null;
+        for(int slot=0;slot<8;slot++){
+            if(slot%4==0){line=new LinearLayout(this);pickerRows.addView(line,new LinearLayout.LayoutParams(-1,0,1));}
+            int index=pickerPage*8+slot;if(index>=count){line.addView(new View(this),new LinearLayout.LayoutParams(0,-1,1));continue;}JSONObject item=filtered.get(index);String pkg=item.optString("package"),name=item.optString("label");
+            Button option=button(line,name,()->{if(setupProtection){Set<String> locks=protectedApps();if(!locks.remove(pkg))locks.add(pkg);prefs().edit().putStringSet("protectedApps",locks).apply();}else pin(pkg);for(Button row:pickerOptions){boolean selected=setupProtection?protectedApps().contains((String)row.getTag()):QuickAccess.read(prefs()).contains((String)row.getTag());row.setSelected(selected);row.setContentDescription(row.getText()+(selected?", selected":", not selected"));}updatePickerRail();});line.removeView(option);option.setCompoundDrawables(null,null,null,null);option.setTag(pkg);option.setTooltipText(name);option.setEllipsize(android.text.TextUtils.TruncateAt.END);AppPickerTile tile=new AppPickerTile(this,option,appIcon(pkg));LinearLayout.LayoutParams size=new LinearLayout.LayoutParams(0,-1,1);size.setMargins(dp(3),dp(3),dp(3),dp(3));line.addView(tile,size);option.setSelected(setupProtection?protectedApps().contains(pkg):QuickAccess.read(prefs()).contains(pkg));controls.remove(option);controls.add(insert++,option);pickerOptions.add(option);
         }
-        pickerPrevious.setText("Previous"); pickerPrevious.setEnabled(pickerPage>0); pickerNext.setEnabled((pickerPage+1)*4<count); pickerNext.setContentDescription("Next page: "+ControllerBindings.badge(prefs(),"page_next"));
-        if(count>0) for(int slot=pickerOptions.size();slot<4;slot++) pickerRows.addView(new View(this),new LinearLayout.LayoutParams(0,1,1));
-        if(editing){ pickerSearch.requestFocus(); controlIndex=-1; } else if(controllerMode&&!pickerOptions.isEmpty()) focusControl(controls.indexOf(pickerOptions.get(0)));
+        pickerPrevious.setEnabled(pickerPage>0);pickerNext.setEnabled((pickerPage+1)*8<count);updatePickerRail();if(editing){pickerSearch.requestFocus();controlIndex=-1;}else if(controllerMode&&!pickerOptions.isEmpty())focusControl(controls.indexOf(pickerOptions.get(0)));
     }
     private void dockPreview(LinearLayout parent){
         previewHost=new LinearLayout(this); previewHost.setOrientation(LinearLayout.VERTICAL); previewHost.setContentDescription("Live dock preview"); parent.addView(previewHost,new LinearLayout.LayoutParams(-1,-2));
@@ -262,15 +263,17 @@ public class SwitcherActivity extends Activity {
             if(isDestroyed()) return; previewApps=new ArrayList<>(); JSONArray values=result.optJSONArray("packages"); if(values!=null) for(int i=0;i<values.length();i++) previewApps.add(values.optString(i)); if(page==Page.DOCKSTYLE) renderPreview();
         });
     }
+    private void changePreview(int delta,boolean left){if(previewApps==null)return;if(delta>0&&previewCount>=previewApps.size()||delta<0&&previewCount<=1)return;if(left)previewLeft=Math.max(0,previewLeft+delta);else previewRight=Math.max(0,previewRight+delta);previewCount=previewLeft+previewRight;renderPreview();}
     private void renderPreview(){
         if(page!=Page.DOCKSTYLE||previewHost==null||previewApps==null) return;
         previewHost.removeAllViews(); if(previewCount<0) previewCount=Math.max(1,QuickAccess.read(prefs()).size()); previewCount=Math.max(1,Math.min(previewCount,previewApps.size()));
-        previewMinus.setEnabled(previewCount>1); previewPlus.setEnabled(previewCount<previewApps.size());
+        if(previewLeft<0||previewLeft+previewRight!=previewCount){previewLeft=QuickAccess.leftCount(prefs(),previewCount);previewRight=previewCount-previewLeft;}
+        previewMinus.setEnabled(previewCount>1&&previewLeft>0);previewRightMinus.setEnabled(previewCount>1&&previewRight>0);previewPlus.setEnabled(previewCount<previewApps.size());previewRightPlus.setEnabled(previewCount<previewApps.size());
         if(previewApps.isEmpty()){ note(previewHost,"No launchable apps available for preview"); return; }
         previewDock=new QuickAccessDock(this,prefs(),new QuickAccessDock.Host(){
             public Drawable icon(String pkg){ return appIcon(pkg); } public String label(String pkg){ return launchLabel(pkg); } public boolean running(String pkg){ return processReported(pkg); } public boolean current(String pkg){ return isCurrent(pkg); }
             public void launch(String pkg){} public void options(String pkg){} public void add(){} public void changed(){} public void touch(){} public boolean controller(){ return false; }
-        }); previewDock.preview(previewApps.subList(0,previewCount)); previewHost.addView(previewDock,new LinearLayout.LayoutParams(-1,-2)); previewDock.update(theme); previewDock.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+        }); previewDock.preview(previewApps.subList(0,previewCount));previewDock.previewSplit(previewLeft); previewHost.addView(previewDock,new LinearLayout.LayoutParams(-1,-2)); previewDock.update(theme); previewDock.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
     }
     private void scrollPopup(LinearLayout panel){
         LinearLayout body=new LinearLayout(this); body.setOrientation(LinearLayout.VERTICAL); body.setPadding(panel.getPaddingLeft(),panel.getPaddingTop(),panel.getPaddingRight(),panel.getPaddingBottom()); panel.setPadding(0,0,0,0);
@@ -283,7 +286,7 @@ public class SwitcherActivity extends Activity {
     private int sidebarWidth(){ return getResources().getConfiguration().screenWidthDp>=760?180:152; }
     private Drawable appIcon(String name){
         Drawable.ConstantState cached=iconCache.get(name); if(cached!=null) return cached.newDrawable(getResources()).mutate();
-        Drawable value=null; try { value=getPackageManager().getApplicationIcon(name); } catch(PackageManager.NameNotFoundException ignored){}
+        Drawable value=null; try { value=getPackageManager().getApplicationIcon(name); if(value!=null)value=value.mutate(); } catch(PackageManager.NameNotFoundException ignored){}
         if(value==null){ value=getDrawable(R.drawable.ic_tasks); if(value!=null){ value=value.mutate(); value.setTint(theme.accent); } }
         if(value!=null&&value.getConstantState()!=null) iconCache.put(name,value.getConstantState()); return value;
     }
@@ -300,7 +303,7 @@ public class SwitcherActivity extends Activity {
         HorizontalScrollView hints=new HorizontalScrollView(this); hints.setHorizontalScrollBarEnabled(false); hints.setFillViewport(true); header.addView(hints,new LinearLayout.LayoutParams(0,-2,1));
         LinearLayout actions=new LinearLayout(this); actions.setGravity(Gravity.CENTER_VERTICAL|Gravity.RIGHT); hints.addView(actions);
         controllerButton(actions,"A","Open","open",this::openSelected); controllerButton(actions,"B","Exit","exit",this::finish); controllerButton(actions,"X","Close","close",this::closeSelected);
-        controllerButton(actions,"Y","Close all","all",this::closeAll); controllerButton(actions,"R1","Close all but current","others",this::closeOthers);
+        controllerButton(actions,"Y","Close all","all",this::closeAll); controllerButton(actions,"R1","Close all but current","others",this::closeOthers); controllerButton(actions,"Select","Options","options",this::protectSelected);
         Button settings=compactButton(button(header,"Settings",()->show(Page.SETTINGS))); settings.setText(""); settings.setContentDescription("Settings"); settings.setTooltipText("Settings"); settings.setGravity(Gravity.CENTER); settings.setCompoundDrawablePadding(0); ((LinearLayout.LayoutParams)settings.getLayoutParams()).width=dp(36); roundSettings(settings); tools.add(settings);
         LinearLayout stats=row(root); stats.setOrientation(LinearLayout.VERTICAL); status=text(stats,"",11,true); status.setPadding(0,0,0,0); status.setLayoutParams(new LinearLayout.LayoutParams(-1,-2)); compactMemory=text(stats,"",11,true); compactMemory.setPadding(dp(10),dp(8),dp(10),dp(8)); compactMemory.setBackground(ramSurface()); compactMemory.setLayoutParams(new LinearLayout.LayoutParams(-1,-2)); status.setVisibility(View.GONE); status.setMaxLines(1); status.setEllipsize(android.text.TextUtils.TruncateAt.END);
         operationInfo=text(root,"",12,true); operationInfo.setMaxLines(2); operationInfo.setEllipsize(android.text.TextUtils.TruncateAt.END); updateOperationInfo();
@@ -325,7 +328,7 @@ public class SwitcherActivity extends Activity {
         if(appContent==null) return;
         String mode=viewMode(); boolean horizontal="cards".equals(mode),list="list".equals(mode),fit="fit".equals(mode);
         sidebar.setVisibility(landscape()?View.VISIBLE:View.GONE); compactMemory.setVisibility(sidebar.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);
-        appContent.removeAllViews(); cards.clear(); rail=null; appScroll=null; appGrid=null;
+        if("fit".equals(viewMode())&&!cards.isEmpty()&&appContent.isLaidOut()&&android.animation.ValueAnimator.areAnimatorsEnabled()){ android.transition.AutoTransition transition=new android.transition.AutoTransition();transition.setDuration(240);android.transition.TransitionManager.beginDelayedTransition(appContent,transition); } appContent.removeAllViews(); cards.clear(); rail=null; appScroll=null; appGrid=null;
         cardRow=new LinearLayout(this); cardRow.setGravity(Gravity.CENTER_VERTICAL);
         int available=appContent.getWidth()>0?Math.round(appContent.getWidth()/getResources().getDisplayMetrics().density):getResources().getConfiguration().screenWidthDp-40-(landscape()&&sidebar.getVisibility()==View.VISIBLE?sidebarWidth():0);
         int height=appContent.getHeight()>0?Math.round(appContent.getHeight()/getResources().getDisplayMetrics().density):Math.max(120,getResources().getConfiguration().screenHeightDp-130);
@@ -346,7 +349,7 @@ public class SwitcherActivity extends Activity {
         boolean compact=getResources().getConfiguration().screenHeightDp<440;
         boolean tiny=fit&&cellHeight<dp(minimum+48),micro=fit&&cellHeight<dp(minimum+18);
         for(JSONObject task:tasks){
-            LinearLayout card=new LinearLayout(this); card.setOrientation(LinearLayout.VERTICAL); card.setGravity(list?Gravity.CENTER_VERTICAL:Gravity.CENTER); card.setPadding(dp(horizontal?12:5),dp(horizontal?(compact?6:14):2),dp(horizontal?12:5),dp(horizontal?(compact?6:14):2)); card.setFocusableInTouchMode(controllerMode); card.setDefaultFocusHighlightEnabled(false);
+            LinearLayout card=new LinearLayout(this); card.setTransitionName("task:"+task.optInt("id")+":"+task.optString("package")); card.setOrientation(LinearLayout.VERTICAL); card.setGravity(list?Gravity.CENTER_VERTICAL:Gravity.CENTER); card.setPadding(dp(horizontal?12:5),dp(horizontal?(compact?6:14):2),dp(horizontal?12:5),dp(horizontal?(compact?6:14):2)); card.setFocusableInTouchMode(controllerMode); card.setDefaultFocusHighlightEnabled(false);
             if(horizontal){ LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(width,-1); p.setMargins(0,0,cards.size()<tasks.size()-1?dp(DECK_GAP):0,0); cardRow.addView(card,p); }
             else { GridLayout.LayoutParams p=new GridLayout.LayoutParams(); p.width=width; p.height=cellHeight; p.setMargins(0,0,cards.size()%gridColumns<gridColumns-1?dp(DECK_GAP):0,cards.size()/gridColumns<(tasks.size()-1)/gridColumns?dp(DECK_GAP):0); appGrid.addView(card,p); }
             LinearLayout stack=new LinearLayout(this); stack.setOrientation(LinearLayout.VERTICAL); stack.setGravity(Gravity.CENTER); card.addView(stack,new LinearLayout.LayoutParams(-1,-2));
@@ -396,71 +399,61 @@ public class SwitcherActivity extends Activity {
             if(getPackageName().equals(service.packageName) && HotkeyService.class.getName().equals(service.name)) return true;
         } return false;
     }
+    private void closeVibration(LinearLayout parent){
+        CheckBox box=new CheckBox(this);box.setText("Vibrate on close");box.setTextSize(11);box.setTextColor(theme.text);box.setButtonTintList(android.content.res.ColorStateList.valueOf(theme.accent));box.setChecked(prefs().getBoolean("vibrateClose",false));box.setMinHeight(dp(44));box.setDefaultFocusHighlightEnabled(false);StateListDrawable focus=new StateListDrawable();GradientDrawable active=rounded(theme.selected);active.setStroke(dp(2),theme.accent);focus.addState(new int[]{android.R.attr.state_activated},active);focus.addState(new int[]{android.R.attr.state_focused},active);focus.addState(new int[]{},rounded(Color.TRANSPARENT));box.setBackground(focus);box.setFocusableInTouchMode(controllerMode);box.setOnCheckedChangeListener((v,checked)->prefs().edit().putBoolean("vibrateClose",checked).apply());parent.addView(box,new LinearLayout.LayoutParams(-2,dp(44)));controls.add(box);
+    }
     private void setupPage(){
-        setupStep=Math.max(0,Math.min(7,setupStep));
-        formPage("Setup · "+(setupStep+1)+" / 8");
-        String[] titles={"Connect Shizuku","Confirm button","Open-menu shortcut","Direct app-switch shortcut","Enable shortcuts","Appearance","Closing behavior","Notifications"};
-        text(formInfo,titles[setupStep],20,false).setTypeface(null,Typeface.BOLD);
-        if(setupStep==0){
-            status=text(formMain,app.backend==null?app.status:"✓ Shizuku connected",14,false); note(formMain,app.backend==null?"Required · Start Shizuku to continue":"Required step complete"); button(formMain,app.backend==null?"Connect Shizuku":"Connection details",()->show(Page.CONNECT));
-            note(formInfo,"Start Shizuku, then authorize TaskDeck. Without root, start it again after reboot. Pairing alone does not start its service.");
-        } else if(setupStep==1){
-            LinearLayout labels=row(formMain); for(String style:new String[]{"abxy","playstation"}){ Button choice=button(labels,style.equals("abxy")?"A/B/X/Y":"PlayStation",()->{ ControllerBindings.selectProfile(prefs(),style+(prefs().getBoolean("swapped",false)?"_swapped":"")); show(Page.SETUP); }); choice.setSelected(style.equals(prefs().getBoolean("psLabels",false)?"playstation":"abxy")); setupThemes.add(choice); }
-            button(formMain,"Calibrate confirm button",()->show(Page.CONFIRM));
-            note(formMain,prefs().getBoolean("confirmCalibrated",false)?"✓ Confirm calibrated":"Default confirm mapping");
-            note(formInfo,"Press printed A or PlayStation Cross to correct common swapped button reports. D-pad and left stick move selection. This step is optional.");
-        } else if(setupStep==2||setupStep==3){
-            boolean direct=setupStep==3; String key=direct?"quickSwitchChord":"shortcutChord";
-            button(formMain,direct?"Record direct switch":"Record deck shortcut",()->startRecording(direct));
-            note(formMain,ShortcutKeys.decode(prefs().getString(key,"")).isEmpty()?"Not configured · optional":"Saved: "+ShortcutKeys.labels(ShortcutKeys.decode(prefs().getString(key,"")))+(shortcutServiceEnabled()?" · service enabled":" · service not enabled"));
-            note(formInfo,direct?"An optional different combination switches between your last two apps without opening TaskDeck. You can skip this step.":"Hold your chosen buttons together, release, then save. This optional shortcut opens TaskDeck from another app.");
-            note(formInfo,"D-pad, Confirm, Back and Start stay available for navigation and saving. Avoid combinations already used by games.");
-        } else if(setupStep==4){
-            button(formMain,"Enable shortcut service",()->startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)));
-            note(formMain,shortcutServiceEnabled()?"✓ Service enabled":"Service not enabled · optional");
-            note(formInfo,"Enable TaskDeck's Accessibility service only if you recorded shortcuts. No screen contents or typed text are read. Otherwise, use the notification or Quick Settings tile.");
-        } else if(setupStep==5){
-            LinearLayout options=null; String[] themes={"light","dark","oled","auto"}; for(int i=0;i<themes.length;i++){ String value=themes[i]; if(i%2==0) options=row(formMain); Button option=button(options,value.equals("auto")?"Auto":value.equals("oled")?"OLED":value.equals("light")?"Light":"Dark",()->{ prefs().edit().putString("theme",value).apply(); show(Page.SETUP); }); option.setSelected(value.equals(prefs().getString("theme","dark"))); option.setPadding(dp(16),dp(8),dp(16),dp(8)); setupThemes.add(option); }
-
-            note(formInfo,"Fit all is the default view. Cards, Grid and List remain available from View. All changes can be revisited in Settings.");
-        } else if(setupStep==6){
-            toggle(formMain,"Stay open after clearing",!prefs().getBoolean("exitAfterBulk",true),()->{ prefs().edit().putBoolean("exitAfterBulk",!prefs().getBoolean("exitAfterBulk",true)).apply(); show(Page.SETUP); });
-            note(formInfo,"On keeps the menu open after clearing. Off returns HOME or to the app you kept. Protected apps are skipped.");
-        } else {
-            toggle(formMain,"RAM feedback",prefs().getBoolean("ramNotifications",true),()->{ prefs().edit().putBoolean("ramNotifications",!prefs().getBoolean("ramNotifications",true)).apply(); show(Page.SETUP); });
-            toggle(formMain,"Notification shortcut",shortcutVisible(),()->{ if(shortcutVisible()) getSystemService(NotificationManager.class).cancel(1); else shortcutNotification(); show(Page.SETUP); });
-            button(formMain,notificationsAllowed()?"Notification settings":"Allow notifications",()->{ if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED) notificationPermission(); else startActivity(new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE,getPackageName())); });
-            note(formInfo,!notificationsAllowed()?"Notifications: not allowed":!notificationsAllowed("ram_results")||!notificationsAllowed("ram")?"Notification access granted · feedback channel blocked":"Notifications: allowed");
-            note(formInfo,"RAM feedback is a preference, not a permission grant. Toast feedback can work without notification access. Android controls banner visibility.");
+        setupStep=Math.max(0,Math.min(4,setupStep));if(setupStep!=2)inlineCapture=false;if(setupStep!=1)inlineConfirm=false;String[] names={"Permissions","Controller","Shortcuts","Appearance","App protection"};
+        if(setupStep==4){text(root,"Setup · 5 / 5 · Protect apps from closing",18,false);buildPicker(true);if(pickerApps==null)loadPickerApps();}
+        else{
+            formPage("Setup · "+(setupStep+1)+" / 5 · "+names[setupStep]);
+            if(setupStep==0){
+                button(formMain,app.backend==null?"Connect Shizuku":"✓ Shizuku connected",()->{if(app.backend==null)app.connect(true);});
+                button(formMain,"Open Shizuku",()->{Intent intent=getPackageManager().getLaunchIntentForPackage("moe.shizuku.privileged.api");if(intent!=null)startActivity(intent);else openLink("https://shizuku.rikka.app/download/");});
+                button(formMain,shortcutServiceEnabled()?"✓ Shortcut access enabled":"Allow shortcut access",()->startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)));
+                button(formMain,notificationsAllowed()?"✓ Notifications allowed":"Allow notifications",()->{if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)notificationPermission();else startActivity(new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE,getPackageName()));});
+                note(formInfo,"Shizuku gives TaskDeck access to Android tasks using debugging privileges. Install and start it, then authorize TaskDeck. Pairing alone does not start it.");
+                button(formInfo,"Official Shizuku guide",()->openLink("https://shizuku.rikka.app/guide/setup/"));
+                smallNote(formInfo,"Required: Shizuku connection. Shortcut access is required only for hotkeys; notifications are optional. Without root, restart Shizuku after reboot.");
+            }else if(setupStep==1){
+                LinearLayout labels=row(formMain);for(String style:new String[]{"abxy","playstation"}){Button choice=button(labels,style.equals("abxy")?"A/B/X/Y":"PlayStation",()->{ControllerBindings.selectProfile(prefs(),style);inlineConfirm=false;show(Page.SETUP);});choice.setSelected(style.equals(prefs().getBoolean("psLabels",false)?"playstation":"abxy"));setupThemes.add(choice);}
+                button(formMain,inlineConfirm?"Press printed A / Cross…":"Calibrate confirm button",()->{inlineConfirm=true;TaskDeckApp.recordingShortcut=true;show(Page.SETUP);});
+                note(formMain,prefs().getBoolean("confirmCalibrated",false)?"✓ Confirm calibrated":"Optional: keep the default mapping");note(formInfo,"Choose printed labels, then calibrate the printed A or Cross button. D-pad and left stick stay available. Individual actions can be remapped later in Settings.");
+            }else if(setupStep==2){
+                Button deck=button(formMain,inlineCapture&&!recordingQuickSwitch?"Recording deck shortcut…":"Record deck shortcut",()->startRecording(false));deck.setEnabled(shortcutServiceEnabled());
+                smallNote(formMain,ShortcutKeys.decode(prefs().getString("shortcutChord","")).isEmpty()?"Not recorded":"✓ Deck shortcut calibrated");
+                Button swap=button(formMain,inlineCapture&&recordingQuickSwitch?"Recording Quick Swap Apps…":"Record Quick Swap Apps",()->startRecording(true));swap.setEnabled(shortcutServiceEnabled());
+                smallNote(formMain,ShortcutKeys.decode(prefs().getString("quickSwitchChord","")).isEmpty()?"Not recorded":"✓ Quick Swap Apps calibrated");
+                recordLive=note(formInfo,inlineCapture?"Hold your combination, then release to save":"Hotkeys open TaskDeck or swap the last two apps.");recordSaved=note(formInfo,inlineCapture?"Recording…":"Deck: "+ShortcutKeys.labels(ShortcutKeys.decode(prefs().getString("shortcutChord","")))+"\nQuick Swap Apps: "+ShortcutKeys.labels(ShortcutKeys.decode(prefs().getString("quickSwitchChord",""))));
+                note(formInfo,shortcutServiceEnabled()?"Hold up to four buttons and release. Saves automatically. Confirm, Back, Start, D-pad and L1/R1 remain available for setup navigation.":"Enable shortcut access on the Permissions page before recording. You can skip hotkeys.");
+            }else{
+                LinearLayout options=null;String[] values={"light","dark","oled","auto"};for(int i=0;i<values.length;i++){if(i%2==0)options=row(formMain);String value=values[i];Button option=button(options,value.equals("auto")?"Auto":value.equals("oled")?"OLED":value.equals("light")?"Light":"Dark",()->{prefs().edit().putString("theme",value).apply();show(Page.SETUP);});option.setSelected(value.equals(prefs().getString("theme","dark")));setupThemes.add(option);}
+                toggle(formMain,"Stay open after clearing",!prefs().getBoolean("exitAfterBulk",true),()->{prefs().edit().putBoolean("exitAfterBulk",!prefs().getBoolean("exitAfterBulk",true)).apply();show(Page.SETUP);});closeVibration(formMain);accentColors(formInfo);
+            }
         }
-        LinearLayout nav=row(root); nav.setLayoutParams(new LinearLayout.LayoutParams(-1,-2));
-        setupPrevious=button(nav,"Previous",()->{ setupStep--; controlIndex=-1; show(Page.SETUP); }); setupPrevious.setEnabled(setupStep>0); Drawable l1=new ControllerBadge("L1",theme.text); l1.setBounds(0,0,dp(32),dp(24)); setupPrevious.setCompoundDrawables(l1,null,null,null);
-        View spacer=new View(this); nav.addView(spacer,new LinearLayout.LayoutParams(0,1,1));
-        setupNext=button(nav,setupStep==7?"Finish setup":"Next step",()->{ controlIndex=-1; if(setupStep<7){ setupStep++; show(Page.SETUP); } else { prefs().edit().putBoolean("setupComplete",true).apply(); show(Page.COMPLETE); } });
-        Drawable r1=new ControllerBadge("R1",theme.text); r1.setBounds(0,0,dp(32),dp(24)); setupNext.setCompoundDrawables(r1,null,null,null); ((LinearLayout.LayoutParams)setupNext.getLayoutParams()).rightMargin=0;
-        if(setupStep>=1&&setupStep<=4){ boolean complete=setupStep==1?prefs().getBoolean("confirmCalibrated",false):setupStep==4?shortcutServiceEnabled():!ShortcutKeys.decode(prefs().getString(setupStep==2?"shortcutChord":"quickSwitchChord","")).isEmpty(); if(!complete) setupNext.setText("Skip for now"); }
-        setupNext.setEnabled(setupStep>0||app.backend!=null);
-        setupPrevious.setContentDescription("L1: Previous"); setupNext.setContentDescription("R1: "+setupNext.getText());
+        LinearLayout nav=row(root);setupPrevious=button(nav,"Previous",()->{inlineCapture=false;inlineConfirm=false;setupStep--;controlIndex=-1;show(Page.SETUP);});setupPrevious.setEnabled(setupStep>0);Drawable l1=new ControllerBadge("L1",theme.text);l1.setBounds(0,0,dp(32),dp(24));setupPrevious.setCompoundDrawables(l1,null,null,null);View spacer=new View(this);nav.addView(spacer,new LinearLayout.LayoutParams(0,1,1));
+        setupNext=button(nav,setupStep==4?"Finish setup":"Next step",()->{inlineCapture=false;inlineConfirm=false;controlIndex=-1;if(setupStep<4){setupStep++;show(Page.SETUP);}else{prefs().edit().putBoolean("setupComplete",true).apply();show(Page.COMPLETE);}});Drawable r1=new ControllerBadge("R1",theme.text);r1.setBounds(0,0,dp(32),dp(24));setupNext.setCompoundDrawables(r1,null,null,null);((LinearLayout.LayoutParams)setupNext.getLayoutParams()).rightMargin=0;setupNext.setEnabled(setupStep>0||app.backend!=null);setupPrevious.setContentDescription("L1: Previous");setupNext.setContentDescription("R1: "+setupNext.getText());
+        TaskDeckApp.recordingShortcut=inlineCapture||inlineConfirm;
     }
     private boolean shortcutConflict(Set<String> keys){ return ShortcutKeys.conflicts(keys,ShortcutKeys.decode(prefs().getString(recordingQuickSwitch?"shortcutChord":"quickSwitchChord",""))); }
-    private void startRecording(boolean direct){ recordingQuickSwitch=direct; show(Page.CHORD); }
+    private void startRecording(boolean direct){if(!shortcutServiceEnabled()){feedback="Allow shortcut access in Android before recording";updateStatus();return;}recordingQuickSwitch=direct;heldKeys.clear();capturedKeys.clear();captureDevice=null;if(page==Page.SETUP){inlineCapture=true;inlineConfirm=false;show(Page.SETUP);}else show(Page.CHORD);}
     private TextView smallNote(LinearLayout parent,String value){ TextView text=note(parent,value); text.setTextSize(12); text.setMaxLines(2); text.setEllipsize(android.text.TextUtils.TruncateAt.END); return text; }
     private void shortcutsPage(){
         formPage("Controller shortcuts"); text(formInfo,"Two independent actions",20,false);
         button(formMain,"Record deck shortcut",()->startRecording(false));
-        button(formMain,"Record direct switch",()->startRecording(true));
+        button(formMain,"Record Quick Swap Apps",()->startRecording(true));
         for(boolean direct:new boolean[]{false,true}){
             String enabled=direct?"quickSwitchEnabled":"shortcutEnabled",chord=direct?"quickSwitchChord":"shortcutChord";
-            toggle(formMain,direct?"Direct switch shortcut":"Open-menu shortcut",prefs().getBoolean(enabled,false),()->{
+            toggle(formMain,direct?"Quick Swap Apps":"Open-menu shortcut",prefs().getBoolean(enabled,false),()->{
                 if(ShortcutKeys.decode(prefs().getString(chord,"")).isEmpty()){ startRecording(direct); return; }
                 prefs().edit().putBoolean(enabled,!prefs().getBoolean(enabled,false)).apply(); show(Page.SHORTCUTS);
             });
         }
         button(formMain,"Shortcut service settings",()->startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)));
         smallNote(formInfo,"Deck: "+ShortcutKeys.labels(ShortcutKeys.decode(prefs().getString("shortcutChord",""))));
-        smallNote(formInfo,"Direct: "+ShortcutKeys.labels(ShortcutKeys.decode(prefs().getString("quickSwitchChord",""))));
+        smallNote(formInfo,"Quick Swap Apps: "+ShortcutKeys.labels(ShortcutKeys.decode(prefs().getString("quickSwitchChord",""))));
         smallNote(formInfo,"Service: "+(shortcutServiceEnabled()?"enabled":"access required"));
-        smallNote(formInfo,"Direct switches the last two distinct apps without opening this menu. Nested/identical chords are rejected to prevent accidental triggers.");
+        smallNote(formInfo,"Quick Swap Apps switches the last two distinct apps without opening this menu. Nested/identical chords are rejected to prevent accidental triggers.");
     }
     private void detailNavigation(int count,Page target){
         LinearLayout nav=row(root); nav.setLayoutParams(new LinearLayout.LayoutParams(-1,-2)); Button previous=pagingButton(nav,"page_previous","Previous page",()->{ detailsPage--; show(target); }); pagePrevious=previous; previous.setEnabled(detailsPage>0); View gap=new View(this); nav.addView(gap,new LinearLayout.LayoutParams(0,1,1));
@@ -492,7 +485,7 @@ public class SwitcherActivity extends Activity {
         SetupCheckView check=new SetupCheckView(this,theme.accent); root.addView(check,new LinearLayout.LayoutParams(dp(96),dp(96)));
         TextView done=text(root,"You're ready",22,false); done.setGravity(Gravity.CENTER); check.play();
         root.announceForAccessibility("Setup complete");
-        main.postDelayed(()->{ if(page==Page.COMPLETE&&!isFinishing()&&!isDestroyed()) finishSetupAnimation(); },1900);
+        main.postDelayed(()->{ if(page==Page.COMPLETE&&!isFinishing()&&!isDestroyed()) finishSetupAnimation(); },950);
     }
     private void toggle(LinearLayout parent,String label,boolean enabled,Runnable action){
         Button option=button(parent,label+(enabled?" · On":" · Off"),action); option.setSelected(enabled); option.setContentDescription(label+", "+(enabled?"on":"off"));
@@ -520,22 +513,24 @@ public class SwitcherActivity extends Activity {
         if(settingsCategory==0){
             TextView connection=smallNote(formInfo,app.backend==null?"Shizuku disconnected":"✓ Shizuku connected"); if(app.backend!=null) connection.setTextColor(successColor());
             button(formInfo,app.backend==null?"Connect Shizuku":"Connection settings",()->show(Page.CONNECT));
-            button(formInfo,"Last action",()->{ detailsPage=0; show(Page.RESULTS); });
-            smallNote(formInfo,"Start Shizuku again after a device reboot. Connection is automatic when available.");
+            button(formInfo,"Shizuku guide",()->openLink("https://shizuku.rikka.app/guide/setup/"));
+            smallNote(formInfo,"Shizuku grants debugging access to Android tasks. Start it again after reboot.");
         } else if(settingsCategory==1){
             button(formInfo,"Button mapping",()->show(Page.MAPPING)); button(formInfo,"Configure shortcuts",()->show(Page.SHORTCUTS));
             smallNote(formInfo,"Service: "+(shortcutServiceEnabled()?"enabled":"access required"));
             smallNote(formInfo,"Choose letter or PlayStation labels, calibrate Confirm or remap individual deck actions.");
         } else if(settingsCategory==2){
             LinearLayout options=row(formInfo); for(String value:new String[]{"light","dark","oled","auto"}){ Button option=button(options,value.equals("auto")?"Auto":value.equals("oled")?"OLED":value.equals("light")?"Light":"Dark",()->{ prefs().edit().putString("theme",value).apply(); show(Page.SETTINGS); }); option.setSelected(value.equals(prefs().getString("theme","dark"))); option.setPadding(dp(10),0,dp(10),0); }
+            for(int i=0;i<options.getChildCount();i++) if(options.getChildAt(i) instanceof Button)((Button)options.getChildAt(i)).setCompoundDrawables(null,null,null,null);
+            closeVibration(options);
             AppearanceOptions appearanceOptions=new AppearanceOptions(this); formInfo.addView(appearanceOptions,new LinearLayout.LayoutParams(-1,-2));
             toggle(appearanceOptions,"Group app windows",prefs().getBoolean("groupApps",true),()->{ prefs().edit().putBoolean("groupApps",!prefs().getBoolean("groupApps",true)).apply(); rebuildTasks(); show(Page.SETTINGS); });
             toggle(appearanceOptions,"Stay open after clearing",!prefs().getBoolean("exitAfterBulk",true),()->{ prefs().edit().putBoolean("exitAfterBulk",!prefs().getBoolean("exitAfterBulk",true)).apply(); show(Page.SETTINGS); });
             accentColors(formInfo);
 
         } else if(settingsCategory==3){
-            button(formInfo,"Add apps to Quick Access",this::showPicker); button(formInfo,"Dock style & size",()->show(Page.DOCKSTYLE)); button(formInfo,"Dock behavior",()->show(Page.DOCKBEHAVIOR));
-            smallNote(formInfo,QuickAccess.read(prefs()).size()+" favorites · hold and drag dock icons to reorder, or use Select.");
+            button(formInfo,"Add apps to Dock",this::showPicker); button(formInfo,"Dock style & size",()->show(Page.DOCKSTYLE)); button(formInfo,"Dock behavior",()->show(Page.DOCKBEHAVIOR));
+            smallNote(formInfo,QuickAccess.read(prefs()).size()+" Dock apps · hold and drag dock icons to reorder, or use Select.");
         } else if(settingsCategory==4){
             toggle(formInfo,"RAM feedback",prefs().getBoolean("ramNotifications",true),()->{ boolean enabled=!prefs().getBoolean("ramNotifications",true); prefs().edit().putBoolean("ramNotifications",enabled).apply(); if(!enabled) getSystemService(NotificationManager.class).cancel(2); show(Page.SETTINGS); });
             toggle(formInfo,"Notification shortcut",shortcutVisible(),()->{ if(shortcutVisible()){ getSystemService(NotificationManager.class).cancel(1); prefs().edit().putBoolean("pendingNotificationShortcut",false).apply(); } else shortcutNotification(); show(Page.SETTINGS); });
@@ -543,7 +538,7 @@ public class SwitcherActivity extends Activity {
             smallNote(formInfo,"Notifications "+(notificationsAllowed("ram_results")?"allowed":"blocked")+". Android controls banner visibility.");
         } else {
             smallNote(formInfo,"TaskDeck "+versionName()+" · by SilasDV"); smallNote(formInfo,"Free and open source · MIT · Vibecoded with OpenAI Codex.");
-            button(formInfo,"Support SilasDV on Ko-fi",()->openLink("https://ko-fi.com/silasdv")); button(formInfo,"GitHub project",()->openLink("https://github.com/silasdv/TaskDeck"));
+            LinearLayout links=row(formInfo); button(links,"Ko-fi",()->openLink("https://ko-fi.com/silasdv")); button(links,"GitHub",()->openLink("https://github.com/silasdv/TaskDeck")); button(formInfo,"Redo Setup",()->{prefs().edit().putBoolean("setupComplete",false).apply();setupStep=0;inlineCapture=false;inlineConfirm=false;show(Page.SETUP);});
         }
     }
     private String profileName(){ String profile=ControllerBindings.profile(prefs()); return (profile.startsWith("playstation")?"PlayStation":"A/B/X/Y")+(profile.endsWith("_swapped")?" (swapped)":""); }
@@ -566,11 +561,12 @@ public class SwitcherActivity extends Activity {
         note(formInfo,"Press a controller button. Assigning an occupied button swaps its previous action. D-pad, Android Back and the on-screen Back button remain available.");
     }
     private Button pagingButton(LinearLayout parent,String action,String label,Runnable callback){ Button b=button(parent,label,callback); if(action.equals("page_next")) ((LinearLayout.LayoutParams)b.getLayoutParams()).rightMargin=0; String hint=ControllerBindings.badge(prefs(),action); Drawable badge=new ControllerBadge(hint,theme.text); badge.setBounds(0,0,dp(hint.length()>1&&!ControllerBadge.symbol(hint)?28:20),dp(20)); b.setCompoundDrawables(badge,null,null,null); b.setContentDescription(label+": "+hint); return b; }
-    private void pagingMappingPage(){ formPage("Page navigation"); pagingButton(formMain,"page_previous","Previous page",()->{ bindingAction="page_previous"; show(Page.BIND); }); pagingButton(formMain,"page_next","Next page",()->{ bindingAction="page_next"; show(Page.BIND); }); note(formInfo,"Applies to app selection, Last action, RAM details and window pages. Main-screen actions are independent. Confirm and Back stay reserved."); }
+    private void pagingMappingPage(){ formPage("Page navigation"); pagingButton(formMain,"page_previous","Previous page",()->{ bindingAction="page_previous"; show(Page.BIND); }); pagingButton(formMain,"page_next","Next page",()->{ bindingAction="page_next"; show(Page.BIND); }); note(formInfo,"Applies to Dock app selection, RAM details and window pages. Main-screen actions are independent. Confirm and Back stay reserved."); }
     private void accentColors(LinearLayout parent){
+        Page destination=page;
         colorColumns=8; TextView title=text(parent,"Accent Colors",12,false); title.setPadding(0,dp(2),0,dp(2));
         AccentPalette palette=new AccentPalette(this); FrameLayout paletteArea=new FrameLayout(this); parent.addView(paletteArea,new LinearLayout.LayoutParams(-1,landscape()?0:-2,landscape()?1:0)); paletteArea.addView(palette,new FrameLayout.LayoutParams(-1,-2,Gravity.TOP));
-        for(int i=0;i<DeckTheme.ACCENT_KEYS.length;i++){ String key=DeckTheme.ACCENT_KEYS[i],name=DeckTheme.ACCENT_NAMES[i]; Button dot=button(parent,"",()->{ prefs().edit().putString("accentColor",key).apply(); show(Page.SETTINGS); }); parent.removeView(dot); dot.setTag("accent:"+key); dot.setContentDescription(name+" accent"); dot.setTooltipText(name); dot.setPadding(0,0,0,0); dot.setMinHeight(0); dot.setMinimumHeight(0); dot.setCompoundDrawables(null,null,null,null); int color=key.equals("theme")?DeckTheme.resolve(prefs().getString("theme","dark"),getResources().getConfiguration().uiMode).accent:DeckTheme.accentColor(key); dot.setBackground(new AccentDot(color,theme.accent,theme.surface,theme.selected,getResources().getDisplayMetrics().density)); dot.setSelected(key.equals(prefs().getString("accentColor","theme"))); colorDots.add(dot); GridLayout.LayoutParams size=new GridLayout.LayoutParams(GridLayout.spec(i/8),GridLayout.spec(i%8)); size.width=dp(48); size.height=dp(48); palette.addView(dot,size); }
+        for(int i=0;i<DeckTheme.ACCENT_KEYS.length;i++){ String key=DeckTheme.ACCENT_KEYS[i],name=DeckTheme.ACCENT_NAMES[i]; Button dot=button(parent,"",()->{ prefs().edit().putString("accentColor",key).apply(); show(destination); }); parent.removeView(dot); dot.setTag("accent:"+key); dot.setContentDescription(name+" accent"); dot.setTooltipText(name); dot.setPadding(0,0,0,0); dot.setMinHeight(0); dot.setMinimumHeight(0); dot.setCompoundDrawables(null,null,null,null); int color=key.equals("theme")?DeckTheme.resolve(prefs().getString("theme","dark"),getResources().getConfiguration().uiMode).accent:DeckTheme.accentColor(key); dot.setBackground(new AccentDot(color,theme.accent,theme.surface,theme.selected,getResources().getDisplayMetrics().density)); dot.setSelected(key.equals(prefs().getString("accentColor","theme"))); colorDots.add(dot); GridLayout.LayoutParams size=new GridLayout.LayoutParams(GridLayout.spec(i/8),GridLayout.spec(i%8)); size.width=dp(48); size.height=dp(48); palette.addView(dot,size); }
     }
     private void boundMenuButtons(LinearLayout pane){
         if(pane==null||!inside(pane,root)||page==Page.APPS||page==Page.PICKER||page==Page.SETTINGS&&pane==formMain) return;
@@ -578,19 +574,7 @@ public class SwitcherActivity extends Activity {
 
         pane.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,or,ob)->{ if(r-l!=or-ol) fit.run(); }); pane.post(fit);
     }
-    private void profileMenu(){
-        String[] labels={"A/B/X/Y","A/B/X/Y (swapped)","PlayStation symbols","PlayStation symbols (swapped)"},values={"abxy","abxy_swapped","playstation","playstation_swapped"};
-        int selected=java.util.Arrays.asList(values).indexOf(ControllerBindings.profile(prefs()));
-        AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Button labels").setSingleChoiceItems(labels,Math.max(0,selected),(d,which)->{ ControllerBindings.selectProfile(prefs(),values[which]); d.dismiss(); show(Page.MAPPING); }).setNegativeButton("Cancel",null).create();
-        dialog.setOnKeyListener((d,key,event)->{
-            if(key==ControllerBindings.code(prefs(),"exit")||key==KeyEvent.KEYCODE_BACK){ if(event.getAction()==0) d.dismiss(); return true; }
-            if(key==ControllerBindings.code(prefs(),"open")||key==KeyEvent.KEYCODE_DPAD_CENTER){ if(event.getAction()==0&&event.getRepeatCount()==0){ int position=dialog.getListView().getSelectedItemPosition(); if(position<0) position=dialog.getListView().getCheckedItemPosition(); if(position>=0){ ControllerBindings.selectProfile(prefs(),values[position]); d.dismiss(); show(Page.MAPPING); } } return true; } return false;
-        });
-        dialog.setOnShowListener(ignored->{
-            int[] axis={0}; dialog.getListView().setOnGenericMotionListener((v,event)->{ if(!event.isFromSource(InputDevice.SOURCE_JOYSTICK)) return false; setInputMode(true); float y=event.getAxisValue(MotionEvent.AXIS_HAT_Y); if(Math.abs(y)<.55f) y=event.getAxisValue(MotionEvent.AXIS_Y); int next=y>.55f?1:y<-.55f?-1:0;
-                if(next!=0&&next!=axis[0]){ int current=dialog.getListView().getSelectedItemPosition(); if(current<0) current=dialog.getListView().getCheckedItemPosition(); dialog.getListView().setSelection(Math.max(0,Math.min(values.length-1,current+next))); } axis[0]=next; return true; });
-        }); dialog.show();
-    }
+    private void profileMenu(){String[] labels={"A/B/X/Y","A/B/X/Y (swapped)","PlayStation symbols","PlayStation symbols (swapped)"},values={"abxy","abxy_swapped","playstation","playstation_swapped"};choice("Button labels",labels,Arrays.asList(values).indexOf(ControllerBindings.profile(prefs())),index->{ControllerBindings.selectProfile(prefs(),values[index]);show(Page.MAPPING);});}
     private int successColor(){ return theme.currentColor(); }
     private String versionName(){ try { return getPackageManager().getPackageInfo(getPackageName(),0).versionName; } catch(Exception absent){ return "Unknown"; } }
     private void openLink(String url){ try { startActivity(new Intent(Intent.ACTION_VIEW,android.net.Uri.parse(url))); } catch(ActivityNotFoundException unavailable){ feedback="No browser available"; updateStatus(); } }
@@ -599,10 +583,10 @@ public class SwitcherActivity extends Activity {
         button(formMain,"Open Shizuku",()->{ Intent intent=getPackageManager().getLaunchIntentForPackage("moe.shizuku.privileged.api"); if(intent!=null) startActivity(intent); else { feedback="Install Shizuku from shizuku.rikka.app"; updateStatus(); } });
         button(formMain,app.backend==null?"Authorize / Connect":"Reconnect Shizuku",()->{ if(app.backend!=null) app.recoverBackend("Manual reconnect"); else app.connect(true); });
         button(formMain,prefs().getBoolean("setupComplete",false)?"Done":"Continue setup",()->{ show(prefs().getBoolean("setupComplete",false)?Page.SETTINGS:Page.SETUP); if(app.backend!=null) refresh(); });
-        text(formInfo,"Connect once",20,false); note(formInfo,"1. Start Shizuku.\n2. Return and choose Authorize / Connect.\n3. Approve TaskDeck access.\n\nWithout root, restart Shizuku after reboot. TaskDeck uses it to access Android tasks.");
+        button(formInfo,"Official Shizuku guide",()->openLink("https://shizuku.rikka.app/guide/setup/")); note(formInfo,"Shizuku grants debugging-level access to Android tasks without root. "); note(formInfo,"1. Start Shizuku.\n2. Return and choose Authorize / Connect.\n3. Approve TaskDeck access.\n\nWithout root, restart Shizuku after reboot. TaskDeck uses it to access Android tasks.");
     }
     private void recordPage(){
-        heldKeys.clear(); capturedKeys.clear(); captureDevice=null; formPage(page==Page.CHORD?(recordingQuickSwitch?"Record direct switch":"Record deck shortcut"):"Calibrate confirm");
+        heldKeys.clear(); capturedKeys.clear(); captureDevice=null; formPage(page==Page.CHORD?(recordingQuickSwitch?"Record Quick Swap Apps":"Record deck shortcut"):"Calibrate confirm");
         recordLive=text(formMain,"Held now: none",16,false); recordSaved=text(formMain,"Recorded: none",16,false);
         recordLive.setMaxLines(2); recordSaved.setMaxLines(3); recordLive.setTextSize(14); recordSaved.setTextSize(14); recordLive.setEllipsize(android.text.TextUtils.TruncateAt.END); recordSaved.setEllipsize(android.text.TextUtils.TruncateAt.END);
         text(formInfo,page==Page.CHORD?"Hold, release, save":prefs().getBoolean("psLabels",false)?"Press Cross":"Press printed A",20,false);
@@ -616,19 +600,20 @@ public class SwitcherActivity extends Activity {
 
     private void record(KeyEvent event){
         String key=ShortcutKeys.id(event);
-        if(page==Page.CONFIRM){
+        if(page==Page.CONFIRM||page==Page.SETUP&&inlineConfirm){
             if(event.getAction()==KeyEvent.ACTION_DOWN && event.getRepeatCount()==0 && (event.getKeyCode()==96 || event.getKeyCode()==97)){
-                ControllerBindings.calibrate(prefs(),event.getKeyCode()); feedback="Confirm button calibrated"; show(prefs().getBoolean("setupComplete",false)?Page.MAPPING:Page.SETUP);
+                ControllerBindings.calibrate(prefs(),event.getKeyCode()); inlineConfirm=false; feedback="Confirm button calibrated"; show(prefs().getBoolean("setupComplete",false)?Page.MAPPING:Page.SETUP);
             } return;
         }
         if(event.getAction()==KeyEvent.ACTION_DOWN && event.getRepeatCount()==0){
-            if(heldKeys.isEmpty()) captureDevice=event.getDeviceId();
+            if(heldKeys.isEmpty()){captureDevice=event.getDeviceId();capturedKeys.clear();}
             if(!Objects.equals(captureDevice,event.getDeviceId())){ recordLive.setText("Use buttons from one controller"); return; }
             heldKeys.add(key);
             if(heldKeys.size()>=capturedKeys.size()){ capturedKeys.clear(); capturedKeys.addAll(heldKeys); }
         } else if(event.getAction()==KeyEvent.ACTION_UP && Objects.equals(captureDevice,event.getDeviceId())) heldKeys.remove(key);
         recordLive.setText("Held now: "+(heldKeys.isEmpty()?"none":ShortcutKeys.labels(heldKeys)));
         recordSaved.setText("Recorded: "+ShortcutKeys.labels(capturedKeys)+(shortcutConflict(capturedKeys)?" · conflicts with other shortcut":""));
+        if(page==Page.SETUP){if(heldKeys.isEmpty()&&!capturedKeys.isEmpty()&&capturedKeys.size()<=4&&!shortcutConflict(capturedKeys)&&shortcutServiceEnabled()){prefs().edit().putString(recordingQuickSwitch?"quickSwitchChord":"shortcutChord",ShortcutKeys.encode(capturedKeys)).putBoolean(recordingQuickSwitch?"quickSwitchEnabled":"shortcutEnabled",true).apply();inlineCapture=false;show(Page.SETUP);}return;}
         saveChord.setEnabled(!capturedKeys.isEmpty() && heldKeys.isEmpty() && capturedKeys.size()<=4&&!shortcutConflict(capturedKeys));
         if(controllerMode && saveChord.isEnabled()) focusControl(controls.indexOf(saveChord));
     }
@@ -700,7 +685,7 @@ public class SwitcherActivity extends Activity {
             if(result.has("error")){ readError=true; pendingRefresh=false; feedback=result.optString("error"); updateStatus(); return; }
             if(app.backend!=backend) return;
             if(readError){ feedback=""; readError=false; } app.backendHealthy();
-            app.status="Connected · backend "+result.optInt("backendVersion",8)+" · UID "+result.optInt("uid")+" · Android API "+result.optInt("sdk");
+            app.status="Connected · backend "+result.optInt("backendVersion",9)+" · UID "+result.optInt("uid")+" · Android API "+result.optInt("sdk");
             if(!result.optString("protectionWarning").isEmpty()) feedback=result.optString("protectionWarning")+" · protection cannot be checked";
             rawTasks.clear(); backgroundApps.clear(); JSONArray rows=result.optJSONArray("tasks");
             if(rows!=null) for(int i=0;i<rows.length();i++){ JSONObject task=rows.optJSONObject(i); if(task!=null){ try { task.put("recentRank",i); } catch(JSONException ignored){} rawTasks.add(task); } }
@@ -743,7 +728,7 @@ public class SwitcherActivity extends Activity {
     private String[] protectedArray(){ return protectedApps().toArray(new String[0]); }
     private Set<String> unlockedLaunchers(){ return new HashSet<>(prefs().getStringSet("unlockedLaunchers",Collections.emptySet())); }
     private void configureBackend(ITaskBackend backend) throws android.os.RemoteException { backend.setProtectedPackages(protectedArray()); backend.setUnlockedLaunchers(unlockedLaunchers().toArray(new String[0])); }
-    private boolean locked(JSONObject task){ return TaskOrder.mandatory(task)||protectedApps().contains(task.optString("package")) || task.optBoolean("launcher")&&!unlockedLaunchers().contains(task.optString("package")); }
+    private boolean locked(JSONObject task){ return TaskOrder.mandatory(task)||protectedApps().contains(task.optString("package")) ; }
     private boolean launcherIdle(JSONObject task){ return task.optBoolean("launcher")&&task.optBoolean("synthetic")&&"not-reported".equals(task.optString("memoryState")); }
     private boolean closable(JSONObject task){ return !locked(task)&&!launcherIdle(task); }
     private void closeSelected(){ if(dockZone){ feedback="Select an open app card to close it"; updateStatus(); return; } JSONObject task=selected(); if(task==null) return; if(!closable(task)){ feedback=locked(task)?"This app is protected":"Launcher is not running · Select to restart"; updateStatus(); return; } remove(TaskGroups.expand(task),0); }
@@ -848,20 +833,19 @@ public class SwitcherActivity extends Activity {
         };
         panel.setOrientation(LinearLayout.VERTICAL); panel.setPadding(dp(20),dp(14),dp(20),dp(14)); panel.setBackground(rounded(theme.surface));
         text(panel,task.optString("label"),21,false);
-        note(panel,launcher?"Launchers start locked. Unlock to include in close actions, or restart once while keeping protection. Android can reopen its default HOME launcher.":mandatory?"Required keyboard or system-service protection.":"Protected apps are skipped by close actions. Your choice is saved.");
+        note(panel,launcher?"Choose whether close actions skip this launcher. Android may reopen its default HOME launcher.":mandatory?"Required keyboard or system-service protection.":"Protected apps are skipped by close actions. Your choice is saved.");
         int previous=controls.size();
         Button toggle=button(panel,mandatory?"Always protected · Close":locked(task)?"Unlock app":"Protect app",()->{
             if(!mandatory){
                 String name=task.optString("package"); Set<String> manual=protectedApps();
-                if(launcher){ Set<String> unlocked=unlockedLaunchers(); if(unlocked.contains(name)) unlocked.remove(name); else unlocked.add(name); manual.remove(name); prefs().edit().putStringSet("unlockedLaunchers",unlocked).putStringSet("protectedApps",manual).apply(); }
-                else { if(manual.contains(name)) manual.remove(name); else manual.add(name); prefs().edit().putStringSet("protectedApps",manual).apply(); }
+                if(manual.contains(name)) manual.remove(name); else manual.add(name); prefs().edit().putStringSet("protectedApps",manual).apply();
             }
             protectionPopup.dismiss(); reorder(); refresh();
         }); options.add(toggle);
         Drawable lock=getDrawable(R.drawable.ic_lock); if(lock!=null){ lock.setTint(theme.text); lock.setBounds(0,0,dp(22),dp(22)); toggle.setCompoundDrawables(lock,null,null,null); }
         if(task.optInt("windowCount",1)>1) options.add(button(panel,"Choose window",()->{ protectionPopup.dismiss(); windowGroup=task; detailsPage=0; show(Page.WINDOWS); }));
         if(launcher&&!mandatory) options.add(button(panel,"Restart launcher",()->{ protectionPopup.dismiss(); restartLauncher(task); }));
-        options.add(button(panel,QuickAccess.read(prefs()).contains(task.optString("package"))?"Remove from Quick Access":"Pin to Quick Access",()->{ protectionPopup.dismiss(); pin(task.optString("package")); }));
+        options.add(button(panel,QuickAccess.read(prefs()).contains(task.optString("package"))?"Remove from Dock":"Pin to Dock",()->{ protectionPopup.dismiss(); pin(task.optString("package")); }));
         while(controls.size()>previous) controls.remove(controls.size()-1);
         GradientDrawable outline=rounded(theme.surface); outline.setStroke(dp(2),theme.muted); panel.setBackground(outline);
         scrollPopup(panel);
@@ -879,12 +863,8 @@ public class SwitcherActivity extends Activity {
             catch(RuntimeException denied){ app.lastOperation=OperationResults.report(new JSONArray().put(OperationResults.item(task,"Restart launcher",BackendRequests.error("Cannot reopen launcher: "+denied.getClass().getSimpleName())))); feedback=app.lastOperation.optString("summary"); updateStatus(); updateOperationInfo(); }
         });
     }
-    private void updateOperationInfo(){
-        if(operationInfo==null) return; JSONObject report=app.lastOperation;
-        boolean problems=report!=null&&(report.optInt("failed")>0||report.optInt("unverified")>0);
-        operationInfo.setVisibility(problems?View.VISIBLE:View.GONE); if(problems){ operationInfo.setText(report.optString("summary")+" · Settings → Connection → Last action"); operationInfo.setTextColor(theme.muted); }
-    }
-    // Outcome verification is per item; uncertain results are not counted as successful closes.
+    private void updateOperationInfo(){ if(operationInfo!=null) operationInfo.setVisibility(View.GONE); }
+
     private void remove(List<JSONObject> snapshot,int destination){
         ITaskBackend backend=app.backend; if(busy||backend==null&&!snapshot.isEmpty()) return; busy=true; catalogGeneration++; long before=available();
         feedback="Closing "+snapshot.size()+" window(s)…"; updateStatus(); JSONObject previous=entryTask;
@@ -908,8 +888,8 @@ public class SwitcherActivity extends Activity {
                 int unknown=0; for(JSONObject task:snapshot) if(!known.contains(task.optInt("id")+":"+task.optString("package"))&&!launchers.contains(task.optString("package"))){ completed.put(OperationResults.item(task,"Outcome unknown",report)); unknown++; }
                 if(unknown==0) completed.put(OperationResults.item(new JSONObject(Collections.singletonMap("label","Connection outcome unknown")),"Close apps",report)); report=OperationResults.report(completed);
             }
-            app.lastOperation=report; int done=report.optInt("confirmed"); if(done>0) app.reportMemoryResult(done,before);
-            if(isDestroyed()) return; feedback=report.optString("summary"); updateStatus(); updateOperationInfo();
+            app.lastOperation=report; int done=report.optInt("confirmed"); if(done>0){ app.reportMemoryResult(done,before); if(prefs().getBoolean("vibrateClose",false)){android.os.Vibrator vibrator=(android.os.Vibrator)getSystemService(VIBRATOR_SERVICE);if(vibrator!=null&&vibrator.hasVibrator())vibrator.vibrate(android.os.VibrationEffect.createOneShot(20,35));} }
+            if(isDestroyed()) return; feedback=report.optInt("failed")>0||report.optInt("unverified")>0?"Some apps could not be closed":""; updateStatus(); updateOperationInfo();
             if(report.optInt("failed")==0&&report.optInt("unverified")==0&&destination!=0){
                 app.flushMemoryFeedback();
                 if(destination==2&&previous!=null&&backend!=null&&!previous.optBoolean("home")){ returnToPrevious(backend,previous); return; }
@@ -955,7 +935,7 @@ public class SwitcherActivity extends Activity {
         else if(page==Page.PAGING) show(Page.MAPPING);
         else if(page==Page.ACCENT){ settingsCategory=2; show(Page.SETTINGS); }
         else if(page==Page.CHORD) show(prefs().getBoolean("setupComplete",false)?Page.SHORTCUTS:Page.SETUP);
-        else if(page==Page.SETUP){ if(setupStep>0){ setupStep--; show(Page.SETUP); } else finish(); }
+        else if(page==Page.SETUP){ if(inlineCapture||inlineConfirm){inlineCapture=false;inlineConfirm=false;show(Page.SETUP);return;} if(setupStep>0){ setupStep--; show(Page.SETUP); } else finish(); }
         else show(prefs().getBoolean("setupComplete",false)?Page.SETTINGS:Page.SETUP);
     }
     private void focusMode(View view,boolean controller){
@@ -963,7 +943,7 @@ public class SwitcherActivity extends Activity {
         if(view instanceof ViewGroup) for(int i=0;i<((ViewGroup)view).getChildCount();i++) focusMode(((ViewGroup)view).getChildAt(i),controller);
     }
     private void setInputMode(boolean controller){
-        if(controllerMode==controller) return; boolean searching=page==Page.PICKER&&pickerSearch!=null&&pickerSearch.hasFocus(); controllerMode=controller;
+        if(controllerMode==controller) return; boolean searching=pickerActive()&&pickerSearch!=null&&pickerSearch.hasFocus(); controllerMode=controller;
         if(root!=null){ focusMode(root,controller); if(!controller){ stopStick(); for(Button button:controls) button.setActivated(false); View focus=getCurrentFocus(); if(focus!=null) focus.clearFocus(); root.requestFocus(); } }
         if(protectionPopup!=null&&protectionPopup.isShowing()){ View panel=protectionPopup.getContentView(); focusMode(panel,controller); if(!controller) panel.clearFocus(); }
         if(controller&&searching){ pickerSearch.requestFocus(); return; }
@@ -984,6 +964,8 @@ public class SwitcherActivity extends Activity {
         int key=event.getKeyCode();
         if(ShortcutKeys.eligible(event)||key>=19&&key<=23) setInputMode(true);
         int a=ControllerBindings.code(prefs(),"open"),b=ControllerBindings.code(prefs(),"exit"),x=ControllerBindings.code(prefs(),"close"),y=ControllerBindings.code(prefs(),"clear");
+        if(page==Page.SETUP&&inlineConfirm&&(key==96||key==97)){record(event);return true;}
+        if(page==Page.SETUP&&inlineCapture&&shortcutServiceEnabled()){boolean reservedSetup=key>=19&&key<=23||key==a||key==b||key==KeyEvent.KEYCODE_BACK||key==KeyEvent.KEYCODE_BUTTON_START||key==KeyEvent.KEYCODE_BUTTON_L1||key==KeyEvent.KEYCODE_BUTTON_R1;if(!reservedSetup&&ShortcutKeys.eligible(event)){record(event);return true;}}
         if(page==Page.COMPLETE&&(key==a||key==KeyEvent.KEYCODE_DPAD_CENTER)){ if(event.getAction()==0&&event.getRepeatCount()==0) finishSetupAnimation(); return true; }
         if(page==Page.BIND&&ControllerBindings.paging(bindingAction)&&(key==a||key==b)){ if(event.getAction()==0&&event.getRepeatCount()==0) show(Page.PAGING); return true; }
         if(page==Page.BIND&&ControllerBindings.BUTTONS.contains(key)){ if(event.getAction()==0&&event.getRepeatCount()==0){ if(ControllerBindings.paging(bindingAction)&&(key==a||key==b)){ feedback="Confirm and Back remain reserved"; updateStatus(); return true; } ControllerBindings.assign(prefs(),bindingAction,key); show(ControllerBindings.paging(bindingAction)?Page.PAGING:Page.MAPPING); } return true; }
@@ -996,7 +978,7 @@ public class SwitcherActivity extends Activity {
             if(event.getAction()==0&&event.getRepeatCount()==0){ Button target=key==KeyEvent.KEYCODE_BUTTON_L1?setupPrevious:setupNext; if(target!=null&&target.isEnabled()) target.performClick(); } return true;
         }
         if((page==Page.PICKER||page==Page.RESULTS||page==Page.WINDOWS||page==Page.MEMORY)&&key!=a&&key!=b&&(key==ControllerBindings.code(prefs(),"page_previous")||key==ControllerBindings.code(prefs(),"page_next"))){ if(event.getAction()==0&&event.getRepeatCount()==0){ Button target=key==ControllerBindings.code(prefs(),"page_previous")?pagePrevious:pageNext; if(target!=null&&target.isEnabled()) target.performClick(); } return true; }
-        if(page==Page.PICKER&&pickerSearch!=null&&pickerSearch.hasFocus()){
+        if(pickerActive()&&pickerSearch!=null&&pickerSearch.hasFocus()){
             if(key==KeyEvent.KEYCODE_DPAD_DOWN){ if(event.getAction()==0){ getSystemService(android.view.inputmethod.InputMethodManager.class).hideSoftInputFromWindow(pickerSearch.getWindowToken(),0); pickerSearch.clearFocus(); if(!pickerOptions.isEmpty()) focusControl(controls.indexOf(pickerOptions.get(0))); } return true; }
             if(key!=b&&key!=KeyEvent.KEYCODE_BACK) return super.dispatchKeyEvent(event);
         }
@@ -1037,10 +1019,12 @@ public class SwitcherActivity extends Activity {
     private boolean inside(View view,ViewGroup parent){ for(android.view.ViewParent p=view.getParent();p instanceof View;p=p.getParent()) if(p==parent) return true; return false; }
     private void navigate(int direction){
         if(page!=Page.APPS){
+            if(page==Page.DOCKBEHAVIOR&&controlIndex>=0&&controlIndex<controls.size()&&"visibilitySlider".equals(controls.get(controlIndex).getTag())&&(direction==1||direction==-1)){setDockVisibility(direction==1?1:0,(TextView)visibilitySlider.getTag());return;}
+            if(pickerActive()&&controlIndex>=0&&controlIndex<controls.size()&&pickerOptions.contains(controls.get(controlIndex))){int index=pickerOptions.indexOf(controls.get(controlIndex)),next=index;if(direction==-2){if(index<4){pickerSearch.requestFocus();controlIndex=-1;return;}next-=4;}else if(direction==2){if(index+4>=pickerOptions.size()){focusControl(controls.indexOf(pickerPrevious));return;}next+=4;}else if(direction==-1&&index%4>0)next--;else if(direction==1&&index%4<3&&index+1<pickerOptions.size())next++;focusControl(controls.indexOf(pickerOptions.get(next)));return;}
             if(page==Page.DOCKSTYLE&&controlIndex>=0&&controlIndex<controls.size()&&dockStyleChoices.contains(controls.get(controlIndex))){int index=dockStyleChoices.indexOf(controls.get(controlIndex)),next=index;if(direction==1&&index%2==1){for(int i=0;i<controls.size();i++)if(inside(controls.get(i),formInfo)){focusControl(i);return;}}if(direction==-2){if(index<2){focusControl(0);return;}next-=2;}else if(direction==2){if(index>=2){focusControl(controls.indexOf(dockStyleChoices.get(3))+1);return;}next+=2;}else if(direction==-1&&index%2==1)next--;else if(direction==1&&index%2==0)next++;focusControl(controls.indexOf(dockStyleChoices.get(next)));return;}
-            if(page==Page.SETUP&&(setupStep==1||setupStep==5)&&controlIndex>=0&&controlIndex<controls.size()&&setupThemes.contains(controls.get(controlIndex))){ int index=setupThemes.indexOf(controls.get(controlIndex)),next=index; if(direction==-2){ if(index<2){ focusControl(0); return; } next-=2; } else if(direction==2){ if(index+2>=setupThemes.size()){ focusControl(setupStep==1?controls.indexOf(setupThemes.get(setupThemes.size()-1))+1:controls.indexOf(setupNext)); return; } next+=2; } else if(direction==-1&&index%2==1) next--; else if(direction==1&&index%2==0) next++; focusControl(controls.indexOf(setupThemes.get(next))); return; }
-            if(page==Page.PICKER&&pickerSearch!=null&&pickerSearch.hasFocus()){ if(direction==2&&!pickerOptions.isEmpty()){ pickerSearch.clearFocus(); getSystemService(android.view.inputmethod.InputMethodManager.class).hideSoftInputFromWindow(pickerSearch.getWindowToken(),0); focusControl(controls.indexOf(pickerOptions.get(0))); } return; }
-            if(page==Page.SETTINGS&&controlIndex>=0&&controlIndex<controls.size()&&colorDots.contains(controls.get(controlIndex))){ colorColumns=((GridLayout)colorDots.get(0).getParent()).getColumnCount(); int index=colorDots.indexOf(controls.get(controlIndex)),next=index; if(direction==-1){ if(index%colorColumns==0){ focusControl(1+settingsCategory); return; } next--; } else if(direction==1&&index%colorColumns<colorColumns-1) next++; else if(direction==-2) next-=colorColumns; else if(direction==2) next+=colorColumns; if(next<0) focusControl(controls.indexOf(colorDots.get(0))-1); else if(next<colorDots.size()) focusControl(controls.indexOf(colorDots.get(next))); return; }
+            if(page==Page.SETUP&&(setupStep==1||setupStep==3)&&controlIndex>=0&&controlIndex<controls.size()&&setupThemes.contains(controls.get(controlIndex))){ int index=setupThemes.indexOf(controls.get(controlIndex)),next=index; if(direction==-2){ if(index<2){ focusControl(0); return; } next-=2; } else if(direction==2){ if(index+2>=setupThemes.size()){ focusControl(setupStep==1?controls.indexOf(setupThemes.get(setupThemes.size()-1))+1:controls.indexOf(setupNext)); return; } next+=2; } else if(direction==-1&&index%2==1) next--; else if(direction==1&&index%2==0) next++; focusControl(controls.indexOf(setupThemes.get(next))); return; }
+            if(pickerActive()&&pickerSearch!=null&&pickerSearch.hasFocus()){ if(direction==2&&!pickerOptions.isEmpty()){ pickerSearch.clearFocus(); getSystemService(android.view.inputmethod.InputMethodManager.class).hideSoftInputFromWindow(pickerSearch.getWindowToken(),0); focusControl(controls.indexOf(pickerOptions.get(0))); } return; }
+            if((page==Page.SETTINGS||page==Page.SETUP)&&controlIndex>=0&&controlIndex<controls.size()&&colorDots.contains(controls.get(controlIndex))){ colorColumns=((GridLayout)colorDots.get(0).getParent()).getColumnCount(); int index=colorDots.indexOf(controls.get(controlIndex)),next=index; if(direction==-1){ if(index%colorColumns==0){ focusControl(page==Page.SETUP?0:1+settingsCategory); return; } next--; } else if(direction==1&&index%colorColumns<colorColumns-1) next++; else if(direction==-2) next-=colorColumns; else if(direction==2) next+=colorColumns; if(next<0) focusControl(controls.indexOf(colorDots.get(0))-1); else if(next<colorDots.size()) focusControl(controls.indexOf(colorDots.get(next))); return; }
             if(page==Page.SETTINGS&&landscape()&&!categories.isEmpty()){
                 int first=controls.indexOf(categories.get(0)),last=first+categories.size()-1,content=last+1;
                 if(controlIndex<first){ if(direction==2||direction==-1) focusControl(first+settingsCategory); return; }

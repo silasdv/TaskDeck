@@ -29,3 +29,5 @@ Version 1.1.5 uses versionCode 115 and the same release key. Signed assets and c
 Version 1.1.6 uses versionCode 116 and the same release key. Signed local assets do not imply GitHub publication. Include the usability review and device acceptance limits.
 
 Version 1.1.7 uses versionCode 117 and the existing release key. Prepare signed assets locally; no implied publication.
+
+Version 1.1.8 uses versionCode 118, UserService 9 and the existing release key. VIBRATE supports optional close feedback. INTERNET remains absent. Signed assets are prepared locally, without implied publication.

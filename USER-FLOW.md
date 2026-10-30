@@ -1,35 +1,25 @@
-# TaskDeck user flow — 1.1.7
+# TaskDeck user flow — 1.1.8
 
-## First launch
+## Setup
 
-Setup runs once; Settings is used thereafter. Eight screens cover Connection, Confirm calibration, Open-menu shortcut, Direct-switch shortcut, Shortcut-service access, Appearance, Closing behavior and Notifications. Each screen explains one decision. L1 goes back and R1 advances, with visible labels; mapped Confirm/Back and visible controls remain available. Connection is required. Its completion is derived from the live backend, never a saved preference. Incomplete optional controller/access steps explicitly offer **Skip for now**.
+Five pages: Permissions → Controller → Shortcuts → Appearance → App protection. L1/R1 navigate. Shizuku is required for tasks; shortcut-service access is required only for hotkeys; notifications are optional. All status reflects live permission checks. The official Shizuku guide is linked in setup and Connection settings.
 
-Choose A/B/X/Y or PlayStation labels inline before calibrating the printed A/Cross button. Calibration infers the common face-button swap; it cannot identify every firmware permutation. Shortcut recording reserves navigation and Confirm/Back/Start. Theme choices use a two-by-two layout. Permission states are checked against Android rather than inferred from clicking a grant button. Finishing saves completion, shows an animated checkmark and holds for about 1.9 seconds; Confirm may continue sooner.
+Controller label selection and calibration stay inline. Both deck and Quick Swap Apps chords record inline after Android grants shortcut access. Hold up to four eligible buttons and release to save. Checkmarks confirm saved recordings. D-pad, Confirm/Back/Start and setup L1/R1 stay reserved; Back cancels capture. Appearance includes themes, accent swatches, closing behavior and vibration. Protection uses the searchable paged app grid. Ordinary apps/launchers are not locked by default; required services remain protected.
+
+Completion draws for 800 ms and opens the deck after about 950 ms total; Confirm can skip. Settings > About > Redo Setup repeats onboarding without clearing configuration.
 
 ## Main screen
 
-Opening selects the first task; Refresh is selected when no tasks exist. Fit all and Recent are defaults, preserving explicit changes. Touch acts on its first tap; controller input switches to explicit focus navigation.
+First task selected on entry, Refresh when empty. Fit all layout changes animate when system animations are enabled. Successful closing has no confirmed banner; errors remain inline. Last action is removed from Settings. The one-row legend includes outlined Select/Share for task options; B text and PlayStation glyphs are white.
 
-- Up from the top task row reaches Refresh; Left/Right traverses the toolbar.
-- Right from the task edge reaches RAM details; Up from RAM reaches Settings.
-- Down from Tasks always enters the leftmost dock item, independent of the previously visited dock side.
-- Right/Down from RAM details enters the right Thumb corner; Up from that corner returns to RAM details.
-- Confirm opens, Back exits, X closes, Y closes all and R1 closes all but current by default. Main actions are remappable.
+Tasks Up → Refresh → toolbar; Tasks Right → RAM details. RAM Up → Settings; RAM Down/Right → right Thumb corner. Tasks Down enters the leftmost Dock app. Current is a separate green badge. Confirm enters Settings content; Back first returns to categories. Touch acts on its first tap.
 
-The Current badge is separate and green. Favorites are shortcuts, not synthetic tasks or protection. Required services remain excluded from closable cards; ordinary user locks sort last. Empty states stay inline.
+## Dock
 
-## Settings
+Use Dock consistently. Add-app selection has eight alphabetical tiles in two rows of four, search, paging, Clear Dock and an icon-only strip of selected apps on the right. Image layers sit above the buttons. Adding an app gives an app-named toast. A picker page needs no scrolling.
 
-Categories sit beside content in landscape. Confirm enters content; Back first returns to categories, then exits Settings. D-pad/stick supports adjacent options. Buttons in a group have equal widths based on actual content with padding, wrapping and height when necessary; no arbitrary narrow cap or ellipsis hides the action.
+Style choices use equal-size grid tiles and distinct vector previews. Size is 50–160%, scaling boxes and icons. Thumb corners supports Swap sides and touch-hold dragging. Independent left/right plus/minus controls sit above the bottom preview; preview edits do not change saved apps. The Dock follows app theme. Visibility is a slider, with controller Left/Right and Confirm support. Internal menus use TaskDeck panels; system permission interfaces remain Android/Shizuku-owned.
 
-Appearance includes theme, grouping, stay-open behavior and sixteen color dots in complete responsive rows. Dots use compact, closely spaced rows with rounded boxes and accessible names/tooltips. The selected box has an accent-tinted fill; controller focus has a stronger accent-colored border. There is no Reset button. Appearance and About retain their category headings. Semantic Current/success colors remain green.
+## Limits
 
-## Quick Access and reports
-
-Dock settings offer inline style choices, 50–160% size and behavior with the real bottom-position preview. Thumb corners is default; Swap sides exchanges the left/right groups without changing their internal order. The dock follows the app theme. Both boxes and icons shrink below 80%; touch hold-and-drag reorders apps. Add-app selection is alphabetical, four items per page, with search and visible icons. The preview count does not change favorites. Controller Previous/Next page mappings are independent of main actions. Last action page controls align to opposite edges. Long press/Select opens item options; touch drag or Move left/right reorders favorites.
-
-## Recovery and limits
-
-Connection interruption directs users to Settings → Connection; denied access points to Shizuku authorization; missing apps suggest refresh/removal. Destructive requests are never automatically replayed. Last action retains detailed outcomes in memory. Permission/channel restrictions can suppress notifications, and unknown RAM is unavailable rather than zero. Closing tasks does not prove their services stopped or that performance improved.
-
-This is the current interaction contract. Historical changes belong in CHANGELOG.md. Physical controller routing, native fonts/insets, permission returns, Shizuku and notification delivery require device acceptance; simulation is not hardware certification.
+Required services stay protected. No automatic destructive replay, fake permission grant or closing undo promise. RAM is estimated MB and does not prove a speed gain. Native RP6 fonts, transition appearance, controller routing, real permission returns, haptics, Shizuku and notifications still need physical acceptance.

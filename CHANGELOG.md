@@ -1,3 +1,14 @@
+# 1.1.8
+
+- Five unnested setup pages, permissions before hotkeys, inline capture/save-on-release and calibrated checkmarks; Redo Setup added.
+- Quick Swap Apps and Dock naming standardized; Shizuku explained and linked.
+- Eight-app picker with corrected icon elevation/layering, search, right icon strip, Clear Dock and named added feedback.
+- Equal-size style vectors, independent left/right preview controls and controller-friendly visibility slider.
+- Select/Share task-options hint, white B/PlayStation glyphs, Fit all transitions and optional close vibration.
+- Successful-close banner and Settings Last action removed.
+- Ordinary launcher locks are opt-in; explicit locks/core protection preserved. UserService version 9.
+- Completion draw slowed to 800 ms; total time reduced to roughly 950 ms.
+
 # 1.1.7
 
 - Replace white swatch rings with rounded boxes, selected accent-tinted fill and stronger accent-colored controller focus; tighten row/heading spacing and remove Reset.

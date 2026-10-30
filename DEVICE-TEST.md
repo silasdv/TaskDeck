@@ -1,3 +1,17 @@
+# 1.1.8 targeted physical acceptance
+
+- Five-page fresh/redo setup, permissions first, no nested capture. Denied shortcut access disables recording; granting enables it after return.
+- Record both chords, release, checkmarks, rotate/reopen, then test actual shortcuts. Check cancellation, conflicts and reserved navigation.
+- Eight picker icons in two rows of four: visibility while pressed/focused, search, paging, Clear Dock, right icon strip and named toast. No page scrolling.
+- Equal style tiles; visibility slider by touch/controller; independent left/right preview counts and odd-count Swap sides. Preview must not change saved apps.
+- Fit all transitions after closing: no stale hit targets or confirmed banner. Respect animations-disabled setting.
+- Six one-row hints including Select/Share; B and PlayStation glyphs white.
+- Vibration off causes no pulse; on requests a short light pulse after confirmed closing. Verify the RP6 motor physically.
+- Ordinary launchers unlocked by default; explicit locks survive upgrades. Required services remain protected.
+- Official Shizuku links, live permission states and slow-draw/short-hold completion.
+
+These physical checks are pending; simulation is not hardware certification.
+
 # 1.1.7 targeted acceptance
 
 - With Orange accent, navigate all sixteen swatch boxes: focused border must be orange, distinct from the filled selected box. Check close row/heading spacing and no Reset. Appearance/About headings remain visible.
