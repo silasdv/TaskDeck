@@ -1,3 +1,12 @@
+# Version 1.1.1 acceptance additions
+
+- Picker: large icons/plain names, alphabetical order, search/no results, selection persistence, L1/R1 pages, L1 Back on first page, mapped Back. First touch executes after controller; D-pad/stick Down leaves search for results without a second touch.
+- Dock: unset style defaults to Thumb corners; explicit style survives. Preview reflects every style/theme and 60–160% size. At maximum size, selected icons and bubbles stay inside their corner/viewport, including long overflowing favorites lists.
+- Current badge remains attached to the correct app, separate from its name, in all four task views. Verify legibility and no clipping at system font scaling/insets.
+- Mapping Right reaches Labels; Left returns to actions. Check all other two-pane/horizontal options. Header and RAM button backgrounds/padding should appear aligned.
+
+---
+
 # Version 1.1 acceptance additions
 
 Install 1.1 over release 1.0; verify settings survive. The automated suite is not a substitute for these physical RP6 checks:

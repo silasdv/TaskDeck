@@ -1,4 +1,18 @@
-# Validation — 1.1
+# Validation — 1.1.1
+
+30 October 2026. versionName 1.1.1, versionCode 111; UserService protocol remains 8. Same release key as 1.0/1.1.
+
+- testDebugUnitTest: **107 passed**, zero failures/errors/skips.
+- lintRelease: **0 errors, 36 warnings** (English-only strings, physical corner alignment/programmatic views and existing private-API/dependency/accessibility/backup/drawing guidance).
+- assembleRelease and bundleRelease: passed.
+
+Added regression coverage checks large alphabetical app rows, search filtering, L1/R1 pages/return, touch-search to controller-results transition, asynchronous loading preserving the search view/query/focus, Mapping Right to Labels and Left back, centered/max-size magnified icons inside their bubbles, fully visible focused end items across overflowing corner lists, separate Current text and matching full-height/padded toolbar surfaces. Previous regressions remain covered. An existing minimum-font test now locates the title inside its badge row, preserving the original size assertion.
+
+All checks use Robolectric/fake IPC. Physical RP6 touch drag, firmware keys/origin, real Shizuku operations, system font/insets and Android notifications remain device acceptance cases. No absolute compatibility or performance claim is made.
+
+---
+
+# Historical validation — 1.1
 
 29 October 2026. Release versionName 1.1, versionCode 110; UserService implementation/protocol remains 8. Same dedicated release key as 1.0, supporting normal upgrades.
 

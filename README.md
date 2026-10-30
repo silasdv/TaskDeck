@@ -2,7 +2,7 @@
 
 **A controller-first Android task manager for gaming handhelds, with full touch support.**
 
-TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **1.1**, Android 10+, using Shizuku.
+TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **1.1.1**, Android 10+, using Shizuku.
 
 ## Vibecoded
 
@@ -35,7 +35,7 @@ Closing is immediate, with no confirmation dialog. Use disposable app state for 
 
 Android 10+ and **Shizuku 13+** are required. Root is not required. Android 11+ can start Shizuku with wireless debugging; Android 10 needs its documented computer setup. Firmware permissions vary.
 
-1. Download **[TaskDeck-1.1.apk](https://github.com/silasdv/TaskDeck/releases/tag/v1.1)** from Releases and install it. **Earlier 0.x test builds used a different key: uninstall one first, after noting your settings/mappings. Uninstalling clears app data.** Version 1.1 uses the same dedicated release key as 1.0 and installs over it, retaining settings.
+1. Download **[TaskDeck-1.1.1.apk](https://github.com/silasdv/TaskDeck/releases/tag/v1.1.1)** from Releases and install it. **Earlier 0.x test builds used a different key: uninstall one first, after noting your settings/mappings. Uninstalling clears app data.** Version 1.1.1 uses the same dedicated release key as 1.0 and installs over it, retaining settings.
 2. Install Shizuku from its [official download page](https://shizuku.rikka.app/download/) and follow the [official setup guide](https://shizuku.rikka.app/guide/setup/). Pairing is not the same as starting Shizuku. Without root, start it again after reboot.
 3. First launch walks through eight focused screens: connection, confirm calibration, open-menu shortcut, direct-switch shortcut, shortcut-service access, appearance, closing behavior and notifications. Controller steps are separate; optional steps can be skipped with Next. L1 goes back; R1 goes forward.
 4. Finish saves setup completion and draws a completion checkmark with about 1.5 seconds of hold time (Confirm continues immediately) before opening the deck. Later launches go directly to the deck. **Settings is a category list, not a repeated setup wizard.**
@@ -55,11 +55,11 @@ The full interaction plan is in [USER-FLOW.md](USER-FLOW.md).
 
 Pin launchable apps with Select or touch long-press on a task card. Add installed apps in Settings > Dock even when they are not open. Favorites are shortcuts, separate from task cards and protection: pinning does not lock an app or fabricate an open task.
 
-Choose **Floating**, **Compact**, **Shelf**, or **Thumb corners**. Thumb corners splits favorites into bottom-left and bottom-right groups, with larger touch targets and independent horizontal scrolling for overflow. Dock size ranges from **60–160%**. Dock themes can follow the app or use Light, Dark or OLED; the app also supports **Automatic** theme following Android.
+**Thumb corners is the default** when no style was explicitly chosen. Choose Floating, Compact, Shelf, or Thumb corners; Settings shows a live style/theme/size preview. Thumb corners splits favorites into bottom-left and bottom-right groups, with larger touch targets and independent horizontal scrolling for overflow. Dock size ranges from **60–160%**. Dock themes can follow the app or use Light, Dark or OLED; the app also supports **Automatic** theme following Android.
 
-Dock behavior offers always visible or show on navigation/tap, focus/hover magnification and optional running indicators. Indicators use reported process data; an ordinary recent task alone does not prove an app is running. The app used before TaskDeck is marked **Current**, when Android reports that origin; selecting another card does not change it.
+Dock behavior offers always visible or show on navigation/tap, focus/hover magnification and optional running indicators. Indicators use reported process data; an ordinary recent task alone does not prove an app is running. The app used before TaskDeck is marked **Current**, with a separate colored badge when Android reports that origin; selecting another card does not change it.
 
-Touch-hold and drag to reorder; dropping outside cancels the reorder. Controller: Down from the last app row enters Quick Access, Left/Right selects, Confirm launches, Up returns. Select opens Open, Move left, Move right and Remove options. Removing a favorite never uninstalls or closes it. Installed-app selection is paginated and supports touch and controller.
+Touch-hold and drag to reorder; dropping outside cancels the reorder. Controller: Down from the last app row enters Quick Access, Left/Right selects, Confirm launches, Up returns. Select opens Open, Move left, Move right and Remove options. Removing a favorite never uninstalls or closes it. Installed-app selection is an alphabetical list with large icons, plain app names and search. Selected rows indicate favorites. L1 goes to the previous page (or Back on page one); R1 goes to the next page. Mapped Back also exits. Down from the search field returns to the results.
 
 RAM details is reachable by D-pad or left stick at the right edge of the app area and through its toolbar control in portrait. Setup checks live Shizuku, accessibility and notification access; a saved preference alone never proves permission was granted.
 
@@ -109,7 +109,7 @@ Build with JDK 17, Android SDK 35 / Build Tools 35.0.0 and Gradle 8.11.1:
 ./gradlew testDebugUnitTest lintRelease assembleRelease bundleRelease
 ```
 
-Windows uses gradlew.bat. Set ANDROID_HOME or local.properties. See [Release signing](docs/RELEASING.md) for signing configuration. Keys/passwords live in ignored `.local/` and are never included in source archives. Without release signing material, the release artifact is unsigned. Application versionCode is 110; UserService implementation remains 8.
+Windows uses gradlew.bat. Set ANDROID_HOME or local.properties. See [Release signing](docs/RELEASING.md) for signing configuration. Keys/passwords live in ignored `.local/` and are never included in source archives. Without release signing material, the release artifact is unsigned. Application versionCode is 111; UserService implementation remains 8.
 
 See [VALIDATION.md](VALIDATION.md) for automated results and [DEVICE-TEST.md](DEVICE-TEST.md) for outstanding hardware checks. UI tests use fake IPC; actual RP6 Shizuku behavior, controller routing and visible RAM banners are not proven by them.
 

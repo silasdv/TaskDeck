@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.1
+
+- Alphabetical full-width app picker with large icons, plain names, selected favorite state, search and L1/R1 paging/back.
+- Thumb corners default when unset; live dock style/theme/size preview. Centered icons magnify inside reserved bubbles rather than enlarging clipped containers.
+- Separate colored Current badge, increased header and RAM-control padding, full-height backgrounds matching Settings.
+- Deterministic horizontal form-pane navigation, including Mapping to Labels; search can return to results with controller input.
+- VersionCode 111, existing release key retained. Physical-device drag, firmware and visual acceptance remain required.
+
 ## 1.1
 
 - Quick Access favorites dock with Floating, Compact, Shelf and Thumb corners styles. Thumb corners groups shortcuts at the bottom left/right with larger targets and independent overflow scrolling.

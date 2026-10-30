@@ -1,4 +1,4 @@
-# User flow — 1.1
+# User flow — 1.1.1
 
 ## Main screen
 
@@ -29,3 +29,11 @@ Pin/unpin from card Select/long-press; Add apps in Dock settings opens a paginat
 Dock settings separates Add apps, Style & size and Behavior. Styles: Floating, Compact, Shelf, Thumb corners. Thumb corners uses bottom-left/right panels with larger targets and independent overflow scrolling. Size 60–160%; dock theme Follow app/Light/Dark/OLED. Behavior controls visibility (always or navigation/tap), magnification and running indicators. App Automatic theme follows Android. An empty dock offers Add apps; collapsed mode has a tappable handle.
 
 Setup checkmarks require real access. Revoked Shizuku/accessibility/notification permissions are rechecked on resume; saved shortcut/calibration preferences are not substitutes. Physical-device acceptance remains required.
+
+## Dock usability revision 1.1.1
+
+Thumb corners is the default for an unset style; explicit choices stay unchanged. Style/theme/size settings contain a live preview. Focus grows only the centered icon within a reserved bubble, preventing overflow of its outline or image. Thumb overflow scrolls each selected end item fully into view.
+
+The installed-app picker is a full-width alphabetical icon/name list, six entries per page with scrolling as needed. Search filters in place and keeps typing focus; Down returns to results. A selected row denotes an existing favorite. L1 previous (Back from page one), R1 next, mapped Back and a visible Back control remain available without touching the screen. Search is also controller-focusable.
+
+Current is a separate colored badge beside the app name. Header actions and Refresh/Sort/View/RAM details use full-height backgrounds and increased padding. Horizontal form navigation crosses aligned panes, including action mapping to Labels; horizontal option groups retain their own left/right order.
