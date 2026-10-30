@@ -315,7 +315,7 @@ public class SwitcherActivity extends Activity {
         else {
             gridColumns=list?1:fit?Math.max(1,(int)Math.ceil(Math.sqrt(Math.max(1,tasks.size())*available/(double)Math.max(1,height)*1.2))):Math.max(2,available/128);
             appGrid=new GridLayout(this); appGrid.setColumnCount(gridColumns); appGrid.setAlignmentMode(GridLayout.ALIGN_BOUNDS);
-            int minimum=(int)Math.ceil(prefs().getInt("minLabelSp",12)*getResources().getDisplayMetrics().scaledDensity/getResources().getDisplayMetrics().density*1.4)+8;
+            int minimum=Math.max(52,(int)Math.ceil(prefs().getInt("minLabelSp",12)*getResources().getDisplayMetrics().scaledDensity/getResources().getDisplayMetrics().density*1.4)+32);
             fitOverflow=fit&&height/Math.max(1,(tasks.size()+gridColumns-1)/gridColumns)-6<minimum;
             if(fit&&!fitOverflow) appContent.addView(appGrid,new FrameLayout.LayoutParams(-1,-1));
             else { appScroll=new ScrollView(this); appContent.addView(appScroll,new FrameLayout.LayoutParams(-1,-1)); appScroll.addView(appGrid,new ScrollView.LayoutParams(-1,-2)); }
@@ -323,7 +323,7 @@ public class SwitcherActivity extends Activity {
         if(tasks.isEmpty()){ if(!horizontal){ appContent.removeAllViews(); appContent.addView(cardRow,new FrameLayout.LayoutParams(-1,-1)); } text(cardRow,app.backend==null?"Settings → Connection to load apps":"Nothing to close",20,true); if(!dockZone){ toolZone=true; toolIndex=0; } markSelection(); return; }
 
         int width=horizontal?dp(Math.max(116,Math.min(190,available/3-14))):dp(Math.max(1,available/gridColumns-6));
-        int minLabel=prefs().getInt("minLabelSp",12),minimum=(int)Math.ceil(minLabel*getResources().getDisplayMetrics().scaledDensity/getResources().getDisplayMetrics().density*1.4)+8;
+        int minLabel=prefs().getInt("minLabelSp",12),minimum=Math.max(52,(int)Math.ceil(minLabel*getResources().getDisplayMetrics().scaledDensity/getResources().getDisplayMetrics().density*1.4)+32);
         int cellHeight=horizontal?-1:dp(list?Math.max(58,minimum+18):fit?Math.max(minimum,height/Math.max(1,(tasks.size()+gridColumns-1)/gridColumns)-6):Math.max(70,Math.min(104,height/2-6)));
         boolean compact=getResources().getConfiguration().screenHeightDp<440;
         boolean tiny=fit&&cellHeight<dp(minimum+48),micro=fit&&cellHeight<dp(minimum+18);
@@ -336,7 +336,7 @@ public class SwitcherActivity extends Activity {
             TextView name=text(labels,task.optString("label")+(task.optInt("windowCount",1)>1?" · "+task.optInt("windowCount")+" windows":""),Math.max(minLabel,horizontal?(compact?16:18):micro?9:tiny?11:14),false); name.setGravity(list?Gravity.START:Gravity.CENTER); name.setMaxLines(1); name.setEllipsize(android.text.TextUtils.TruncateAt.END); name.setTypeface(null,Typeface.BOLD);
             long kb=task.optLong("pssKb",-1); String state=task.optString("memoryState","unavailable");
             String ram=kb>=0?"~"+MemoryUnits.pss(kb)+" MB app RAM"+(state.equals("shared")?" · shared":""):state.equals("loading")?"RAM loading…":state.equals("not-reported")?"No process in snapshot":"RAM unavailable";
-            if(isCurrent(task.optString("package"))){ labels.removeView(name); LinearLayout titleLine=row(labels); titleLine.setLayoutParams(new LinearLayout.LayoutParams(-1,-2)); titleLine.addView(name,new LinearLayout.LayoutParams(0,-2,1)); TextView current=text(titleLine,"Current",9,false); current.setTextColor(successColor()); GradientDrawable chip=rounded(theme.surface); chip.setStroke(dp(1),successColor()); current.setBackground(chip); current.setGravity(Gravity.CENTER); current.setPadding(dp(6),dp(1),dp(6),dp(1)); LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-2,-2); cp.leftMargin=dp(6); current.setLayoutParams(cp); current.setContentDescription("Current app: "+task.optString("label")); }
+            if(isCurrent(task.optString("package"))){ boolean narrow=!list&&!horizontal&&width<dp(120); LinearLayout titleLine=labels; if(!narrow){ labels.removeView(name); titleLine=row(labels); titleLine.setLayoutParams(new LinearLayout.LayoutParams(-1,-2)); titleLine.addView(name,new LinearLayout.LayoutParams(0,-2,1)); } else if(cellHeight<dp(96)) icon.setVisibility(View.GONE); TextView current=text(titleLine,"Current",9,false); current.setTextColor(successColor()); GradientDrawable chip=rounded(theme.surface); chip.setStroke(dp(1),successColor()); current.setBackground(chip); current.setGravity(Gravity.CENTER); current.setPadding(dp(6),dp(1),dp(6),dp(1)); LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-2,-2); if(narrow){ cp.gravity=Gravity.CENTER_HORIZONTAL; cp.topMargin=dp(3); } else cp.leftMargin=dp(6); current.setLayoutParams(cp); current.setContentDescription("Current app: "+task.optString("label")); }
             TextView usage=text(labels,ram,horizontal?12:10,true); usage.setMaxLines(1); usage.setEllipsize(android.text.TextUtils.TruncateAt.END); if(micro) usage.setVisibility(View.GONE); usage.setGravity(list?Gravity.START:Gravity.CENTER);
             boolean locked=locked(task);
             TextView badge=text(labels,task.optBoolean("launcher")?(locked?"Launcher · protected":launcherIdle(task)?"Launcher · not running":"Launcher · unlocked"):locked?"Protected":"X to close",12,true); badge.setTextColor(locked?theme.muted:theme.accent); badge.setGravity(Gravity.CENTER);
