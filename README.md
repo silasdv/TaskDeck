@@ -2,7 +2,7 @@
 
 **A controller-first Android task manager for gaming handhelds, with full touch support.**
 
-TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **2.3** (local update), Android 10+, using Shizuku.
+TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **2.4** (local update), Android 10+, using Shizuku.
 
 [Full 2.0 release notes: every change since 1.0](docs/RELEASE-2.0.md) · [Changelog](CHANGELOG.md)
 
@@ -150,3 +150,5 @@ Dock app pages use the same 360 ms, after-layout transition as setup protection 
 [2.2 local redesign](docs/CHANGES-2.2.md): non-scrolling Dock form, independent visual shape controls, None background, fixed-box logo fill, contextual Dock behavior help, visual App icon style below Accent Colors, matching Start/Settings badge and visible About links.
 
 Local 2.3 reorganizes Dock style into **Dock / Background** and **Icons**. Background Shape is hidden under None without losing its stored value. See [local changes](docs/CHANGES-2.3.md).
+
+Local 2.4 uses the available Dock settings space, equal-height groups, distinct focus/selection, matching percentage steppers and a neutral, explicitly labelled live preview. See [changes](docs/CHANGES-2.4.md).

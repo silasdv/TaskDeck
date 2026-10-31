@@ -188,3 +188,7 @@ The checks below require physical hardware and have not been executed here. Reco
 ## Local 2.3 follow-up
 
 Dock style groups Dock / Background and Icons on one screen. Under None, Background Shape is hidden and its previous value retained. Check restored focus, captions, compact spacing, centered icons and running indicators on RP6; verify palette-to-icon-style navigation with D-pad and stick. Automated layout checks passed, but physical acceptance is still required.
+
+## Local 2.4 UX follow-up
+
+Dock settings use the available panel height, with equal-height groups, captioned neutral background forms and matching percentage steppers. A saved choice is filled with a tick; focus is outlined independently. None and Theme have distinct symbols and focused colors reveal a name. The live preview uses neutral app states and never saves sample-count changes. Back carries its mapped controller badge. On RP6, inspect focus versus saved selection in Light/Dark/OLED, color edges, caption readability, compact targets, maximum Dock size, panel fit and actual preview alignment. Compact targets do not establish a universal 48-dp touch-target guarantee; physical acceptance remains open.

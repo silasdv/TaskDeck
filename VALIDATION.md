@@ -1,3 +1,17 @@
+# Validation — 2.4 local update
+
+31 October 2026. VersionCode 240; UserService 9. Same package/key/permissions; GitHub 2.0 remains unchanged.
+
+- testDebugUnitTest: **187 passed**, zero failures/errors/skips.
+- lintRelease: **0 errors, 33 warnings**, unchanged warning count.
+- assembleRelease and bundleRelease passed.
+
+New checks cover equal-height panels using available space; matching size-stepper geometry and saved values; independent saved selection and controller focus; neutral preview indicators and unchanged saved favorites after changing sample counts; background-shape previews without app artwork; and keeping controller focus on an enabled sibling at range limits. Existing compact 640x360 dp maximum-Dock no-scroll and eight-dp-gap checks pass, along with portrait reflow and prior input/backend tests.
+
+Panels resize their option grids into spare height; compact background shape choices use one row to preserve fit. Visual captions and layout thumbnails keep artwork proportions and bound text to available width. These are simulated state/layout checks, not native RP6 visual acceptance. Compact touch targets, actual firmware routing, font scaling, animation and rendering need device review. Other-menu consistency findings are proposals in docs/UX-CONSISTENCY.md, not implemented changes.
+
+## Previous validation
+
 # Validation — 2.3 local update
 
 31 October 2026. versionCode 230; UserService 9. Same signing key and permissions; public GitHub 2.0 unchanged.

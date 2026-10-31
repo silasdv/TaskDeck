@@ -21,3 +21,7 @@ Updates over 1.0/signed 1.1 builds retain settings. Earlier 0.x debug builds req
 ## Local 2.3
 
 Version 2.3 / code 230, UserService 9. Same package, permissions and signing key. 182 tests pass; lint 0 errors/33 warnings; release APK/AAB pass. Package a source archive and SHA-256 sums. No GitHub publication is authorized by this local update request.
+
+## Local 2.4
+
+Version 2.4 / code 240, UserService 9, same package, permissions and signing key. Local Dock UX update; public GitHub 2.0 assets remain untouched. Source audit follow-ups are documented separately and are not implemented by this package.
