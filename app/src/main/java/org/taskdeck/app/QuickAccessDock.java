@@ -53,6 +53,7 @@ public final class QuickAccessDock extends LinearLayout {
         icons=new LinearLayout(getContext()); icons.setGravity(Gravity.CENTER); icons.setClipChildren(false); icons.setPadding(dp(6),dp(6),dp(6),dp(6)); GradientDrawable shell=new IconShape.Surface(QuickAccess.backgroundColor(prefs,theme),prefs.getString("dockBackgroundShape","rounded"));if(!"none".equals(prefs.getString("dockBackground","theme")))shell.setStroke(dp(1),theme.raised); icons.setBackground(shell);
         center.addView(icons,new LayoutParams("shelf".equals(style)||thumbs?-1:-2,-1));
         List<String> order=preview!=null?preview:dragging&&dragOrder!=null?dragOrder:QuickAccess.read(prefs);
+        if(order.size()>QuickAccess.limit(prefs))order=new java.util.ArrayList<>(order.subList(0,QuickAccess.limit(prefs)));
         if(thumbs){
             order=QuickAccess.displayOrder(prefs,order); icons.setBackgroundColor(Color.TRANSPARENT); icons.setPadding(0,0,0,0); split=preview!=null&&previewSplit>=0?Math.min(order.size(),previewSplit):QuickAccess.leftCount(prefs,order.size());
             leftScroll=new HorizontalScrollView(getContext()); rightScroll=new HorizontalScrollView(getContext()); for(HorizontalScrollView side:new HorizontalScrollView[]{leftScroll,rightScroll}){ side.setHorizontalScrollBarEnabled(false); side.setFillViewport(true); side.setClipChildren(false); }

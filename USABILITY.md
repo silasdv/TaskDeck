@@ -46,3 +46,9 @@ Settings > Dock now has Add apps to Dock, Dock / Background, Icons and Dock beha
 ## Local 2.6
 
 All Back actions use the mapped controller badge and common compact dimensions; wizard Previous/Next and paging keep their distinct semantics. Preview count controls have no native lift and reserve drawing clearance. All icon-look examples reserve two caption lines and share full artwork size. On RP6 inspect pressed/focused preview buttons, all Back badges with remapped/PlayStation controls, equal example artwork and compact Appearance palette readability. Source-review findings outside these fixes are documented in docs/UX-REVIEW-2.6.md and remain proposals.
+
+## Local 2.7 acceptance
+
+The nine UX-REVIEW-2.6 follow-ups are implemented, with the user's six/eight-app Dock limits replacing unrestricted growth. Check zero-result search entirely by gamepad; disabled shortcut recording and recovery access; remapped/PlayStation card hints; memory age and independent refresh without losing selection; named failed-close feedback; favorite removal, clear and trim Undo (including expiry and rotation); full Dock addition limits; and readable picker rail overflow for legacy saved extras.
+
+Check native DocumentsUI export/import on RP6, reviewing every imported setting before Apply, cancellation while reading, and unchanged Android grants. Import resets omitted customization to defaults. Check 130% and 200% system fonts and reduced motion. Automated tests use fake IPC/document streams and do not establish physical controller mapping, Shizuku outcomes, haptic/notification delivery or native rendering.

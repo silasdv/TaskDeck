@@ -1,3 +1,19 @@
+# Validation — 2.7 local update
+
+31 October 2026. VersionCode 270; UserService 9. Same package/signing key/permissions. GitHub 2.0 assets remain unchanged.
+
+- testDebugUnitTest: **216 passed**, zero failures/errors/skips.
+- lintRelease: **0 errors, 33 warnings**, unchanged count.
+- assembleRelease and bundleRelease passed.
+
+New checks cover mapped/PlayStation task-card hints, zero-result search recovery using gamepad, shortcut-access availability, disconnect feedback, independent RAM sampling preserving selected task identity, sample age/stale state, exact Dock clear/remove/trim Undo including gamepad, expiry and recreation, six/eight-app limits and retained legacy extras, named close failures, reduced-motion completion and 130%/200% drawn captions. Oversized legacy Dock preview order is checked against the visible main Dock.
+
+Backup checks cover version/type/range/package/size validation, unknown runtime keys excluded from export, invalid import leaving preferences untouched, conflicting mappings/chords rejected, layout limits, local document intent/stream export, preview-before-apply import, printed-label/paging previews, and stale asynchronous import cancellation. Android permissions/setup state are not restored by import. Existing settings-fit, preview bounds and controller tests still pass; legacy unlimited-Dock expectations were revised to the user's explicit limits.
+
+The tests use fake IPC/document-provider streams and simulated rendering. Physical RP6 mapping, Shizuku results, native DocumentsUI, haptic/notification delivery and native fonts/scrolling remain hardware acceptance. At system font scales above 125%, affected content intentionally reflows/scrolls rather than preserving the normal no-scroll form at the expense of readability.
+
+## Previous validation
+
 # Validation — 2.6 local update
 
 31 October 2026. VersionCode 260; UserService 9. Same package/key/permissions. GitHub 2.0 remains unchanged.

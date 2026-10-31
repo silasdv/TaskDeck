@@ -1,5 +1,7 @@
 # TaskDeck UX review — 31 October 2026
 
+**Implementation update:** all nine follow-ups below are implemented in local 2.7; see [changes](CHANGES-2.7.md). Dock now limits additions to six/eight apps per the subsequent user correction. The original review below records the pre-2.7 findings and is retained as history.
+
 Scope: source review across main task actions, RAM details, Dock settings/preview, app picker and protection, all setup steps, connection, controller mapping/shortcut capture, notifications and About. Relevant layout/navigation regressions are exercised by the automated suite. This is not a physical RP6 test, screenshot comparison or proof of Android permission/notification behavior.
 
 ## Fixes included in 2.6

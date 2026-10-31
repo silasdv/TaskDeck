@@ -33,3 +33,7 @@ Version 2.5 / code 250, UserService 9. Same package/key/permissions. 189 tests p
 ## Local 2.6
 
 Version 2.6 / code 260, UserService 9. Same key/package/permissions. 193 tests pass; lint 0 errors / 33 existing warnings; release APK/AAB pass. Nine audit findings remain proposals. No GitHub publication.
+
+## Local 2.7
+
+Version 2.7 / code 270, UserService 9. Same package/key/permissions. 216 tests passed; lint 0 errors / 33 existing warnings; release APK/AAB passed. Implements the nine 2.6 review follow-ups and user-directed six/eight-app Dock limits. No GitHub publication.

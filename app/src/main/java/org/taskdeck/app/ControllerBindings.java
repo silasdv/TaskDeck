@@ -39,7 +39,10 @@ public final class ControllerBindings {
     }
     public static void reset(SharedPreferences p){ SharedPreferences.Editor edit=p.edit(); for(String action:ACTIONS) edit.remove("map_"+action); for(String action:PAGE_ACTIONS) edit.remove("map_"+action); edit.apply(); }
     public static String label(SharedPreferences p,int code){
-        int printed=p.getBoolean("swapped",false)?swapped(code):code; boolean ps=p.getBoolean("psLabels",false);
+        return label(p.getBoolean("psLabels",false),p.getBoolean("swapped",false),code);
+    }
+    public static String label(boolean ps,boolean swap,int code){
+        int printed=swap?swapped(code):code;
         switch(printed){ case 96:return ps?"Cross":"A"; case 97:return ps?"Circle":"B"; case 99:return ps?"Square":"X"; case 100:return ps?"Triangle":"Y"; case 102:return "L1"; case 103:return "R1"; case 104:return "L2"; case 105:return "R2"; case 106:return "L3"; case 107:return "R3"; case 108:return ps?"Options":"Start"; case 109:return ps?"Share":"Select"; default:return "Button "+code; }
     }
     public static String badge(SharedPreferences p,String action){ return label(p,code(p,action)); }

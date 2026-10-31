@@ -2,7 +2,7 @@
 
 **A controller-first Android task manager for gaming handhelds, with full touch support.**
 
-TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **2.6** (local update), Android 10+, using Shizuku.
+TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **2.7** (local update), Android 10+, using Shizuku.
 
 [Full 2.0 release notes: every change since 1.0](docs/RELEASE-2.0.md) · [Changelog](CHANGELOG.md)
 
@@ -156,3 +156,13 @@ Local 2.4 uses the available Dock settings space, equal-height groups, distinct 
 Local 2.5 replaces the combined Dock style screen with separate **Dock / Background** and **Icons** menus. See [changes](docs/CHANGES-2.5.md).
 
 Local 2.6 unifies mapped Back badges, protects preview controls and equalizes full-size icon-look artwork. [Changes](docs/CHANGES-2.6.md) · [App-wide UX review and proposed follow-ups](docs/UX-REVIEW-2.6.md).
+
+## Local 2.7 improvements
+
+Dock holds up to **6 apps in Thumb Corners**, or **8 in Floating/Shelf**. Above-limit saved lists are preserved: only the allowed first apps appear in Dock, while Add apps to Dock shows the saved count and offers Trim to limit. Removing/clearing/trimming favorites offers a controller-accessible **Undo Dock change** for ten seconds. Unselected apps cannot be added while full; selected favorites remain removable.
+
+RAM details provide **Refresh RAM** and sample age. System totals are live; per-app samples show loading, unavailable or stale state and remain approximate. Memory refresh preserves selected task identity. Failed close feedback names the affected apps.
+
+**Settings > About > Settings backup** exports a local JSON file through Android's document picker. Import first validates and previews all saved customization, with L1/R1 (or mapped page controls) for review. Apply is explicit; omitted customization resets to defaults. Android permissions and setup completion stay on this device. Back/cancel discards the pending import. Backups are limited to 64 KB and reject unknown keys, invalid mappings, conflicting shortcuts and excessive Dock lists. Trim an old over-limit Dock before exporting it. No network permission is used.
+
+System font scaling applies to icon captions; above 125% affected content scrolls/reflows so navigation remains available. Reduced motion skips the setup completion delay. [Full changes](docs/CHANGES-2.7.md).
