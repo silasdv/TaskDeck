@@ -196,3 +196,7 @@ Dock settings use the available panel height, with equal-height groups, captione
 ## Local 2.5 — split Dock settings
 
 Settings > Dock now has Add apps to Dock, Dock / Background, Icons and Dock behavior. The two customization menus retain their own edits and return focus to their originating Settings entry. Each has the actual-size preview at the bottom, bounded two-panel forms in landscape and stacked forms in portrait. Check both menus at maximum Dock/icon sizes on RP6, including D-pad/stick access to every control and Back, None hiding the shape section, focus name versus saved color, and live preview updates without changing favorites. Wider Settings/setup consistency proposals remain deferred in docs/UX-CONSISTENCY.md.
+
+## Local 2.6
+
+All Back actions use the mapped controller badge and common compact dimensions; wizard Previous/Next and paging keep their distinct semantics. Preview count controls have no native lift and reserve drawing clearance. All icon-look examples reserve two caption lines and share full artwork size. On RP6 inspect pressed/focused preview buttons, all Back badges with remapped/PlayStation controls, equal example artwork and compact Appearance palette readability. Source-review findings outside these fixes are documented in docs/UX-REVIEW-2.6.md and remain proposals.

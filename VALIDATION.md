@@ -1,3 +1,17 @@
+# Validation — 2.6 local update
+
+31 October 2026. VersionCode 260; UserService 9. Same package/key/permissions. GitHub 2.0 remains unchanged.
+
+- testDebugUnitTest: **193 passed**, zero failures/errors/skips.
+- lintRelease: **0 errors, 33 warnings**, unchanged warning count.
+- assembleRelease and bundleRelease passed.
+
+New regressions cover mapped Back badges and uniform compact dimensions across forms/settings/setup and app picker, including PlayStation and remapped Exit; full visible preview-count button rectangles while pressed at maximum Dock size across both menus/all styles; zero native lift; and full equal artwork rectangles for all four Appearance icon-look examples on compact and large landscape. Existing compact palette minimum size, form fit, eight-dp gaps, Dock size limits, and controller reachability checks continue to pass.
+
+The exact device clipping cause was not reproduced from a screenshot. Removing native lift and protecting drawing bounds is a targeted fix; native RP6 rendering still needs acceptance. The app-wide review in docs/UX-REVIEW-2.6.md distinguishes implemented fixes from nine proposed follow-ups and records its source-review limits.
+
+## Previous validation
+
 # Validation — 2.5 local update
 
 31 October 2026. VersionCode 250; UserService 9. Same signing key, package and permissions. Public GitHub 2.0 is unchanged.

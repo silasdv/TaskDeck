@@ -29,3 +29,7 @@ Version 2.4 / code 240, UserService 9, same package, permissions and signing key
 ## Local 2.5
 
 Version 2.5 / code 250, UserService 9. Same package/key/permissions. 189 tests pass; lint 0 errors / 33 existing warnings; release APK/AAB pass. Two sibling Dock customization menus replace the combined screen. No GitHub publication is included.
+
+## Local 2.6
+
+Version 2.6 / code 260, UserService 9. Same key/package/permissions. 193 tests pass; lint 0 errors / 33 existing warnings; release APK/AAB pass. Nine audit findings remain proposals. No GitHub publication.

@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.6 — unreleased
+
+- Unify Back buttons across forms, settings/setup submenus and Dock app selection using the mapped controller badge plus Back text. Remove the Dock-only badge override; Previous/Next actions retain their own bindings.
+- Protect preview Apps minus/plus buttons from clipping: add drawing clearance, remove native elevation/translation-Z and state-list lift, and keep controls inside their row.
+- Give every icon-look example the same two-line caption reserve and full icon area. Increase shared card sizes and use Appearance pane width so Black and White/Accent Color no longer shrink their artwork versus Normal/Glass.
+- Preserve compact palette room by removing incidental theme-row margins.
+- Document a source-based app-wide UX review with prioritized follow-ups separately from implemented fixes.
+
 ## 2.5 — unreleased
 
 - Split Dock customization into two sibling menus under Settings > Dock: Dock / Background and Icons.
