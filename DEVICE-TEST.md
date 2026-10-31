@@ -1,3 +1,11 @@
+# 1.1.12 physical acceptance
+
+- Add apps to Dock: compare first/later/backward page transitions with setup protection; confirm search and controller focus remain usable.
+- Size-control icon stays inside its border; Appearance themes/close vibration have room on RP6 and portrait.
+- Preview count controls show exactly one plus/minus and still add/remove on the correct side.
+
+Native RP6 visual acceptance remains pending.
+
 # 1.1.11 physical acceptance
 
 - Compare first and later protection transitions; check slower motion, no initial jump/flash and stable focus during rapid paging.

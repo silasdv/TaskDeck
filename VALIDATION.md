@@ -1,3 +1,17 @@
+# Validation — 1.1.12
+
+31 October 2026. versionCode 122; UserService 9 unchanged.
+
+- 156 unit tests passed; zero failures/errors/skips.
+- lintRelease: 0 errors, 33 warnings.
+- assembleRelease and bundleRelease passed.
+
+Both setup protection and Dock app selection keep their grid instance, animate after pre-draw over 360 ms for first/later pages and settle alpha/translation. Existing maximum-size previews still add/remove distinct apps. Padding and Appearance row containment checks pass at 800x360 dp; Dock preview containment also passes at 640x360 dp. Count buttons retain icons with simplified labels. Two pre-existing tests were adapted to stop locating preview actions by removed plus/minus text.
+
+These are simulated checks, not physical RP6 animation/appearance acceptance. See DEVICE-TEST.md.
+
+---
+
 # Validation — 1.1.11
 
 31 October 2026. versionName 1.1.11, versionCode 121; UserService 9 unchanged. Existing release key retained.

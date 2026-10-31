@@ -1,4 +1,4 @@
-# TaskDeck user flow — 1.1.11
+# TaskDeck user flow — 1.1.12
 
 ## Setup
 
@@ -29,3 +29,5 @@ Picker icon/name groups are centered with matching border gaps. Setup download l
 Appearance Down reaches both full-size On/Off actions. Bulk closing honors the exit setting even on partial outcomes. A Close All request during refresh runs once after the fresh task list; destructive actions are never automatically replayed.
 
 The final setup footer is compact and labels Previous page/Next page beside L1/R1. Start/Options is written in its badge. Page motion starts after layout over 360 ms, with canceled/stale transforms reset. Dock style texts share a left start with more padding. Record actions use Record icons; RAM uses a chip, Swap sides opposing arrows, and layout/download controls their own brand marks.
+
+Dock app pages use the same 360 ms, after-layout transition as setup protection pages. Preview count buttons show one plus/minus icon beside Apps; size and Appearance choices have larger internal padding.

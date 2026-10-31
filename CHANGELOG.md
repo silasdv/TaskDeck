@@ -1,3 +1,10 @@
+# 1.1.12
+
+- Reuse the setup protection picker transition for Add apps to Dock: animate the measured grid in place for 360 ms without rebuilding the page/search.
+- Increase Dock size-control padding and height to keep the icon inside its frame.
+- Remove repeated plus/minus characters from preview Apps labels; retain icons and distinct accessible descriptions.
+- Increase theme-choice and Vibrate on close padding in Appearance.
+
 # 1.1.11
 
 - Restore Record icons for calibration, recording and Configure shortcuts; use PlayStation/Google Play/GitHub marks for their targets.
