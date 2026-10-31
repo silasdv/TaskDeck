@@ -1,3 +1,21 @@
+# Validation — TaskDeck 3.0
+
+31 October 2026. versionCode **300**, UserService **9**, package `org.taskdeck.app`.
+
+- `testDebugUnitTest`: **216 passed**, zero failures/errors/skips.
+- `lintRelease`: **0 errors, 33 warnings**, unchanged count.
+- `assembleRelease` and `bundleRelease`: passed using JDK 17, SDK 35 and Gradle 8.11.1, offline with the existing dependencies.
+- Runtime changes are the reviewed local 2.1–2.7 implementation; 3.0 adds release versioning and consolidated public documentation. No speculative functional change was introduced after the 2.7 gates.
+- Release uses the existing dedicated signing key. Expected signer SHA-256: `7c4fee9313f84dc00aa55ddd58bbc3277901a3e3dcabf97e3506b3ebeabbd386`.
+- Package permissions remain POST_NOTIFICATIONS, VIBRATE and Shizuku API access; no INTERNET/storage permission. Release is not debuggable.
+- Packaging verifies the final Git commit in AAB provenance, tracked-source ZIP exclusions and SHA-256 sums. GitHub publication checks draft metadata/assets and remote file digests before making the release latest.
+
+**Hardware limits:** no new physical RP6/second-device pass, hotplug/long-session measurement, native DocumentsUI, banner or haptic certification was performed here. ADB inventory was blocked by the host Android configuration directory permission. User feedback reports satisfactory operation; it is not presented as a complete hardware test matrix. See [DEVICE-TEST.md](DEVICE-TEST.md).
+
+[All changes since 2.0](docs/RELEASE-3.0.md). The retained prior sections below record local milestones, not a different current release.
+
+## Previous validation
+
 # Validation — 2.7 local update
 
 31 October 2026. VersionCode 270; UserService 9. Same package/signing key/permissions. GitHub 2.0 assets remain unchanged.

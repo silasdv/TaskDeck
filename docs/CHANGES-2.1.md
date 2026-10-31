@@ -1,5 +1,7 @@
 # TaskDeck 2.1 — local update
 
+Historical local milestone, included in [TaskDeck 3.0](RELEASE-3.0.md). Final 3.0 behavior supersedes intermediate designs below.
+
 - Dock style & size now includes background color, Round/Square/Squircle shape, Original/B&W/Accent/Glass icon looks and Follow accent color inline. Dock appearance is no longer a destination; old restored destinations redirect to Dock style.
 - Smaller, separated size-stepper buttons. Swap sides is a normal action button and participates in spatial controller navigation. Style-preview glyphs stay neutral white on a dark miniature background, independent of app colors.
 - Preview does not force the first app selected. Current still uses semantic green. Background swatches have a contrasting dark/light outline as well as selected/focused treatment.

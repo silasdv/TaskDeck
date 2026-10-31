@@ -1,5 +1,7 @@
 # TaskDeck 2.6 — local update
 
+Historical local milestone, included in [TaskDeck 3.0](RELEASE-3.0.md). Final 3.0 behavior supersedes intermediate designs below.
+
 - Unify Back buttons across forms, settings/setup submenus and Dock app selection using the mapped controller badge plus Back text. Remove the Dock-only badge override; Previous/Next actions retain their own bindings.
 - Protect preview Apps minus/plus buttons from clipping: add drawing clearance, remove native elevation/translation-Z and state-list lift, and keep controls inside their row.
 - Give every icon-look example the same two-line caption reserve and full icon area. Increase shared card sizes and use Appearance pane width so Black and White/Accent Color no longer shrink their artwork versus Normal/Glass.

@@ -1,5 +1,7 @@
 # TaskDeck 2.3 — local update
 
+Historical local milestone, included in [TaskDeck 3.0](RELEASE-3.0.md). Final 3.0 behavior supersedes intermediate designs below.
+
 - Group Dock style into Dock / Background and Icons within the same screen. Rename Size to Dock Size.
 - Hide Background Shape when Background Color is None, preserve the saved shape, and prevent that hidden shape from affecting icon sizing or focus geometry.
 - Add a Dock Layout heading and centered icon-over-caption layout choices. Add captions to icon shapes and styles; remove the redundant Follow Accent control and fixed-box explanation.

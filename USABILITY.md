@@ -1,3 +1,7 @@
+# TaskDeck 3.0 usability status
+
+Release 3.0 incorporates the nine follow-ups from [the 2.6 review](docs/UX-REVIEW-2.6.md), including the subsequent six/eight-app Dock limits. Physical acceptance remains separate from simulated checks. [Current behavior](README.md) · [Release notes](docs/RELEASE-3.0.md) · [Test matrix](DEVICE-TEST.md). Historical analysis follows.
+
 # Usability review — TaskDeck 2.0
 
 Source/layout review using [Nielsen’s ten usability heuristics](https://www.nngroup.com/articles/ten-usability-heuristics/); not a physical RP6 certification or moderated user study.

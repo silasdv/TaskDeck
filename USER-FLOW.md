@@ -1,3 +1,9 @@
+# TaskDeck 3.0 user flow
+
+The current installation and controls are in [README](README.md), with [complete changes since 2.0](docs/RELEASE-3.0.md). The five-step setup leads to the task deck; normal launches go directly to the deck. Settings keeps category/content navigation; Back restores the originating control. Dock / Background and Icons are sibling menus, each with a real bottom preview. About contains local backup review/apply and Redo Setup. Default-size layouts stay compact; larger system fonts may scroll content while navigation remains outside.
+
+The notes below preserve development history; the 3.0 README/release notes take precedence over superseded intermediate layouts.
+
 # TaskDeck user flow — 2.2
 
 ## Setup

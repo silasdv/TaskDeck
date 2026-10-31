@@ -1,5 +1,7 @@
 # TaskDeck 2.4 — local update
 
+Historical local milestone, included in [TaskDeck 3.0](RELEASE-3.0.md). Final 3.0 behavior supersedes intermediate designs below.
+
 - Use the available settings area instead of leaving a broad empty band above the Dock. Both background panels share one bottom edge; visual choices expand into spare space and compact layouts retain the tested no-scroll fit.
 - Separate saved selection (accent fill and a tick) from controller focus (a consistent outline). Layout thumbnails no longer have an extra dark backdrop.
 - Use the same minus / percentage / plus stepper for Dock Size and Icon Size; dim unavailable range and preview-count actions.

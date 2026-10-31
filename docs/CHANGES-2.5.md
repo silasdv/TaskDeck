@@ -1,5 +1,7 @@
 # TaskDeck 2.5 — local update
 
+Historical local milestone, included in [TaskDeck 3.0](RELEASE-3.0.md). Final 3.0 behavior supersedes intermediate designs below.
+
 - Split Dock customization into two sibling menus under Settings > Dock: Dock / Background and Icons.
 - Dock / Background contains Layout, Swap sides (Thumb Corners only), Dock Size, Background Color and conditional Background Shape. Icons contains Icon Size, Icon Shape and Icon Style.
 - Keep changes on their own menu and return Back to the originating Settings entry. Both menus use the same controller navigation, mapped Back badge and real bottom Dock preview.

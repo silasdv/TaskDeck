@@ -1,3 +1,18 @@
+# TaskDeck 3.0 release procedure
+
+The user explicitly authorized publishing version 3.0 to silasdv/TaskDeck. It consolidates every local 2.1–2.7 change since public v2.0 (`888ad06bbe0baf69aafdbbbdfb5cf2d188c0cc7d`). VersionCode 300; UserService 9; same package, signing identity and permissions. Preserve old releases and do not rewrite remote history.
+
+1. Run tests, lint and release APK/AAB gates; record exact results and physical-device limits.
+2. Consolidate final behavior in README, CHANGELOG and RELEASE-3.0.md. Keep historical milestones explicitly historical. Preserve SilasDV, MIT, vibecoded, support and third-party disclosures.
+3. Commit source/docs. Refresh release VCS metadata, build final artifacts and check final-commit provenance.
+4. Verify APK signer/version/permissions/debuggable state. Archive tracked source, excluding private/generated files; create SHA-256 sums for APK/AAB/source ZIP.
+5. Push main and the annotated v3.0 tag with the existing authorized account. Create a draft release, upload four assets, verify draft/body/tag and remote asset digests, then publish as latest. Verify readback afterward.
+6. Prepare the Reddit draft after GitHub release, centered on Android Recent Apps controller usability. The user will add a real screenshot. Reddit publication is a separate step; none is sent by this release procedure.
+
+Signing configuration still uses ignored .local/release-signing.properties or TASKDECK_KEYSTORE_PATH/TASKDECK_STORE_PASSWORD/TASKDECK_KEY_ALIAS/TASKDECK_KEY_PASSWORD. Never print or publish keys/credentials. Public builders use their own signing material. See the historical release instructions below for earlier local versions.
+
+## Historical procedure
+
 # Release signing and publication
 
 TaskDeck 2.0 uses versionCode 200, UserService 9 and the same dedicated release key as 1.0. Keep keys/passwords private and backed up.

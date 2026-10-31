@@ -1,5 +1,7 @@
 # TaskDeck 2.7 — local update
 
+Historical local milestone, included in [TaskDeck 3.0](RELEASE-3.0.md). Final 3.0 behavior supersedes intermediate designs below.
+
 - Derive task-card Close hints from the active mapping and vector button labels, including PlayStation and swapped profiles.
 - Empty app searches give D-pad Down an explicit Clear search target, and clearing returns controller focus to results. Missing shortcut access disables recording and offers an Enable shortcut access action. Disconnection feedback points to Refresh/reconnect instead of silently ignoring actions.
 - Show per-app RAM sample age, loading/unavailable states and a stale marker after 30 seconds. RAM details can refresh the memory sample without re-reading tasks or changing selected task identity.

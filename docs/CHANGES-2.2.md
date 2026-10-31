@@ -1,5 +1,7 @@
 # TaskDeck 2.2 — local update
 
+Historical local milestone, included in [TaskDeck 3.0](RELEASE-3.0.md). Final 3.0 behavior supersedes intermediate designs below.
+
 - Rebuild Dock style as four balanced columns on wide handhelds, or a two-by-two form in portrait. No scrolling is needed in the tested 640x360 dp maximum-size landscape case. Larger screens get larger targets and sample artwork. Style/Swap sides, Size/Icon size, background and icon appearance each have a clear area. Gaps and choice sizes are symmetric.
 - Icon shape and Background shape are separate. Background defaults to the previous rounded box family; rounded, round, square and squircle backgrounds are available. Icon choices show the same example app with round/square/squircle masks instead of text labels. Adaptive layers are masked **before** color/look filters, fixing the round system mask surviving Square/Squircle.
 - Add Background color **None**, which removes fills and persistent outlines; controller selection can still show a focus outline. Current remains identifiable by its green dot. Larger color samples use a fine contrasting edge only when they blend into the theme. Graphite is lighter so it is distinct from black. Add amber for a complete two-row palette.

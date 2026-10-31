@@ -8,4 +8,6 @@ VIBRATE supports opt-in short close feedback. Legacy preferences may remain afte
 
 Shizuku help, Ko-fi and GitHub buttons open an external browser. The browser and those services apply their own policies; TaskDeck does not send task lists, RAM samples or controller data to them.
 
+Optional manual settings backups contain configuration, including favorite/protected package identifiers and controller bindings. They contain no task history, RAM reports, typed text or Android permission grants. Files are unencrypted JSON in the document provider selected by the user; that provider has its own policies. TaskDeck does not upload backups itself. Uninstalling clears app settings but does not delete independently saved backup files.
+
 Uninstalling clears TaskDeck settings. Do not include private app titles, screenshots, account details or signing material in public bug reports.

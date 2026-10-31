@@ -1,6 +1,16 @@
 # Changelog
 
-## 2.7 — unreleased
+## 3.0 — 2026-10-31
+
+First public release after 2.0, including all local 2.1–2.7 milestones. [Complete changes, fixes and upgrade notes](docs/RELEASE-3.0.md).
+
+- Separate Dock/background and icon settings, independent masks/scales, styles and real previews.
+- Six/eight-app limits, search recovery, readable favorites and controller-accessible Undo.
+- Mapped Back/Close/Start hints, focus restoration and access/disconnection feedback.
+- Bounded close retry, named errors, RAM sample age and independent refresh.
+- Font scaling/reduced motion, validated local settings backups and updated public documentation.
+
+## 2.7 — local milestone, included in 3.0
 
 - Derive task-card Close hints from the active mapping and vector button labels, including PlayStation and swapped profiles.
 - Empty app searches give D-pad Down an explicit Clear search target, and clearing returns controller focus to results. Missing shortcut access disables recording and offers an Enable shortcut access action. Disconnection feedback points to Refresh/reconnect instead of silently ignoring actions.
@@ -12,7 +22,7 @@
 - Respect disabled system animations for setup completion. Drawn captions scale with the system font, with larger visual-choice bounds/reflow. At font scales above 125%, affected form content can scroll while navigation remains outside it; normal-size layouts remain unchanged.
 - Add Settings backup under About: local Android document-picker export/import, versioned JSON schema and strict allow-list/type/range/size checks. Preview imported values with mapped page navigation, app names and printed controller labels before Apply import. Omitted customization returns to defaults; setup completion and Android permission grants are not imported. Canceled/stale reads cannot reintroduce an abandoned import.
 
-## 2.6 — unreleased
+## 2.6 — local milestone, included in 3.0
 
 - Unify Back buttons across forms, settings/setup submenus and Dock app selection using the mapped controller badge plus Back text. Remove the Dock-only badge override; Previous/Next actions retain their own bindings.
 - Protect preview Apps minus/plus buttons from clipping: add drawing clearance, remove native elevation/translation-Z and state-list lift, and keep controls inside their row.
@@ -20,7 +30,7 @@
 - Preserve compact palette room by removing incidental theme-row margins.
 - Document a source-based app-wide UX review with prioritized follow-ups separately from implemented fixes.
 
-## 2.5 — unreleased
+## 2.5 — local milestone, included in 3.0
 
 - Split Dock customization into two sibling menus under Settings > Dock: Dock / Background and Icons.
 - Dock / Background contains Layout, Swap sides (Thumb Corners only), Dock Size, Background Color and conditional Background Shape. Icons contains Icon Size, Icon Shape and Icon Style.
@@ -30,7 +40,7 @@
 - Remove the extra dark plate from icon-mask examples. Background forms remain neutral; icon forms show only masked app artwork.
 - Keep compact matching size steppers, saved settings and preview-count changes separate from actual favorites. None still hides Background Shape and preserves its stored value.
 
-## 2.4 — unreleased
+## 2.4 — local milestone, included in 3.0
 
 - Use the available settings area instead of leaving a broad empty band above the Dock. Both background panels share one bottom edge; visual choices expand into spare space and compact layouts retain the tested no-scroll fit.
 - Separate saved selection (accent fill and a tick) from controller focus (a consistent outline). Layout thumbnails no longer have an extra dark backdrop.
@@ -40,7 +50,7 @@
 - Label the bottom area Live preview, keep its Dock at the actual size/position, and explain that app-count controls change preview samples only. Use input-specific help and neutral app states, so Current tint no longer conceals the chosen background color.
 - Add the mapped Back controller badge to the compact Back button. Preserve controller navigation and saved Dock contents while adjusting preview counts.
 
-## 2.3 — unreleased
+## 2.3 — local milestone, included in 3.0
 
 - Group Dock style into Dock / Background and Icons within the same screen. Rename Size to Dock Size.
 - Hide Background Shape when Background Color is None, preserve the saved shape, and prevent that hidden shape from affecting icon sizing or focus geometry.
@@ -50,7 +60,7 @@
 - Keep App icon style eight dp below the accent palette and support controller navigation from the palette into style choices.
 - Migrate the old accent override to the explicit Accent Color style when appropriate.
 
-## 2.2 — unreleased
+## 2.2 — local milestone, included in 3.0
 
 - Rebuild Dock style as four balanced columns on wide handhelds, or a two-by-two form in portrait. No scrolling is needed in the tested 640x360 dp maximum-size landscape case. Larger screens get larger targets and sample artwork. Style/Swap sides, Size/Icon size, background and icon appearance each have a clear area. Gaps and choice sizes are symmetric.
 - Icon shape and Background shape are separate. Background defaults to the previous rounded box family; rounded, round, square and squircle backgrounds are available. Icon choices show the same example app with round/square/squircle masks instead of text labels. Adaptive layers are masked **before** color/look filters, fixing the round system mask surviving Square/Squircle.
@@ -66,7 +76,7 @@
 - Cache grid placement specs and reuse layout parameters rather than allocating them during every measurement.
 
 
-## 2.1 — unreleased
+## 2.1 — local milestone, included in 3.0
 
 - Dock style & size now includes background color, Round/Square/Squircle shape, Original/B&W/Accent/Glass icon looks and Follow accent color inline. Dock appearance is no longer a destination; old restored destinations redirect to Dock style.
 - Smaller, separated size-stepper buttons. Swap sides is a normal action button and participates in spatial controller navigation. Style-preview glyphs stay neutral white on a dark miniature background, independent of app colors.
