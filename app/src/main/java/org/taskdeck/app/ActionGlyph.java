@@ -32,7 +32,7 @@ public final class ActionGlyph extends Drawable {
         if(s.equals("dock")) return "grid";
         if(s.equals("auto")) return "theme";
         if(s.contains("feedback")) return "notify";
-        if(s.contains("ko-fi")) return "heart";
+        if(s.contains("ko-fi")) return "kofi";
         if(s.equals("swap sides")||s.equals("switch apps")) return "switch";
         if(s.startsWith("ram")||s.equals("manage tasks")) return "grid";
         if(s.equals("permissions")) return "info";
@@ -71,6 +71,8 @@ public final class ActionGlyph extends Drawable {
         Paint p=new Paint(Paint.ANTI_ALIAS_FLAG); p.setColor(color); p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(2); p.setStrokeCap(Paint.Cap.ROUND); p.setStrokeJoin(Paint.Join.ROUND);
         switch(kind){
             case "none": break;
+            case "eye": canvas.drawOval(new RectF(2,6,22,18),p);canvas.drawCircle(12,12,3,p);break;
+            case "activity": for(int x=5;x<=19;x+=7)canvas.drawCircle(x,12,2,p);break;
             case "search": canvas.drawCircle(10,10,6,p);canvas.drawLine(15,15,21,21,p);break;
             case "unlock": canvas.drawRoundRect(5,10,19,22,2,2,p);canvas.drawArc(new RectF(8,1,18,13),180,190,false,p);canvas.drawCircle(12,16,1,p);break;
             case "dpad": {Path cross=new Path();cross.moveTo(8,2);cross.lineTo(16,2);cross.lineTo(16,8);cross.lineTo(22,8);cross.lineTo(22,16);cross.lineTo(16,16);cross.lineTo(16,22);cross.lineTo(8,22);cross.lineTo(8,16);cross.lineTo(2,16);cross.lineTo(2,8);cross.lineTo(8,8);cross.close();canvas.drawPath(cross,p);break;}

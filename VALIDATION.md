@@ -1,3 +1,19 @@
+# Validation — 2.2 local update
+
+31 October 2026. versionCode 220; UserService 9, unchanged package/key/permissions. Public GitHub 2.0 is not modified.
+
+- testDebugUnitTest: **175 passed**, zero failures/errors/skips.
+- lintRelease: **0 errors, 33 warnings** (no new warnings versus 2.1).
+- assembleRelease and bundleRelease passed.
+
+New checks cover all four Dock form columns and nested controls fitting without scroll at 640x360 dp with maximum Dock/icon settings across Thumb/Floating/Shelf; portrait two-column reflow; independent icon/background shapes; None fill; unchanged box width/Dock height when icon fill increases; visual shape/style choices; adaptive source layers masked before look filtering; centered foreground controls; Appearance theme/behavior rows and icon examples below accents; contextual focus/hover help; initial 220 ms fade; actual About destinations and Ko-fi asset; and theme-dependent edge decisions. Existing mapping, fast Confirm, setup, close retry/timeout, RAM and input cases pass. Tests asserting the former checkbox, icon-linked background shape, old stepper alignment/padding or circle-only Settings control were revised to the new design.
+
+Grid placement specs/layout parameters are reused, with geometry reassigned only when necessary. The preview uses the real Dock renderer. These are simulated layout/state/configuration checks; they do not certify native RP6 pixels, edge antialiasing, fonts, animation timing, firmware routing, Shizuku outcomes or haptic/notification presentation. Legacy pre-rounded raster icons cannot reconstruct absent corners. See DEVICE-TEST.md.
+
+Packaging verifies the existing signing identity, non-debuggable 2.2 APK, unchanged permissions/no INTERNET, final-commit AAB metadata, clean source ZIP and SHA-256 hashes. No GitHub release is implied.
+
+---
+
 # Validation — 2.1 local update
 
 31 October 2026. versionCode 210; UserService 9, unchanged package/key/permissions. GitHub 2.0 remains unchanged.

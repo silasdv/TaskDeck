@@ -1,3 +1,14 @@
+# 2.2 physical acceptance
+
+- Dock menu: every option visible without scrolling on RP6; four wide-screen columns/two-by-two portrait, larger targets when height permits, centered plus/minus and balanced spacing.
+- Icon/background shape independent; Rounded remains default. Inspect real adaptive icon square/squircle corners before/after B&W/Accent/Glass filtering. Legacy raster corners cannot be reconstructed.
+- None removes fills/persistent borders while focus and Current dot remain usable. Check larger color samples and conditional thin edges in Light/Dark/OLED; grey vs black distinct.
+- Logo fill 50/100/110/160 changes within unchanged boxes/Dock height. Focus magnification and indicators stay inside shape safety margins.
+- Dock behavior: all three options same toggle style; focus/hover changes only the relevant help; rapid double Confirm never activates Back.
+- Add-app catalogue fades on first load; quick paging/search during load must not produce a stale fade or flash.
+- Appearance: consistent heading, theme-only first row, three behavior toggles second, Accent Colors unchanged, App icon style visual samples below. Check native fonts at enlarged system font sizes.
+- About cup/logo and visible exact SilasDV destinations. Main Start/Select badge sizes match, Start+gear share one background, divider subtle. Existing input/close/Shizuku checks below remain applicable.
+
 # 2.1 physical acceptance
 
 - Inline Dock controls: Swap sides reachable by D-pad/stick and touch; compact size buttons do not overlap. Verify low-height pane scrolling and portrait focus.

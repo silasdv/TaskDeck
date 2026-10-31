@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.2 — unreleased
+
+- Rebuild Dock style as four balanced columns on wide handhelds, or a two-by-two form in portrait. No scrolling is needed in the tested 640x360 dp maximum-size landscape case. Larger screens get larger targets and sample artwork. Style/Swap sides, Size/Icon size, background and icon appearance each have a clear area. Gaps and choice sizes are symmetric.
+- Icon shape and Background shape are separate. Background defaults to the previous rounded box family; rounded, round, square and squircle backgrounds are available. Icon choices show the same example app with round/square/squircle masks instead of text labels. Adaptive layers are masked **before** color/look filters, fixing the round system mask surviving Square/Squircle.
+- Add Background color **None**, which removes fills and persistent outlines; controller selection can still show a focus outline. Current remains identifiable by its green dot. Larger color samples use a fine contrasting edge only when they blend into the theme. Graphite is lighter so it is distinct from black. Add amber for a complete two-row palette.
+- Icon size changes logo fill inside a **fixed** box; it no longer enlarges the box or Dock height. 50–160% selects the usable fill range, with magnification/indicator space reserved. Changing Dock Size sets the box scale; shape combinations retain safe margins.
+- Center plus/minus artwork independently of TextView alignment. Shape and look choices use visual examples with accessible labels/tooltips. Saved/current real app artwork is preferred and refreshed after catalogue loading.
+- Dock behavior has three matching icon-backed On/Off buttons: Always show Dock, Magnify focused icons, Running indicators. Its right pane explains only the hovered/focused option; touch changes retain the relevant explanation.
+- Initial Add apps to Dock results fade in over 220 ms. Stale fades cannot replace a later page transition. Existing 360 ms page motion remains.
+- Appearance keeps the standard category heading position. Light/Dark/OLED/Auto have their own row. Group apps (shortened label), Stay open after clearing and Vibrate on close share the next row, with equal heights and readable wrapping. Accent Colors retain their swatches. **App icon style** and four visual samples follow below.
+- About shows actual destinations beside Ko-fi and GitHub actions, keeping the confirmed SilasDV URLs. Replace the heart with Ko-fi's official cup from its Creator kit; bundle its source/usage attribution.
+- Start uses the same 21x16 dp outlined badge dimensions as Select and shares one button background with the Settings gear. A subtle divider separates View/tools from the action legend.
+- Preserve controller focus immediately when rebuilding an option page, preventing a quick second Confirm from activating Back before the deferred focus restoration.
+- Cache grid placement specs and reuse layout parameters rather than allocating them during every measurement.
+
+
 ## 2.1 — unreleased
 
 - Dock style & size now includes background color, Round/Square/Squircle shape, Original/B&W/Accent/Glass icon looks and Follow accent color inline. Dock appearance is no longer a destination; old restored destinations redirect to Dock style.

@@ -2,7 +2,7 @@
 
 **A controller-first Android task manager for gaming handhelds, with full touch support.**
 
-TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **2.1** (local update), Android 10+, using Shizuku.
+TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **2.2** (local update), Android 10+, using Shizuku.
 
 [Full 2.0 release notes: every change since 1.0](docs/RELEASE-2.0.md) · [Changelog](CHANGELOG.md)
 
@@ -65,9 +65,9 @@ Pin launchable apps with Select or touch long-press on a task card. Add installe
 
 **Thumb corners is the default.** Choose Thumb corners, Floating or Shelf using equal-size, left-aligned vertical choices. A full-width bottom preview uses real installed apps: saved Dock apps in their order/sides first, then alphabetical extras. Preview edits never change saved favorites. Thumb corners has independent left/right add/remove sample controls; Floating and Shelf have one pair. Count buttons use one plus/minus icon, without duplicate signs in the text.
 
-Dock **Size** and **Icon size** are independent **50–160%** settings beside one another. Size sets a minimum box size; Icon size changes logos, with boxes growing when needed to fit the chosen logo scale, focus and the indicator strip. Existing local Dock sizes initialize icon scale once on upgrade. Directly in **Dock style & size**, choose background color (follow theme, black, graphite, white, blue, purple, green, red) and Round/Square/Squircle icons, with adaptive layers masked to match. Original, B&W, Accent and Glass looks are available, with Follow accent color. Appearance offers the same four looks for main task icons. The preview uses the same renderer/settings as the main Dock.
+Dock **Size** and **Icon size** are independent **50–160%** settings beside one another. Size sets the fixed box scale; Icon size changes logo fill within that box, preserving room for focus and status dots. Existing local Dock sizes initialize icon scale once on upgrade. Directly in **Dock style & size**, choose background color (None, follow theme, black, graphite, white, blue, purple, green, red, amber), independent background shapes and Round/Square/Squircle icons, with adaptive layers masked to match. Original, B&W, Accent and Glass looks are available, with Follow accent color. Appearance offers the same four looks for main task icons. The preview uses the same renderer/settings as the main Dock.
 
-Thumb corners separates favorites into bottom-left/right groups with individual bubbles and independent overflow scrolling. **Swap sides** exchanges groups, including odd counts. Touch-hold and drag reorders apps. An empty Dock offers **+ Add apps to Dock**. Always show Dock is a checkbox; off reveals it on navigation/tap. Old Compact choices migrate to Floating. Automatic app theme follows Android; the Dock follows it unless a background override is chosen.
+Thumb corners separates favorites into bottom-left/right groups with individual bubbles and independent overflow scrolling. **Swap sides** exchanges groups, including odd counts. Touch-hold and drag reorders apps. An empty Dock offers **+ Add apps to Dock**. Always show Dock is an On/Off button matching the other Dock behavior controls; off reveals it on navigation/tap. Old Compact choices migrate to Floating. Automatic app theme follows Android; the Dock follows it unless a background override is chosen.
 
 The dock has no visible heading. Thumb corners uses a separate bordered box for each app, with 8dp spacing; Current uses the same green as task cards. Growing the dock reduces task space. Idle selection/app-count status text is omitted; actionable errors remain visible.
 
@@ -123,7 +123,7 @@ Build with JDK 17, Android SDK 35 / Build Tools 35.0.0 and Gradle 8.11.1:
 ./gradlew testDebugUnitTest lintRelease assembleRelease bundleRelease
 ```
 
-Windows uses gradlew.bat. Set ANDROID_HOME or local.properties. See [Release signing](docs/RELEASING.md) for signing configuration. Keys/passwords live in ignored `.local/` and are never included in source archives. Without release signing material, the release artifact is unsigned. Application versionCode is 200; UserService implementation is 9.
+Windows uses gradlew.bat. Set ANDROID_HOME or local.properties. See [Release signing](docs/RELEASING.md) for signing configuration. Keys/passwords live in ignored `.local/` and are never included in source archives. Without release signing material, the release artifact is unsigned. Application versionCode is 220; UserService implementation is 9.
 
 See [VALIDATION.md](VALIDATION.md) for automated results and [DEVICE-TEST.md](DEVICE-TEST.md) for outstanding hardware checks. UI tests use fake IPC; actual RP6 Shizuku behavior, controller routing and visible RAM banners are not proven by them.
 
@@ -145,4 +145,6 @@ The final setup footer is compact and labels Previous page/Next page beside L1/R
 
 Dock app pages use the same 360 ms, after-layout transition as setup protection pages. Preview count buttons show one plus/minus icon beside Apps; size and Appearance choices have larger internal padding.
 
-[2.1 local changes](docs/CHANGES-2.1.md): inline Dock customization, mask-matched focus, 160% icons, Start Settings hint/reservation, restored submenu focus, protected badges and one identity-checked close retry. The previous public GitHub release remains 2.0. Compact Dock panes scroll only when content cannot fit. Glass is a stylized icon highlight.
+[2.1 local changes](docs/CHANGES-2.1.md): inline Dock customization, mask-matched focus, 160% icons, Start Settings hint/reservation, restored submenu focus, protected badges and one identity-checked close retry. The previous public GitHub release remains 2.0. That 2.1 scrolling layout is superseded by the non-scrolling 2.2 form. Glass is a stylized icon highlight.
+
+[2.2 local redesign](docs/CHANGES-2.2.md): non-scrolling Dock form, independent visual shape controls, None background, fixed-box logo fill, contextual Dock behavior help, visual App icon style below Accent Colors, matching Start/Settings badge and visible About links.

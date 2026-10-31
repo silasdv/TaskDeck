@@ -21,3 +21,7 @@ AndroidX annotations (compile-time), Android build tooling, JUnit and Robolectri
 Shizuku icon from RikkaApps/Shizuku: https://raw.githubusercontent.com/RikkaApps/Shizuku/master/manager/src/main/res/mipmap-xxxhdpi/ic_launcher.png (31 October 2026). Apache-2.0; upstream license retained in docs/SHIZUKU-LICENSE.txt.
 
 GitHub Invertocat from https://brand.github.com/GitHub_Logos.zip . White SVG path converted to Android vector without geometry changes, displayed in black/white. Brand usage: https://brand.github.com/foundations/logo . Marks identify external projects without implying endorsement; they are not relicensed as TaskDeck artwork.
+
+## Ko-fi cup
+
+Official Creator-kit cup artwork from [Ko-fi Brand Assets](https://more.ko-fi.com/brand-assets), downloaded 31 October 2026 from https://cdn.prod.website-files.com/5c14e387dab576fe667689cf/670f5a01229bf8a18f97a3c1_favion.avif and converted to a 128px PNG without changing its design. Used only for the author's Ko-fi support link. Ko-fi owns the mark; it is not covered by TaskDeck's MIT license. See [Ko-fi's creator-logo guidance](https://help.ko-fi.com/hc/en-us/articles/360007169493-Can-I-use-the-Ko-fi-logo-to-promote-my-page) and the linked content guidelines. No endorsement is implied.

@@ -19,12 +19,13 @@ public final class QuickAccess {
     public static int size(SharedPreferences prefs){ return Math.max(50,Math.min(160,prefs.getInt("dockSize",100))); }
     public static int iconSize(SharedPreferences prefs){ return Math.max(50,Math.min(160,prefs.getInt("dockIconSize",100))); }
     public static int foregroundColor(int background){return android.graphics.Color.luminance(background)>.179?android.graphics.Color.BLACK:android.graphics.Color.WHITE;}
-    public static final String[] BACKGROUND_KEYS={"theme","black","graphite","white","blue","purple","green","red"};
+    public static final String[] BACKGROUND_KEYS={"none","theme","black","graphite","white","blue","purple","green","red","amber"};
     public static int backgroundColor(SharedPreferences prefs,DeckTheme theme){
         String key=prefs.getString("dockBackground","theme");
+        if("none".equals(key))return android.graphics.Color.TRANSPARENT;
         if("theme".equals(key))return theme.surface;
         if("black".equals(key))return android.graphics.Color.BLACK;
-        if("graphite".equals(key))return android.graphics.Color.rgb(44,48,56);
+        if("graphite".equals(key))return android.graphics.Color.rgb(104,111,124);
         return DeckTheme.accentColor(key)==0?theme.surface:DeckTheme.accentColor(key);
     }
 }

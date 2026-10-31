@@ -2,7 +2,7 @@ package org.taskdeck.app;
 import android.graphics.*;
 import android.graphics.drawable.GradientDrawable;
 final class IconShape {
-    static Path path(RectF box,String shape){Path path=new Path();if("squircle".equals(shape)){float a=box.width()/2,b=box.height()/2;for(int i=0;i<=80;i++){double t=i*Math.PI*2/80,c=Math.cos(t),s=Math.sin(t);float x=box.centerX()+a*(float)Math.copySign(Math.sqrt(Math.abs(c)),c),y=box.centerY()+b*(float)Math.copySign(Math.sqrt(Math.abs(s)),s);if(i==0)path.moveTo(x,y);else path.lineTo(x,y);}path.close();}else{float radius=Math.min(box.width(),box.height())*("square".equals(shape)?.08f:.5f);path.addRoundRect(box,radius,radius,Path.Direction.CW);}return path;}
+    static Path path(RectF box,String shape){Path path=new Path();if("squircle".equals(shape)){float a=box.width()/2,b=box.height()/2;for(int i=0;i<=80;i++){double t=i*Math.PI*2/80,c=Math.cos(t),s=Math.sin(t);float x=box.centerX()+a*(float)Math.copySign(Math.sqrt(Math.abs(c)),c),y=box.centerY()+b*(float)Math.copySign(Math.sqrt(Math.abs(s)),s);if(i==0)path.moveTo(x,y);else path.lineTo(x,y);}path.close();}else{float radius=Math.min(box.width(),box.height())*("square".equals(shape)?.08f:"rounded".equals(shape)?.25f:.5f);path.addRoundRect(box,radius,radius,Path.Direction.CW);}return path;}
     static final class Surface extends GradientDrawable {
         final String shape;private int stroke,width;private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
         Surface(int fill,String shape){this.shape=shape;setColor(fill);}
