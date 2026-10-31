@@ -2,7 +2,9 @@
 
 **A controller-first Android task manager for gaming handhelds, with full touch support.**
 
-TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **1.1.12**, Android 10+, using Shizuku.
+TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **2.0**, Android 10+, using Shizuku.
+
+[Full 2.0 release notes: every change since 1.0](docs/RELEASE-2.0.md) · [Changelog](CHANGELOG.md)
 
 ## Vibecoded
 
@@ -37,7 +39,7 @@ Closing is immediate, with no confirmation dialog. Use disposable app state for 
 
 Android 10+ and **Shizuku 13+** are required. Root is not required. Android 11+ can start Shizuku with wireless debugging; Android 10 needs its documented computer setup. Firmware permissions vary.
 
-1. Download the signed APK from the supplied local release package (see [public Releases](https://github.com/silasdv/TaskDeck/releases) for published versions) and install it. **Earlier 0.x test builds used a different key: uninstall one first, after noting your settings/mappings. Uninstalling clears app data.** Version 1.1.12 uses the same dedicated release key as 1.0 and installs over it, retaining settings.
+1. Download **TaskDeck-2.0.apk** from [Releases](https://github.com/silasdv/TaskDeck/releases/tag/v2.0) and install it. **Earlier 0.x test builds used a different key: uninstall one first, after noting your settings/mappings. Uninstalling clears app data.** Version 2.0 uses the same dedicated release key as 1.0 and installs over it, retaining settings.
 2. Install Shizuku from its [official download page](https://shizuku.rikka.app/download/) and follow the [official setup guide](https://shizuku.rikka.app/guide/setup/). Pairing is not the same as starting Shizuku. Without root, start it again after reboot.
 3. Setup has five unnested pages: Permissions, Controller, Shortcuts, Appearance and App protection. Shizuku connection is required. Shortcut-service access is required to record hotkeys; notifications are optional. L1/R1 navigate.
 4. Controller calibration and both shortcut recordings stay inline. Hold and release a chord to save; completed deck and Quick Swap Apps recordings show checkmarks. Appearance includes accent selection and optional close vibration. Protection lets users choose locks. Completion draws for 800 ms and opens the deck after roughly 950 ms total. Settings > About > Redo Setup preserves configuration.
@@ -57,11 +59,15 @@ Menu buttons share a content-measured width within each pane, with horizontal pa
 
 The full interaction plan is in [USER-FLOW.md](USER-FLOW.md).
 
-## Dock dock
+## Dock
 
 Pin launchable apps with Select or touch long-press on a task card. Add installed apps in Settings > Dock even when they are not open. Favorites are shortcuts, separate from task cards and protection: pinning does not lock an app or fabricate an open task.
 
-**Thumb corners is the default** when no style was explicitly chosen. Choose Thumb corners (default), Floating or Shelf; Settings shows a full-width, original-size preview at the actual bottom dock position. It starts with saved Dock apps in their actual order and sides, then alphabetical extras; Separate left/right Apps + / − Apps controls sit above the preview and never change saved Dock apps. Thumb corners splits favorites into bottom-left and bottom-right groups, with larger touch targets and independent horizontal scrolling for overflow. Dock size ranges from **50–160%**, with boxes and icons both scaling below 80%. An empty dock offers a compact, labeled **+ Add apps to Dock** button with bounded focus. The dock follows the app theme; the app supports **Automatic** theme following Android. Style choices are equal-size vertical buttons, with Thumb corners first. Always show Dock is a compact checkbox; off means reveal on navigation/tap. Old Compact choices migrate to Floating. Thumb corners offers **Swap sides**, including uneven groups. Hold and drag on the touchscreen to reorder individual apps.
+**Thumb corners is the default.** Choose Thumb corners, Floating or Shelf using equal-size, left-aligned vertical choices. A full-width bottom preview uses real installed apps: saved Dock apps in their order/sides first, then alphabetical extras. Preview edits never change saved favorites. Thumb corners has independent left/right add/remove sample controls; Floating and Shelf have one pair. Count buttons use one plus/minus icon, without duplicate signs in the text.
+
+Dock **Size** and **Icon size** are independent **50–160%** settings beside one another. Size changes the boxes; Icon size changes logos, capped to fit their box and focus magnification. Existing local Dock sizes initialize icon scale once on upgrade. In **Dock appearance**, choose background color (follow theme, black, graphite, white, blue, purple, green, red) and Round/Square icons, with adaptive layers masked to match. The preview uses the same renderer/settings as the main Dock.
+
+Thumb corners separates favorites into bottom-left/right groups with individual bubbles and independent overflow scrolling. **Swap sides** exchanges groups, including odd counts. Touch-hold and drag reorders apps. An empty Dock offers **+ Add apps to Dock**. Always show Dock is a checkbox; off reveals it on navigation/tap. Old Compact choices migrate to Floating. Automatic app theme follows Android; the Dock follows it unless a background override is chosen.
 
 The dock has no visible heading. Thumb corners uses a separate bordered box for each app, with 8dp spacing; Current uses the same green as task cards. Growing the dock reduces task space. Idle selection/app-count status text is omitted; actionable errors remain visible.
 
@@ -117,7 +123,7 @@ Build with JDK 17, Android SDK 35 / Build Tools 35.0.0 and Gradle 8.11.1:
 ./gradlew testDebugUnitTest lintRelease assembleRelease bundleRelease
 ```
 
-Windows uses gradlew.bat. Set ANDROID_HOME or local.properties. See [Release signing](docs/RELEASING.md) for signing configuration. Keys/passwords live in ignored `.local/` and are never included in source archives. Without release signing material, the release artifact is unsigned. Application versionCode is 115; UserService implementation remains 8.
+Windows uses gradlew.bat. Set ANDROID_HOME or local.properties. See [Release signing](docs/RELEASING.md) for signing configuration. Keys/passwords live in ignored `.local/` and are never included in source archives. Without release signing material, the release artifact is unsigned. Application versionCode is 200; UserService implementation is 9.
 
 See [VALIDATION.md](VALIDATION.md) for automated results and [DEVICE-TEST.md](DEVICE-TEST.md) for outstanding hardware checks. UI tests use fake IPC; actual RP6 Shizuku behavior, controller routing and visible RAM banners are not proven by them.
 
@@ -133,7 +139,7 @@ UserService version 9 refreshes the revised launcher policy. VIBRATE supports op
 
 Picker icon/name groups are centered using measured text layout; border gaps match across rows and columns. Setup offers direct Google Play and GitHub Shizuku downloads with adjacent Required/Optional reasons. Right from setup themes enters Accent Colors and Left returns. Protection uses separate app-page arrows, leaving only one setup L1/R1 pair. About actions are stacked vertically.
 
-On the final protection page, swipe or move the D-pad past an edge to page horizontally. L1/R1 page apps, B returns, and Start finishes setup. Footer badges are larger. Setup Appearance Down reaches both full-size On/Off actions. Close All during a successful refresh runs once after the fresh list, rather than discarding the input. Semantic icons replace generic gears; theme icons are omitted. Official GitHub/Shizuku assets identify their links.
+On the final protection page, swipe or move the D-pad past an edge to page horizontally. L1/R1 page apps, B returns, and Start finishes setup. Footer badges explicitly label page actions; Start/Options is written inside its badge. Setup Appearance Down reaches both full-size On/Off actions. Close All during a successful refresh runs once after the fresh list, rather than discarding the input. Semantic icons replace generic gears; theme icons are omitted. Official GitHub/Shizuku assets identify their links.
 
 The final setup footer is compact and labels Previous page/Next page beside L1/R1. Start/Options is written in its badge. Page motion starts after layout over 360 ms, with canceled/stale transforms reset. Dock style texts share a left start with more padding. Record actions use Record icons; RAM uses a chip, Swap sides opposing arrows, and layout/download controls their own brand marks.
 

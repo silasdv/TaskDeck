@@ -1,3 +1,11 @@
+# 2.0 release acceptance
+
+- Thumb corners: two preview-count pairs; Floating/Shelf: one, with correct add/remove limits.
+- Size and Icon size persist independently at 50/100/160%; logo focus remains inside its box. Upgrade from a signed 1.x build retains settings and initializes previous icon scale once.
+- Dock appearance: background colors, selected/focused swatches, round/square legacy/adaptive icons and faithful bottom preview. Check white/OLED contrast and native edge rendering.
+- Controller: all size-stepper directions, background grid to shape choices, Back returning to Dock style; no clipped controls in compact landscape or portrait.
+- Repeat the existing setup, Shizuku, task-close, notification, Current-origin and drag/reorder acceptance below. Automated layout/state checks do not certify native RP6 graphics/firmware.
+
 # 1.1.12 physical acceptance
 
 - Add apps to Dock: compare first/later/backward page transitions with setup protection; confirm search and controller focus remain usable.

@@ -17,4 +17,13 @@ public final class QuickAccess {
     public static List<String> storageOrder(SharedPreferences prefs,List<String> order){List<String> values=new ArrayList<>(order);if("thumb".equals(prefs.getString("dockStyle","thumb"))&&prefs.getBoolean("dockSwapSides",false)) Collections.rotate(values,(values.size()+1)/2);return values;}
     public static void saveDisplayOrder(SharedPreferences prefs,List<String> order){save(prefs,storageOrder(prefs,order));}
     public static int size(SharedPreferences prefs){ return Math.max(50,Math.min(160,prefs.getInt("dockSize",100))); }
+    public static int iconSize(SharedPreferences prefs){ return Math.max(50,Math.min(160,prefs.getInt("dockIconSize",100))); }
+    public static final String[] BACKGROUND_KEYS={"theme","black","graphite","white","blue","purple","green","red"};
+    public static int backgroundColor(SharedPreferences prefs,DeckTheme theme){
+        String key=prefs.getString("dockBackground","theme");
+        if("theme".equals(key))return theme.surface;
+        if("black".equals(key))return android.graphics.Color.BLACK;
+        if("graphite".equals(key))return android.graphics.Color.rgb(44,48,56);
+        return DeckTheme.accentColor(key)==0?theme.surface:DeckTheme.accentColor(key);
+    }
 }
