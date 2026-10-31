@@ -10,6 +10,21 @@ public final class ActionGlyph extends Drawable {
     public ActionGlyph(String kind,int color){ this.kind=kind; this.color=color; }
     public static String kind(String label){
         String s=label.toLowerCase(Locale.ROOT);
+        if(s.equals("search")) return "search";
+        if(s.startsWith("unlock")) return "unlock";
+        if(s.startsWith("clear")) return "all";
+        if(s.contains("calibrate confirm")) return "dpad";
+        if(s.equals("about")) return "info";
+        if(s.equals("github")) return "github";
+        if(s.startsWith("redo")||s.startsWith("reset setup")) return "undo";
+        if(s.contains("shizuku")||s.contains("connect")||s.contains("authorize")) return "shizuku";
+        if(s.contains("button mapping")||s.equals("controller")||s.startsWith("a/b/x/y")||s.startsWith("playstation")) return "dpad";
+        if(s.contains("shortcut")||s.contains("quick swap")) return "shortcut";
+        if(s.equals("light")||s.equals("dark")||s.equals("oled")||s.equals("auto")) return "none";
+        if(s.contains("add apps")) return "plus";
+        if(s.contains("dock style")) return "brush";
+        if(s.contains("dock behavior")) return "sliders";
+        if(s.equals("dock")) return "grid";
         if(s.contains("dock")||s.startsWith("pin ")||s.startsWith("unpin ")) return "pin";
         if(s.equals("dock")) return "grid";
         if(s.equals("auto")) return "theme";
@@ -52,6 +67,14 @@ public final class ActionGlyph extends Drawable {
         int save=canvas.save(); canvas.translate(getBounds().left,getBounds().top); canvas.scale(getBounds().width()/24f,getBounds().height()/24f);
         Paint p=new Paint(Paint.ANTI_ALIAS_FLAG); p.setColor(color); p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(2); p.setStrokeCap(Paint.Cap.ROUND); p.setStrokeJoin(Paint.Join.ROUND);
         switch(kind){
+            case "none": break;
+            case "search": canvas.drawCircle(10,10,6,p);canvas.drawLine(15,15,21,21,p);break;
+            case "unlock": canvas.drawRoundRect(5,10,19,22,2,2,p);canvas.drawArc(new RectF(8,1,18,13),180,190,false,p);canvas.drawCircle(12,16,1,p);break;
+            case "dpad": {Path cross=new Path();cross.moveTo(8,2);cross.lineTo(16,2);cross.lineTo(16,8);cross.lineTo(22,8);cross.lineTo(22,16);cross.lineTo(16,16);cross.lineTo(16,22);cross.lineTo(8,22);cross.lineTo(8,16);cross.lineTo(2,16);cross.lineTo(2,8);cross.lineTo(8,8);cross.close();canvas.drawPath(cross,p);break;}
+            case "shortcut": canvas.drawOval(new RectF(2,3,14,13),p);canvas.drawOval(new RectF(10,11,22,21),p);canvas.drawLine(8,9,16,15,p);break;
+            case "undo": canvas.drawArc(new RectF(4,5,21,22),205,290,false,p);line(canvas,p,3,12,4,5,11,6);break;
+            case "brush": canvas.drawLine(8,15,19,3,p);canvas.drawLine(12,18,22,6,p);canvas.drawLine(19,3,22,6,p);Path brush=new Path();brush.moveTo(8,14);brush.cubicTo(2,13,7,20,2,22);brush.cubicTo(9,24,15,20,12,17);brush.close();canvas.drawPath(brush,p);break;
+            case "sliders": for(int x=5;x<=19;x+=7){canvas.drawLine(x,3,x,21,p);canvas.drawCircle(x,x==12?8:16,2,p);}break;
             case "pin": { Path bookmark=new Path(); bookmark.moveTo(6,3); bookmark.lineTo(18,3); bookmark.lineTo(18,21); bookmark.lineTo(12,16); bookmark.lineTo(6,21); bookmark.close(); canvas.drawPath(bookmark,p); break; }
             case "heart": { Path heart=new Path(); heart.moveTo(12,21); heart.cubicTo(-4,10,4,0,12,7); heart.cubicTo(20,0,28,10,12,21); canvas.drawPath(heart,p); break; }
             case "minus": canvas.drawLine(4,12,20,12,p); break;

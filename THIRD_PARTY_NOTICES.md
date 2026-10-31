@@ -13,3 +13,9 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 AndroidX annotations (compile-time), Android build tooling, JUnit and Robolectric are build/test dependencies under their respective licenses. They are not copied application implementations.
+
+## Brand navigation icons
+
+Shizuku icon from RikkaApps/Shizuku: https://raw.githubusercontent.com/RikkaApps/Shizuku/master/manager/src/main/res/mipmap-xxxhdpi/ic_launcher.png (31 October 2026). Apache-2.0; upstream license retained in docs/SHIZUKU-LICENSE.txt.
+
+GitHub Invertocat from https://brand.github.com/GitHub_Logos.zip . White SVG path converted to Android vector without geometry changes, displayed in black/white. Brand usage: https://brand.github.com/foundations/logo . Marks identify external projects without implying endorsement; they are not relicensed as TaskDeck artwork.

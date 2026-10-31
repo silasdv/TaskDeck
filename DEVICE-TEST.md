@@ -1,3 +1,14 @@
+# 1.1.10 physical acceptance
+
+- Setup themes Down reaches Stay open after clearing, then Vibrate on close; both On/Off actions readable and touch/controller operated.
+- Protection: D-pad at row edges, L1/R1 app pages and touch swipe. A swipe must not toggle a lock. Edge hints, large footer frames, B back and Start finish must agree with actual mappings.
+- Check narrow portrait footer fit and landscape focus visibility.
+- Search/unlock/D-pad/theme/About/GitHub/redo/Dock/style/behavior/shortcut/Shizuku icon meaning and native contrast. Connected Shizuku retains its green check.
+- Press Y once during task refresh: bulk action should run after list arrival and exit when configured. Partial failures still exit with an error message; Stay open On keeps the deck. No destructive automatic retry.
+- Confirm real RP6 firmware, touch/swipe feel, Shizuku connection, notifications and haptics.
+
+These device checks remain pending; simulations are not hardware certification.
+
 # 1.1.9 physical acceptance
 
 - Both pickers: centered icon/name groups, comfortable bottom padding and equal row/column border gaps; check native fonts and larger system text.

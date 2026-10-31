@@ -1,4 +1,4 @@
-# Usability review — TaskDeck 1.1.9
+# Usability review — TaskDeck 1.1.10
 
 Source/layout review using [Nielsen’s ten usability heuristics](https://www.nngroup.com/articles/ten-usability-heuristics/); not a physical RP6 certification or moderated user study.
 
@@ -18,3 +18,5 @@ Source/layout review using [Nielsen’s ten usability heuristics](https://www.nn
 Completion drawing is slower (800 ms), with about 150 ms further hold. Ordinary apps/launchers are no longer automatically locked. Simulated checks cover selected state, layout and input behavior, not actual motor feedback or Shizuku firmware behavior.
 
 Reported geometry/navigation fixes: measured centered picker groups and equal gaps, single setup shoulder pair, explicit accent cross-pane routes, adjacent permission reasons/downloads and faithful saved-Dock previews.
+
+Setup now routes themes Down through both appearance actions. Final protection uses horizontal edge/swipe navigation; shoulders page apps while B/Start handle setup. Footer frames are larger and fit narrow screens. Semantic and official-brand icons improve recognition. An explicit bulk input is retained during successful refresh, and the exit preference applies even when some closes fail. No automatic destructive retry is introduced.

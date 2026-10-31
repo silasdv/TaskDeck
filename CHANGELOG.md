@@ -1,3 +1,11 @@
+# 1.1.10
+
+- Fix setup themes Down navigation to both full-size appearance actions; unify close vibration as an On/Off toggle.
+- Protection pages horizontally by D-pad edge, touch swipe or L1/R1, with edge hints. B returns and Start finishes; enlarge footer frames and fit narrow displays.
+- Replace generic gears with semantic search/unlock/D-pad/info/redo/Dock/brush/behavior/shortcut icons; omit duplicate theme icons.
+- Include official GitHub/Shizuku brand assets, retaining upstream notices/license. Connected status keeps its green tick beside the Shizuku mark.
+- Queue one explicit Close All behind task refresh and honor bulk exit preference for partial results; report failures without destructive retries.
+
 # 1.1.9
 
 - Center picker icons/names using measured text layout and equalize border gaps in both pickers.

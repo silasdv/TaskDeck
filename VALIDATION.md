@@ -1,4 +1,18 @@
-# Validation — 1.1.9
+# Validation — 1.1.10
+
+31 October 2026. versionName 1.1.10, versionCode 120; UserService 9 unchanged. Existing release key retained.
+
+- testDebugUnitTest: **153 passed**, zero failures/errors/skips.
+- lintRelease: **0 errors, 33 warnings**.
+- assembleRelease and bundleRelease: passed.
+
+Added coverage verifies setup Down reaches Stay open and Vibrate actions; full-size On/Off vibration state; protection paging by D-pad edge, shoulders and touch swipe without accidental locks; Start completion and B return; narrow portrait footer fit; semantic icon routing and official brand drawable types; larger shoulder bounds; a single Y pressed during a blocked task refresh executing once; and partial-result closing honoring the exit preference. Existing checks for staying open explicitly set that preference. Connected status retains both the Shizuku icon and a green check.
+
+Checks simulate Android views/input, vibration API calls and fake IPC. They do not establish physical RP6 firmware routing, native gesture/animation feel, permissions, Shizuku reliability, haptics or notification delivery. DEVICE-TEST.md records pending hardware acceptance. No absolute compatibility claim is made.
+
+---
+
+# Historical validation — 1.1.9
 
 30 October 2026. versionName 1.1.9, versionCode 119; UserService 9 unchanged. Existing release key retained.
 
