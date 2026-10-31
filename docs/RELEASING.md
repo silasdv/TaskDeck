@@ -17,3 +17,7 @@ Updates over 1.0/signed 1.1 builds retain settings. Earlier 0.x debug builds req
 2.1 is a local update, versionCode 210, UserService 9, existing key. It does not modify the published v2.0 release. Package APK/AAB, clean source and hashes after gates; no new GitHub publication is implied.
 
 2.2 is local, versionCode 220, UserService 9; same key. Include Ko-fi artwork notice. GitHub 2.0 is unchanged.
+
+## Local 2.3
+
+Version 2.3 / code 230, UserService 9. Same package, permissions and signing key. 182 tests pass; lint 0 errors/33 warnings; release APK/AAB pass. Package a source archive and SHA-256 sums. No GitHub publication is authorized by this local update request.

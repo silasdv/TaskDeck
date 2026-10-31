@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.3 — unreleased
+
+- Group Dock style into Dock / Background and Icons within the same screen. Rename Size to Dock Size.
+- Hide Background Shape when Background Color is None, preserve the saved shape, and prevent that hidden shape from affecting icon sizing or focus geometry.
+- Add a Dock Layout heading and centered icon-over-caption layout choices. Add captions to icon shapes and styles; remove the redundant Follow Accent control and fixed-box explanation.
+- Compact and center Swap sides; top-align content panels and leave consistent gaps around preview controls and the Dock.
+- Center Dock artwork inside its background while retaining clear running/current indicators.
+- Keep App icon style eight dp below the accent palette and support controller navigation from the palette into style choices.
+- Migrate the old accent override to the explicit Accent Color style when appropriate.
+
 ## 2.2 — unreleased
 
 - Rebuild Dock style as four balanced columns on wide handhelds, or a two-by-two form in portrait. No scrolling is needed in the tested 640x360 dp maximum-size landscape case. Larger screens get larger targets and sample artwork. Style/Swap sides, Size/Icon size, background and icon appearance each have a clear area. Gaps and choice sizes are symmetric.

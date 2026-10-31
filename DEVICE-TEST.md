@@ -184,3 +184,7 @@ The checks below require physical hardware and have not been executed here. Reco
 
 17. Settings > Controller > Button mapping: test all four label profiles, calibration with printed A/Cross, custom action assignment and conflict swaps. New bindings and vector labels must agree in the footer, dialogs and Settings navigation. D-pad/Android Back must remain usable during assignment. Reset preserves label style. Repeat after changing Android controller mode.
 18. Connection has a green checkmark only when connected, in every theme. Appearance includes Stay open after clearing; there is no Closing behavior category. Test feedback uses a bell icon. About shows 1.0, SilasDV and the optional external Ko-fi/GitHub links.
+
+## Local 2.3 follow-up
+
+Dock style groups Dock / Background and Icons on one screen. Under None, Background Shape is hidden and its previous value retained. Check restored focus, captions, compact spacing, centered icons and running indicators on RP6; verify palette-to-icon-style navigation with D-pad and stick. Automated layout checks passed, but physical acceptance is still required.

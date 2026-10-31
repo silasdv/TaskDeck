@@ -30,3 +30,7 @@ Dock app pages use the same 360 ms, after-layout transition as setup protection 
 2.1: Start opens Settings and is reserved; Back restores the originating setting. Protected badges sit above icons. Background previews are not forced-selected and swatches have contrast outlines. Main task icons and Dock icons offer monochrome, accent and glass looks. Known close failures get one fresh-identity-checked retry after 50 ms; uncertain/deadline/permission outcomes are not blindly replayed. Compact Dock panes retain scroll access rather than clipping controls. [Detailed local changes](docs/CHANGES-2.1.md).
 
 2.2 supersedes the 2.1 Dock layout/scaling: four compact areas (two-by-two on phones), independent icon/background shapes, None fill and fixed box dimensions. Visual app samples replace shape/look text choices. Appearance separates themes, three behavior toggles, unchanged accent swatches, then App icon style. Dock behavior help follows focus/hover. Initial app loading fades and quick repeated Confirm retains focus. [Full redesign details](docs/CHANGES-2.2.md).
+
+## Local 2.3 follow-up
+
+Dock style groups Dock / Background and Icons on one screen. Under None, Background Shape is hidden and its previous value retained. Check restored focus, captions, compact spacing, centered icons and running indicators on RP6; verify palette-to-icon-style navigation with D-pad and stick. Automated layout checks passed, but physical acceptance is still required.

@@ -1,3 +1,15 @@
+# Validation — 2.3 local update
+
+31 October 2026. versionCode 230; UserService 9. Same signing key and permissions; public GitHub 2.0 unchanged.
+
+- testDebugUnitTest: **182 passed**, zero failures/errors/skips.
+- lintRelease: **0 errors, 33 warnings**, unchanged warning count.
+- assembleRelease and bundleRelease passed.
+
+New checks cover conditional Background Shape visibility and restored values, None geometry independence, panel/preview spacing, visual captions, artwork/indicator alignment, palette-to-style controller navigation, and legacy accent preference migration. These are simulated checks; physical RP6 appearance and controller behavior remain unverified.
+
+## Previous validation
+
 # Validation — 2.2 local update
 
 31 October 2026. versionCode 220; UserService 9, unchanged package/key/permissions. Public GitHub 2.0 is not modified.
