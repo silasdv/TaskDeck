@@ -2,11 +2,11 @@
 
 31 October 2026. versionName 2.0, versionCode 200; UserService 9. Explicit GitHub release authorization; public baseline verified as v1.0 / 57841d7. All local 1.1–1.1.12 changes are included in aggregate release notes/changelog.
 
-- testDebugUnitTest: **158 passed**, zero failures/errors/skips.
+- testDebugUnitTest: **159 passed**, zero failures/errors/skips.
 - lintRelease: **0 errors, 33 warnings**.
 - assembleRelease and bundleRelease passed.
 
-New scenarios cover Thumb/Floating/Shelf preview-pair visibility and working count limits; box/icon scale independence; 640x360 dp inner stepper containment and room for glyph/padding; background/shape selection persistence; bottom preview parity; Back to Dock style; controller movement between size columns and background grid/shape pane. Existing 50–160% preview, icon focus containment, setup, touch, controller, feedback-state and bulk-exit checks pass. The About version assertion now reads package metadata rather than assuming 1.1.
+New scenarios cover Thumb/Floating/Shelf preview-pair visibility and working count limits; box/icon scale independence; 640x360 dp inner stepper containment and room for glyph/padding; background/shape selection persistence; bottom preview parity; Back to Dock style; controller movement between size columns and background grid/shape pane. Existing 50–160% preview, icon focus containment, setup, touch, controller, feedback-state and bulk-exit checks pass. The empty-Dock action remains readable on white background and dark focus; chosen text meets 4.5:1 contrast against all background presets. The About version assertion now reads package metadata rather than assuming 1.1.
 
 APK certificate, non-debuggable manifest and permissions, AAB final-commit provenance, clean source archive and SHA-256 asset hashes are verified for publication. Physical RP6 masks/graphics, animation timing, drag reordering, firmware routing, Shizuku outcomes and notification presentation remain acceptance cases, not automated guarantees. No additional network permission is added.
 

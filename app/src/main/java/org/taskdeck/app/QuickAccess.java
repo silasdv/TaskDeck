@@ -18,6 +18,7 @@ public final class QuickAccess {
     public static void saveDisplayOrder(SharedPreferences prefs,List<String> order){save(prefs,storageOrder(prefs,order));}
     public static int size(SharedPreferences prefs){ return Math.max(50,Math.min(160,prefs.getInt("dockSize",100))); }
     public static int iconSize(SharedPreferences prefs){ return Math.max(50,Math.min(160,prefs.getInt("dockIconSize",100))); }
+    public static int foregroundColor(int background){return android.graphics.Color.luminance(background)>.179?android.graphics.Color.BLACK:android.graphics.Color.WHITE;}
     public static final String[] BACKGROUND_KEYS={"theme","black","graphite","white","blue","purple","green","red"};
     public static int backgroundColor(SharedPreferences prefs,DeckTheme theme){
         String key=prefs.getString("dockBackground","theme");

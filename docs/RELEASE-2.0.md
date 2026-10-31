@@ -9,7 +9,7 @@ This release collects **all changes since the last public release, 1.0**. The in
 - Touch hold-and-drag reorders shortcuts; controller task options offer move/remove. Swap sides exchanges Thumb corner groups while preserving odd group sizes and ordering. An empty Dock clearly offers Add apps to Dock.
 - Configure always-visible versus reveal-on-navigation behavior, focus magnification and running indicators. The former Android-style visibility popup/slider is now an explicit Always show Dock checkbox.
 - **Size and Icon size are separate**, each 50–160%. Changing box size does not change the stored icon scale. Large logos are limited to fit their box and magnified focus state. Existing local Dock sizes initialize the icon scale once to retain their appearance.
-- **Background color:** follow the app theme, black, graphite, white, blue, purple, green or red. **Icon shape:** Round or Square, including adaptive icon layers. These controls live in Dock appearance, reachable from Dock style & size.
+- **Background color:** follow the app theme, black, graphite, white, blue, purple, green or red. **Icon shape:** Round or Square, including adaptive icon layers. These controls live in Dock appearance, reachable from Dock style & size. The empty-Dock add action adapts its text to the background/focus fill for readable contrast.
 - The full-width preview occupies the actual bottom Dock position and uses real, distinct installed apps. Saved favorites appear first in their actual order/sides; alphabetical extras follow. Preview changes never change saved favorites. Thumb corners has left/right add/remove sample controls; Floating and Shelf have only one pair. Plus/minus appears once as an icon.
 
 ## App picker and task deck
@@ -49,7 +49,7 @@ Install over **1.0 or the signed 1.1 test builds**: the release key/package are 
 
 ## Validation and known limits
 
-**158 automated tests passed**, with zero failures/errors/skips. Release lint completed with **0 errors and 33 warnings**. Signed APK and App Bundle builds passed; APK signing identity and final-commit bundle metadata are checked before publishing. Automated checks use fake IPC and simulated layouts; they do not certify physical hardware.
+**159 automated tests passed**, with zero failures/errors/skips. Release lint completed with **0 errors and 33 warnings**. Signed APK and App Bundle builds passed; APK signing identity and final-commit bundle metadata are checked before publishing. Automated checks use fake IPC and simulated layouts; they do not certify physical hardware.
 
 Physical RP6 animation/drag behavior, controller firmware routing, Shizuku task reporting and visible RAM banners still need device acceptance. Current identifies the previous app reported by Android. Core processes stay protected; removing a task does not necessarily stop background services, and Android may reopen HOME. RAM figures are decimal MB and estimates, not a performance promise. Feedback is owned by the Application and can outlive Activity exit, but not force-stopping the whole process. TaskDeck does not replace Android's system swipe-up gesture or obtain live task screenshots.
 

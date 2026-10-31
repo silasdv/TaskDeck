@@ -14,6 +14,8 @@ The local 1.1–1.1.12 updates are included in this release. [Installation, vali
 - **Background color:** follow the app theme, black, graphite, white, blue, purple, green or red. **Icon shape:** Round or Square, including adaptive icon layers. These controls live in Dock appearance, reachable from Dock style & size.
 - The full-width preview occupies the actual bottom Dock position and uses real, distinct installed apps. Saved favorites appear first in their actual order/sides; alphabetical extras follow. Preview changes never change saved favorites. Thumb corners has left/right add/remove sample controls; Floating and Shelf have only one pair. Plus/minus appears once as an icon.
 
+- Empty-Dock add text adapts to the chosen background and focus fill; all color presets meet 4.5:1 text contrast.
+
 ### App picker and task deck
 
 - Searchable, alphabetical **eight-app grid**, two rows of four, without scrolling inside a page. Large, bounded icons and centered names; matching horizontal/vertical border gaps. A right-side icon strip shows Dock contents. Clear Dock and app-named added feedback are included.
@@ -47,7 +49,7 @@ The local 1.1–1.1.12 updates are included in this release. [Installation, vali
 ### Build and distribution
 
 - VersionCode 200, UserService 9; existing signing key/package retained for updates over 1.0 and signed 1.1 test builds.
-- 158 automated tests passed, release lint 0 errors/33 warnings, signed APK/AAB builds passed. Hardware acceptance remains open as documented.
+- 159 automated tests passed, release lint 0 errors/33 warnings, signed APK/AAB builds passed. Hardware acceptance remains open as documented.
 - English documentation, aggregate release notes, updated brand licenses/notices, clean source ZIP and SHA-256 checksums.
 
 ## 1.1.12
