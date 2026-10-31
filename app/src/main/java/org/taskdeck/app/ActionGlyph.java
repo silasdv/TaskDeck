@@ -25,6 +25,7 @@ public final class ActionGlyph extends Drawable {
         if(s.contains("shortcut")||s.contains("quick swap")) return "shortcut";
         if(s.equals("light")||s.equals("dark")||s.equals("oled")||s.equals("auto")) return "none";
         if(s.contains("add apps")) return "plus";
+        if(s.equals("dock / background")||s.equals("icons")) return "brush";
         if(s.contains("dock style")||s.contains("dock appearance")) return "brush";
         if(s.contains("dock behavior")) return "sliders";
         if(s.equals("dock")) return "grid";

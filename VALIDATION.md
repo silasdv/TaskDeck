@@ -1,3 +1,17 @@
+# Validation — 2.5 local update
+
+31 October 2026. VersionCode 250; UserService 9. Same signing key, package and permissions. Public GitHub 2.0 is unchanged.
+
+- testDebugUnitTest: **189 passed**, zero failures/errors/skips.
+- lintRelease: **0 errors, 33 warnings**, unchanged count.
+- assembleRelease and bundleRelease passed.
+
+Tests were updated from the retired combined page to the two sibling menus. Coverage includes menu-specific controls and persistent edits, Back returning to each originating Settings entry, both maximum-size landscape forms fitting without scroll at 640x360 dp, portrait stacking, bounded cards and matching compact steppers, conditional None shapes, live preview sizing and unchanged favorites. New checks traverse the D-pad focus graph to every enabled/shown button on both menus and distinguish a focused color name from the stable setting heading/saved color.
+
+These are simulated UI/state checks. Native RP6 visual/controller behavior, actual font rendering, touch targets and animation still require device acceptance. Wider Settings/setup consistency changes remain proposals in docs/UX-CONSISTENCY.md.
+
+## Previous validation
+
 # Validation — 2.4 local update
 
 31 October 2026. VersionCode 240; UserService 9. Same package/key/permissions; GitHub 2.0 remains unchanged.

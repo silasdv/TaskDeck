@@ -38,3 +38,7 @@ Dock style groups Dock / Background and Icons on one screen. Under None, Backgro
 ## Local 2.4 UX follow-up
 
 Dock settings use the available panel height, with equal-height groups, captioned neutral background forms and matching percentage steppers. A saved choice is filled with a tick; focus is outlined independently. None and Theme have distinct symbols and focused colors reveal a name. The live preview uses neutral app states and never saves sample-count changes. Back carries its mapped controller badge. On RP6, inspect focus versus saved selection in Light/Dark/OLED, color edges, caption readability, compact targets, maximum Dock size, panel fit and actual preview alignment. Compact targets do not establish a universal 48-dp touch-target guarantee; physical acceptance remains open.
+
+## Local 2.5 — split Dock settings
+
+Settings > Dock now has Add apps to Dock, Dock / Background, Icons and Dock behavior. The two customization menus retain their own edits and return focus to their originating Settings entry. Each has the actual-size preview at the bottom, bounded two-panel forms in landscape and stacked forms in portrait. Check both menus at maximum Dock/icon sizes on RP6, including D-pad/stick access to every control and Back, None hiding the shape section, focus name versus saved color, and live preview updates without changing favorites. Wider Settings/setup consistency proposals remain deferred in docs/UX-CONSISTENCY.md.

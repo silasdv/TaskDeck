@@ -25,3 +25,7 @@ Version 2.3 / code 230, UserService 9. Same package, permissions and signing key
 ## Local 2.4
 
 Version 2.4 / code 240, UserService 9, same package, permissions and signing key. Local Dock UX update; public GitHub 2.0 assets remain untouched. Source audit follow-ups are documented separately and are not implemented by this package.
+
+## Local 2.5
+
+Version 2.5 / code 250, UserService 9. Same package/key/permissions. 189 tests pass; lint 0 errors / 33 existing warnings; release APK/AAB pass. Two sibling Dock customization menus replace the combined screen. No GitHub publication is included.
