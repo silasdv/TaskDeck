@@ -13,3 +13,5 @@ Without signing material release artifacts are unsigned; do not distribute them 
 The user explicitly authorized GitHub v2.0 publication. The previous published release is v1.0; include every intervening local 1.1–1.1.12 change in docs/RELEASE-2.0.md and CHANGELOG.md. Push main and annotated tag without rewriting remote history. Upload assets to a draft, check body/tag/asset metadata and checksums, then publish as latest. Preserve v1.0 assets.
 
 Updates over 1.0/signed 1.1 builds retain settings. Earlier 0.x debug builds require uninstalling first, which clears app data. Real-device acceptance limits remain documented; tests do not certify physical RP6 compatibility. No Play Store publication is implied.
+
+2.1 is a local update, versionCode 210, UserService 9, existing key. It does not modify the published v2.0 release. Package APK/AAB, clean source and hashes after gates; no new GitHub publication is implied.

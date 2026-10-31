@@ -26,3 +26,5 @@ The final setup footer is compact and labels Previous page/Next page beside L1/R
 Dock app pages use the same 360 ms, after-layout transition as setup protection pages. Preview count buttons show one plus/minus icon beside Apps; size and Appearance choices have larger internal padding.
 
 2.0 adds independent icon scale, masked adaptive icons, Dock backgrounds and style-specific preview controls. [All changes since the public 1.0 release](docs/RELEASE-2.0.md).
+
+2.1: Start opens Settings and is reserved; Back restores the originating setting. Protected badges sit above icons. Background previews are not forced-selected and swatches have contrast outlines. Main task icons and Dock icons offer monochrome, accent and glass looks. Known close failures get one fresh-identity-checked retry after 50 ms; uncertain/deadline/permission outcomes are not blindly replayed. Compact Dock panes retain scroll access rather than clipping controls. [Detailed local changes](docs/CHANGES-2.1.md).

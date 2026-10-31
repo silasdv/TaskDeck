@@ -33,7 +33,7 @@ public final class ActionGlyph extends Drawable {
         if(s.equals("auto")) return "theme";
         if(s.contains("feedback")) return "notify";
         if(s.contains("ko-fi")) return "heart";
-        if(s.equals("switch apps")) return "switch";
+        if(s.equals("swap sides")||s.equals("switch apps")) return "switch";
         if(s.startsWith("ram")||s.equals("manage tasks")) return "grid";
         if(s.equals("permissions")) return "info";
         if(s.equals("appearance")) return "theme";

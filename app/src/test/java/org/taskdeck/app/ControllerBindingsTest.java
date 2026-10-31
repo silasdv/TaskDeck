@@ -26,4 +26,5 @@ public class ControllerBindingsTest {
         var p=prefs(); ControllerBindings.selectProfile(p,"playstation_swapped"); ControllerBindings.assign(p,"open",105); ControllerBindings.reset(p);
         assertEquals("playstation_swapped",ControllerBindings.profile(p)); assertEquals(97,ControllerBindings.code(p,"open")); assertEquals("Cross",ControllerBindings.badge(p,"open"));
     }
+    @Test public void startIsReservedAndLegacyMappingMovesToAnAvailableButton(){var p=prefs();ControllerBindings.assign(p,"open",97);p.edit().putInt("map_exit",108).putInt("map_page_next",108).commit();ControllerBindings.reserveStart(p);assertFalse(ControllerBindings.BUTTONS.contains(108));assertFalse(ControllerBindings.read(p).containsValue(108));assertEquals(6,new HashSet<>(ControllerBindings.read(p).values()).size());assertNotEquals(108,ControllerBindings.code(p,"page_next"));ControllerBindings.assign(p,"close",108);assertNotEquals(108,ControllerBindings.code(p,"close"));}
 }

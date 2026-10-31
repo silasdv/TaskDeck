@@ -8,10 +8,11 @@ public final class ControllerBindings {
     public static final String[] ACTIONS={"open","exit","close","clear","others","options"};
     public static final int[] DEFAULTS={96,97,99,100,103,109};
     public static final String[] NAMES={"Open app","Exit menu","Close app","Close all","Close all but current","App options"};
-    public static final List<Integer> BUTTONS=List.of(96,97,99,100,102,103,104,105,106,107,108,109);
+    public static final List<Integer> BUTTONS=List.of(96,97,99,100,102,103,104,105,106,107,109);
     public static final String[] PAGE_ACTIONS={"page_previous","page_next"};
     public static boolean paging(String action){ return Arrays.asList(PAGE_ACTIONS).contains(action); }
     private ControllerBindings(){}
+    public static void reserveStart(SharedPreferences p){Map<String,Integer> values=read(p);Set<Integer> used=new HashSet<>(values.values());used.remove(108);boolean changed=false;for(int i=0;i<ACTIONS.length;i++)if(values.get(ACTIONS[i])==108){int fallback=p.getBoolean("swapped",false)?swapped(DEFAULTS[i]):DEFAULTS[i];if(used.contains(fallback))for(int candidate:BUTTONS)if(!used.contains(candidate)){fallback=candidate;break;}values.put(ACTIONS[i],fallback);used.add(fallback);changed=true;}if(changed)save(p,values);for(String action:PAGE_ACTIONS)if(p.getInt("map_"+action,0)==108){String other=action.equals("page_previous")?"page_next":"page_previous";int fallback=action.equals("page_previous")?102:103;for(int candidate:BUTTONS)if(candidate!=code(p,"open")&&candidate!=code(p,"exit")&&candidate!=code(p,other)){fallback=candidate;break;}p.edit().putInt("map_"+action,fallback).apply();}}
     public static int swapped(int code){ switch(code){ case 96:return 97; case 97:return 96; case 99:return 100; case 100:return 99; default:return code; } }
     public static int confirm(SharedPreferences p){ return p.getBoolean("swapped",false)?97:96; }
     public static int back(SharedPreferences p){ return p.getBoolean("swapped",false)?96:97; }

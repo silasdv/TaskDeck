@@ -1,4 +1,4 @@
-# TaskDeck user flow — 2.0
+# TaskDeck user flow — 2.1
 
 ## Setup
 
@@ -18,7 +18,7 @@ Tasks Up → Refresh → toolbar; Tasks Right → RAM details. RAM Up → Settin
 
 Use Dock consistently. Add-app selection has eight alphabetical tiles in two rows of four, search, paging, Clear Dock and an icon-only strip of selected apps on the right. Image layers sit above the buttons. Adding an app gives an app-named toast. A picker page needs no scrolling.
 
-Style choices are three equal-size vertical controls: Thumb corners, Floating, Shelf. Compact migrates to Floating. Size and Icon size are independent 50–160% controls; icons are capped to fit their box and focus highlight. Thumb corners supports Swap sides and touch-hold dragging. Thumb corners has left/right plus/minus controls; Floating and Shelf have one pair above the bottom preview; preview edits do not change saved apps. Dock appearance offers eight background choices and Round/Square icon masks; Follow theme is the default. Always show Dock is a compact touch/Confirm checkbox. Off reveals the Dock on navigation/tap; it is not transparency. Internal menus use TaskDeck panels; system permission interfaces remain Android/Shizuku-owned.
+Style choices are three equal-size vertical controls: Thumb corners, Floating, Shelf. Compact migrates to Floating. Size and Icon size are independent 50–160% controls; boxes grow as needed to fit logos, magnification and visible indicators. Thumb corners supports Swap sides and touch-hold dragging. Thumb corners has left/right plus/minus controls; Floating and Shelf have one pair above the bottom preview; preview edits do not change saved apps. Dock style includes eight background choices, Round/Square/Squircle masks, four icon looks and Follow accent color inline; Follow theme is the default. Always show Dock is a compact touch/Confirm checkbox. Off reveals the Dock on navigation/tap; it is not transparency. Internal menus use TaskDeck panels; system permission interfaces remain Android/Shizuku-owned.
 
 ## Limits
 
@@ -33,3 +33,5 @@ The final setup footer is compact and labels Previous page/Next page beside L1/R
 Dock app pages use the same 360 ms, after-layout transition as setup protection pages. Preview count buttons show one plus/minus icon beside Apps; size and Appearance choices have larger internal padding.
 
 2.0 adds independent icon scale, masked adaptive icons, Dock backgrounds and style-specific preview controls. [All changes since the public 1.0 release](docs/RELEASE-2.0.md).
+
+2.1: Start opens Settings and is reserved; Back restores the originating setting. Protected badges sit above icons. Background previews are not forced-selected and swatches have contrast outlines. Main task icons and Dock icons offer monochrome, accent and glass looks. Known close failures get one fresh-identity-checked retry after 50 ms; uncertain/deadline/permission outcomes are not blindly replayed. Compact Dock panes retain scroll access rather than clipping controls. [Detailed local changes](docs/CHANGES-2.1.md).

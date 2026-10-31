@@ -1,3 +1,19 @@
+# Validation — 2.1 local update
+
+31 October 2026. versionCode 210; UserService 9, unchanged package/key/permissions. GitHub 2.0 remains unchanged.
+
+- testDebugUnitTest: **168 passed**, zero failures/errors/skips.
+- lintRelease: **0 errors, 33 warnings**.
+- assembleRelease and bundleRelease passed.
+
+New regressions cover Start opening Settings without finishing, reserved Start migration, Back restoring originating content selection, inline controls and reachable Swap sides, icon-size growth from 110 to 160%, matching squircle focus and unobscured indicator strip, non-forced preview focus, outlined swatches, saved Dock/task icon looks and accent checkbox, protected badge placement/spacing, exactly one transient close retry, permanent failure stopping after two attempts, no transport/protection replay and already-absent tasks confirmed without another command. Existing 640/800dp layout, large-font text containment, accent palette, setup, input and privacy-related state tests pass. Old assumptions about centered indicator-free logos, the removed submenu, toggle wording and size shrink below icon safety floors were updated to the new requested behavior.
+
+On compact screens the Dock panes scroll; on larger screens all controls fit alongside each other. Glass is a gradient-based icon treatment, not an Apple/system blur implementation. Simulated tests inspect geometry/state/drawable configuration; they do not certify native pixels, RP6 masks, frame timing, haptics, controller firmware, Shizuku close results or notifications. See DEVICE-TEST.md.
+
+Signed APK/AAB, final-commit bundle metadata, archive contents and hashes are checked when packaging. Existing GitHub v2.0 assets are not replaced.
+
+---
+
 # Validation — 2.0
 
 31 October 2026. versionName 2.0, versionCode 200; UserService 9. Explicit GitHub release authorization; public baseline verified as v1.0 / 57841d7. All local 1.1–1.1.12 changes are included in aggregate release notes/changelog.

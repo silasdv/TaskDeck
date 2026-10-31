@@ -2,7 +2,7 @@
 
 **A controller-first Android task manager for gaming handhelds, with full touch support.**
 
-TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **2.0**, Android 10+, using Shizuku.
+TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **2.1** (local update), Android 10+, using Shizuku.
 
 [Full 2.0 release notes: every change since 1.0](docs/RELEASE-2.0.md) · [Changelog](CHANGELOG.md)
 
@@ -65,7 +65,7 @@ Pin launchable apps with Select or touch long-press on a task card. Add installe
 
 **Thumb corners is the default.** Choose Thumb corners, Floating or Shelf using equal-size, left-aligned vertical choices. A full-width bottom preview uses real installed apps: saved Dock apps in their order/sides first, then alphabetical extras. Preview edits never change saved favorites. Thumb corners has independent left/right add/remove sample controls; Floating and Shelf have one pair. Count buttons use one plus/minus icon, without duplicate signs in the text.
 
-Dock **Size** and **Icon size** are independent **50–160%** settings beside one another. Size changes the boxes; Icon size changes logos, capped to fit their box and focus magnification. Existing local Dock sizes initialize icon scale once on upgrade. In **Dock appearance**, choose background color (follow theme, black, graphite, white, blue, purple, green, red) and Round/Square icons, with adaptive layers masked to match. The preview uses the same renderer/settings as the main Dock.
+Dock **Size** and **Icon size** are independent **50–160%** settings beside one another. Size sets a minimum box size; Icon size changes logos, with boxes growing when needed to fit the chosen logo scale, focus and the indicator strip. Existing local Dock sizes initialize icon scale once on upgrade. Directly in **Dock style & size**, choose background color (follow theme, black, graphite, white, blue, purple, green, red) and Round/Square/Squircle icons, with adaptive layers masked to match. Original, B&W, Accent and Glass looks are available, with Follow accent color. Appearance offers the same four looks for main task icons. The preview uses the same renderer/settings as the main Dock.
 
 Thumb corners separates favorites into bottom-left/right groups with individual bubbles and independent overflow scrolling. **Swap sides** exchanges groups, including odd counts. Touch-hold and drag reorders apps. An empty Dock offers **+ Add apps to Dock**. Always show Dock is a checkbox; off reveals it on navigation/tap. Old Compact choices migrate to Floating. Automatic app theme follows Android; the Dock follows it unless a background override is chosen.
 
@@ -144,3 +144,5 @@ On the final protection page, swipe or move the D-pad past an edge to page horiz
 The final setup footer is compact and labels Previous page/Next page beside L1/R1. Start/Options is written in its badge. Page motion starts after layout over 360 ms, with canceled/stale transforms reset. Dock style texts share a left start with more padding. Record actions use Record icons; RAM uses a chip, Swap sides opposing arrows, and layout/download controls their own brand marks.
 
 Dock app pages use the same 360 ms, after-layout transition as setup protection pages. Preview count buttons show one plus/minus icon beside Apps; size and Appearance choices have larger internal padding.
+
+[2.1 local changes](docs/CHANGES-2.1.md): inline Dock customization, mask-matched focus, 160% icons, Start Settings hint/reservation, restored submenu focus, protected badges and one identity-checked close retry. The previous public GitHub release remains 2.0. Compact Dock panes scroll only when content cannot fit. Glass is a stylized icon highlight.

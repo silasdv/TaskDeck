@@ -1,3 +1,13 @@
+# 2.1 physical acceptance
+
+- Inline Dock controls: Swap sides reachable by D-pad/stick and touch; compact size buttons do not overlap. Verify low-height pane scrolling and portrait focus.
+- Source preview cards unselected, Current green; background swatches have contrasting outlines in Light/Dark/OLED.
+- Round/Square/Squircle masks and matching highlights; Original/B&W/Accent/Glass and Follow accent color. Compare actual native icon detail/edges, including adaptive icons.
+- Icon size 110 to 160 visibly grows, while box/focus fits and running/current dots remain visible. Minimum box size may expand to fit icons.
+- Main task icon looks; protected/current lock badges above icons with matching gaps, including dense layouts.
+- Start opens Settings (does not close Activity), hint visible; existing Start mappings migrate. Setup Start/chord semantics unchanged. Back returns to the originating setting button.
+- Known transient close failure gets one extra attempt after 50 ms, then feedback; no retry after uncertain transport, protection change, interruption or deadline. Validate true Shizuku/firmware results with disposable app state.
+
 # 2.0 release acceptance
 
 - Thumb corners: two preview-count pairs; Floating/Shelf: one, with correct add/remove limits.
