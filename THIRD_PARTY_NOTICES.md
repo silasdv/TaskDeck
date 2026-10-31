@@ -1,5 +1,7 @@
 # Third-party notices
 
+PlayStation and Google Play icon paths are from [Simple Icons](https://github.com/simple-icons/simple-icons), icons/playstation.svg and icons/googleplay.svg, retrieved 31 October 2026 and converted to Android vectors. Upstream [CC0 license](https://github.com/simple-icons/simple-icons/blob/develop/LICENSE.md). Sony/Google trademarks identify layout/download targets without implying endorsement.
+
 Shizuku API and provider, version 13.1.5: https://github.com/RikkaApps/Shizuku-API
 
 MIT License

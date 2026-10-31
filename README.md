@@ -2,7 +2,7 @@
 
 **A controller-first Android task manager for gaming handhelds, with full touch support.**
 
-TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **1.1.10**, Android 10+, using Shizuku.
+TaskDeck by **SilasDV** lets you open, close and protect real Android tasks without wrestling with touch-only Overview controls. Version **1.1.11**, Android 10+, using Shizuku.
 
 ## Vibecoded
 
@@ -37,7 +37,7 @@ Closing is immediate, with no confirmation dialog. Use disposable app state for 
 
 Android 10+ and **Shizuku 13+** are required. Root is not required. Android 11+ can start Shizuku with wireless debugging; Android 10 needs its documented computer setup. Firmware permissions vary.
 
-1. Download the signed APK from the supplied local release package (see [public Releases](https://github.com/silasdv/TaskDeck/releases) for published versions) and install it. **Earlier 0.x test builds used a different key: uninstall one first, after noting your settings/mappings. Uninstalling clears app data.** Version 1.1.10 uses the same dedicated release key as 1.0 and installs over it, retaining settings.
+1. Download the signed APK from the supplied local release package (see [public Releases](https://github.com/silasdv/TaskDeck/releases) for published versions) and install it. **Earlier 0.x test builds used a different key: uninstall one first, after noting your settings/mappings. Uninstalling clears app data.** Version 1.1.11 uses the same dedicated release key as 1.0 and installs over it, retaining settings.
 2. Install Shizuku from its [official download page](https://shizuku.rikka.app/download/) and follow the [official setup guide](https://shizuku.rikka.app/guide/setup/). Pairing is not the same as starting Shizuku. Without root, start it again after reboot.
 3. Setup has five unnested pages: Permissions, Controller, Shortcuts, Appearance and App protection. Shizuku connection is required. Shortcut-service access is required to record hotkeys; notifications are optional. L1/R1 navigate.
 4. Controller calibration and both shortcut recordings stay inline. Hold and release a chord to save; completed deck and Quick Swap Apps recordings show checkmarks. Appearance includes accent selection and optional close vibration. Protection lets users choose locks. Completion draws for 800 ms and opens the deck after roughly 950 ms total. Settings > About > Redo Setup preserves configuration.
@@ -134,3 +134,5 @@ UserService version 9 refreshes the revised launcher policy. VIBRATE supports op
 Picker icon/name groups are centered using measured text layout; border gaps match across rows and columns. Setup offers direct Google Play and GitHub Shizuku downloads with adjacent Required/Optional reasons. Right from setup themes enters Accent Colors and Left returns. Protection uses separate app-page arrows, leaving only one setup L1/R1 pair. About actions are stacked vertically.
 
 On the final protection page, swipe or move the D-pad past an edge to page horizontally. L1/R1 page apps, B returns, and Start finishes setup. Footer badges are larger. Setup Appearance Down reaches both full-size On/Off actions. Close All during a successful refresh runs once after the fresh list, rather than discarding the input. Semantic icons replace generic gears; theme icons are omitted. Official GitHub/Shizuku assets identify their links.
+
+The final setup footer is compact and labels Previous page/Next page beside L1/R1. Start/Options is written in its badge. Page motion starts after layout over 360 ms, with canceled/stale transforms reset. Dock style texts share a left start with more padding. Record actions use Record icons; RAM uses a chip, Swap sides opposing arrows, and layout/download controls their own brand marks.

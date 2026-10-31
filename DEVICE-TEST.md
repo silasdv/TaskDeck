@@ -1,3 +1,12 @@
+# 1.1.11 physical acceptance
+
+- Compare first and later protection transitions; check slower motion, no initial jump/flash and stable focus during rapid paging.
+- Compact Previous/Finish controls, labeled L1/R1 page hints and written Start/Options badge; narrow-screen fit.
+- Dock style labels have one left start and more side padding; Swap sides has a swap icon.
+- Recognizable PlayStation/store/GitHub marks, Record icons, circular redo arrow and memory-chip RAM icon.
+
+Native RP6 visual/animation acceptance remains pending.
+
 # 1.1.10 physical acceptance
 
 - Setup themes Down reaches Stay open after clearing, then Vibrate on close; both On/Off actions readable and touch/controller operated.

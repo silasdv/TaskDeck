@@ -1,3 +1,11 @@
+# 1.1.11
+
+- Restore Record icons for calibration, recording and Configure shortcuts; use PlayStation/Google Play/GitHub marks for their targets.
+- Redraw redo arrow and add memory-chip RAM/Swap sides icons.
+- Start page motion after layout with a slower 360 ms transition and stale-start protection.
+- Compact final footer with labeled page hints and text Start/Options badge.
+- Add side padding and left-aligned Dock style texts.
+
 # 1.1.10
 
 - Fix setup themes Down navigation to both full-size appearance actions; unify close vibration as an On/Off toggle.

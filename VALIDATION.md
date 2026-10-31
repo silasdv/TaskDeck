@@ -1,4 +1,18 @@
-# Validation — 1.1.10
+# Validation — 1.1.11
+
+31 October 2026. versionName 1.1.11, versionCode 121; UserService 9 unchanged. Existing release key retained.
+
+- testDebugUnitTest: **155 passed**, zero failures/errors/skips.
+- lintRelease: **0 errors, 33 warnings**.
+- assembleRelease and bundleRelease: passed.
+
+New checks cover Record/brand/RAM icon routing, download/layout vector types, compact footer height and labels, Start text-badge mode, equal Dock style text starts/padding and Swap icon. Animation checks dispatch pre-draw after layout for first and subsequent pages, verify 360 ms duration and settled alpha/translation. Existing input, close-exit, portrait fit and persistence checks pass.
+
+These simulated checks do not certify native RP6 frame timing or visual feel. Physical rendering, firmware, Shizuku, haptics and notification acceptance remain in DEVICE-TEST.md. No absolute compatibility claim is made.
+
+---
+
+# Historical validation — 1.1.10
 
 31 October 2026. versionName 1.1.10, versionCode 120; UserService 9 unchanged. Existing release key retained.
 

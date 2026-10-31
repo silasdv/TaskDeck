@@ -35,3 +35,5 @@ Version 1.1.8 uses versionCode 118, UserService 9 and the existing release key. 
 Version 1.1.9 uses versionCode 119, UserService 9 and the existing release key. Assets are prepared locally.
 
 Version 1.1.10 uses versionCode 120, UserService 9 and the existing key. Include official brand assets and their notices/license in clean source archives. Local packaging is separate from publication.
+
+Version 1.1.11 uses versionCode 121, UserService 9 and the existing key. Include updated asset notices.

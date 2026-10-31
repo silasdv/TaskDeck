@@ -1,4 +1,4 @@
-# Usability review — TaskDeck 1.1.10
+# Usability review — TaskDeck 1.1.11
 
 Source/layout review using [Nielsen’s ten usability heuristics](https://www.nngroup.com/articles/ten-usability-heuristics/); not a physical RP6 certification or moderated user study.
 
@@ -20,3 +20,5 @@ Completion drawing is slower (800 ms), with about 150 ms further hold. Ordinary 
 Reported geometry/navigation fixes: measured centered picker groups and equal gaps, single setup shoulder pair, explicit accent cross-pane routes, adjacent permission reasons/downloads and faithful saved-Dock previews.
 
 Setup now routes themes Down through both appearance actions. Final protection uses horizontal edge/swipe navigation; shoulders page apps while B/Start handle setup. Footer frames are larger and fit narrow screens. Semantic and official-brand icons improve recognition. An explicit bulk input is retained during successful refresh, and the exit preference applies even when some closes fail. No automatic destructive retry is introduced.
+
+The final setup footer is compact and labels Previous page/Next page beside L1/R1. Start/Options is written in its badge. Page motion starts after layout over 360 ms, with canceled/stale transforms reset. Dock style texts share a left start with more padding. Record actions use Record icons; RAM uses a chip, Swap sides opposing arrows, and layout/download controls their own brand marks.

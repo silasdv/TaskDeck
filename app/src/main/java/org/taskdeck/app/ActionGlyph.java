@@ -13,9 +13,12 @@ public final class ActionGlyph extends Drawable {
         if(s.equals("search")) return "search";
         if(s.startsWith("unlock")) return "unlock";
         if(s.startsWith("clear")) return "all";
-        if(s.contains("calibrate confirm")) return "dpad";
+        if(s.contains("calibrate confirm")||s.startsWith("record")||s.equals("configure shortcuts")) return "record";
+        if(s.contains("playstation")) return "playstation";
+        if(s.equals("google play")) return "googleplay";
+        if(s.startsWith("ram")) return "ramchip";
         if(s.equals("about")) return "info";
-        if(s.equals("github")) return "github";
+        if(s.startsWith("github")) return "github";
         if(s.startsWith("redo")||s.startsWith("reset setup")) return "undo";
         if(s.contains("shizuku")||s.contains("connect")||s.contains("authorize")) return "shizuku";
         if(s.contains("button mapping")||s.equals("controller")||s.startsWith("a/b/x/y")||s.startsWith("playstation")) return "dpad";
@@ -72,7 +75,8 @@ public final class ActionGlyph extends Drawable {
             case "unlock": canvas.drawRoundRect(5,10,19,22,2,2,p);canvas.drawArc(new RectF(8,1,18,13),180,190,false,p);canvas.drawCircle(12,16,1,p);break;
             case "dpad": {Path cross=new Path();cross.moveTo(8,2);cross.lineTo(16,2);cross.lineTo(16,8);cross.lineTo(22,8);cross.lineTo(22,16);cross.lineTo(16,16);cross.lineTo(16,22);cross.lineTo(8,22);cross.lineTo(8,16);cross.lineTo(2,16);cross.lineTo(2,8);cross.lineTo(8,8);cross.close();canvas.drawPath(cross,p);break;}
             case "shortcut": canvas.drawOval(new RectF(2,3,14,13),p);canvas.drawOval(new RectF(10,11,22,21),p);canvas.drawLine(8,9,16,15,p);break;
-            case "undo": canvas.drawArc(new RectF(4,5,21,22),205,290,false,p);line(canvas,p,3,12,4,5,11,6);break;
+            case "undo": {Path loop=new Path();loop.moveTo(5,8);loop.cubicTo(8,3,15,3,19,7);loop.cubicTo(23,12,20,20,14,21);loop.cubicTo(8,22,3,18,3,13);canvas.drawPath(loop,p);line(canvas,p,5,2,5,8,11,8);break;}
+            case "ramchip": canvas.drawRoundRect(6,6,18,18,2,2,p);canvas.drawRect(9,9,15,15,p);for(int n=8;n<=16;n+=4){canvas.drawLine(n,3,n,6,p);canvas.drawLine(n,18,n,21,p);canvas.drawLine(3,n,6,n,p);canvas.drawLine(18,n,21,n,p);}break;
             case "brush": canvas.drawLine(8,15,19,3,p);canvas.drawLine(12,18,22,6,p);canvas.drawLine(19,3,22,6,p);Path brush=new Path();brush.moveTo(8,14);brush.cubicTo(2,13,7,20,2,22);brush.cubicTo(9,24,15,20,12,17);brush.close();canvas.drawPath(brush,p);break;
             case "sliders": for(int x=5;x<=19;x+=7){canvas.drawLine(x,3,x,21,p);canvas.drawCircle(x,x==12?8:16,2,p);}break;
             case "pin": { Path bookmark=new Path(); bookmark.moveTo(6,3); bookmark.lineTo(18,3); bookmark.lineTo(18,21); bookmark.lineTo(12,16); bookmark.lineTo(6,21); bookmark.close(); canvas.drawPath(bookmark,p); break; }
