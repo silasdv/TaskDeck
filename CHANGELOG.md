@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.0.1 — local update, 2026-11-01
+
+- Dock shortcuts recover from obsolete recent-task IDs or activities after app updates by resolving the current package launcher when reopening a recent task fails.
+- Observe package installation/replacement/change/removal while the activity is alive, invalidate affected icon state, and use a fresh launcher for affected dock entries without restarting TaskDeck. Updates received in the background are applied on resume.
+- Preserve saved dock pins/order when an app is temporarily unavailable; keep the menu usable if neither launch path succeeds.
+- Preserve successful recent-task restoration for unchanged apps.
+
 ## 3.0 — 2026-10-31
 
 First public release after 2.0, including all local 2.1–2.7 milestones. [Complete changes, fixes and upgrade notes](docs/RELEASE-3.0.md).

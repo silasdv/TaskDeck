@@ -25,7 +25,7 @@ public class SwitcherActivityTest {
         @Override public void recoverBackend(String reason){ recoveries++; super.recoverBackend(reason); }
     }
     static class FakeBackend extends ITaskBackend.Stub {
-        final List<Integer> removed=new ArrayList<>(); final Set<String> protectedApps=new HashSet<>(),unlockedLaunchers=new HashSet<>(); final List<Boolean> launcherStops=new ArrayList<>(); int opened=-1,reads,directSwitches,taskCount=20,entryId=7; boolean extra,many,feedbackBeforeOpen,duplicates; int failId=-1,unverifiedId=-1,transientFailId=-1,lateSuccessId=-1,busyId=-1;boolean unknownRemove;final Map<Integer,Integer> closeAttempts=new HashMap<>();
+        final List<Integer> removed=new ArrayList<>(); final Set<String> protectedApps=new HashSet<>(),unlockedLaunchers=new HashSet<>(); final List<Boolean> launcherStops=new ArrayList<>(); boolean failOpen; int opened=-1,reads,directSwitches,taskCount=20,entryId=7; boolean extra,many,feedbackBeforeOpen,duplicates; int failId=-1,unverifiedId=-1,transientFailId=-1,lateSuccessId=-1,busyId=-1;boolean unknownRemove;final Map<Integer,Integer> closeAttempts=new HashMap<>();
         java.util.concurrent.CountDownLatch memoryStarted,releaseMemory,tasksStarted,releaseTasks;
         public synchronized void setProtectedPackages(String[] names){ protectedApps.clear(); protectedApps.addAll(Arrays.asList(names)); }
         public synchronized void setUnlockedLaunchers(String[] names){ unlockedLaunchers.clear(); unlockedLaunchers.addAll(Arrays.asList(names)); }
@@ -51,7 +51,7 @@ public class SwitcherActivityTest {
                 return new JSONObject().put("uid",2000).put("sdk",33).put("tasks",rows).put("backgroundApps",new JSONArray().put(new JSONObject().put("label","Test Keyboard").put("pssKb",51200).put("reason","Protected service"))).put("previousTask",new JSONObject().put("id",entryId).put("package","test.game"+entryId)).toString();
             } catch(JSONException e){ throw new RuntimeException(e); }
         }
-        public synchronized String openTask(int id,String name){ feedbackBeforeOpen=!((TaskDeckApp)RuntimeEnvironment.getApplication()).lastMemoryMessage.isEmpty(); opened=id; return "{}"; }
+        public synchronized String openTask(int id,String name){ feedbackBeforeOpen=!((TaskDeckApp)RuntimeEnvironment.getApplication()).lastMemoryMessage.isEmpty(); opened=id; return failOpen?"{\"error\":\"Old task activity no longer exists\"}":"{}"; }
         public synchronized String removeTask(int id,String name){ int attempts=closeAttempts.merge(id,1,Integer::sum);if(unknownRemove)throw new IllegalStateException("Connection outcome unknown");if(id==busyId)return "{\"error\":\"Android was busy\"}";if(id==transientFailId&&attempts==1)return "{\"error\":\"Android was busy\"}";if(id==lateSuccessId){removed.add(id);return "{\"verified\":false}";} if(id==9||protectedApps.contains(name)||id==failId) return "{\"error\":\"Permission denied for test app\"}"; if(id==unverifiedId) return "{\"verified\":false,\"warning\":\"Still reported by Android\"}"; removed.add(id); return "{\"verified\":true}"; }
         public void destroy(){}
     }
@@ -67,6 +67,37 @@ public class SwitcherActivityTest {
     private Object field(SwitcherActivity activity,String name) throws Exception { var f=SwitcherActivity.class.getDeclaredField(name); f.setAccessible(true); return f.get(activity); }
     private void end(org.robolectric.android.controller.ActivityController<SwitcherActivity> controller){ controller.pause().stop().destroy(); app.worker.shutdownNow(); app.memoryWorker.shutdownNow(); }
 
+    @Test public void dockFallsBackToCurrentLauncherWhenUpdatedAppsRecentTaskFails() throws Exception {
+        var controller=start();var activity=controller.get();installLauncher("test.game7","Updated game");backend.failOpen=true;
+        QuickAccess.save(app.getSharedPreferences("settings",0),List.of("test.game7","test.game8"));
+        invoke(activity,"launchFavorite",new Class[]{String.class},"test.game7");drain();
+        var launched=Shadows.shadowOf(activity).getNextStartedActivity();assertNotNull(launched);
+        assertEquals("test.game7.Main",launched.getComponent().getClassName());assertEquals(7,backend.opened);assertTrue(activity.isFinishing());
+        assertEquals(List.of("test.game7","test.game8"),QuickAccess.read(app.getSharedPreferences("settings",0)));end(controller);
+    }
+    @Test public void workingDockRecentTaskDoesNotLaunchAnotherActivity() throws Exception {
+        var controller=start();var activity=controller.get();installLauncher("test.game7","Game");
+        invoke(activity,"launchFavorite",new Class[]{String.class},"test.game7");drain();
+        assertEquals(7,backend.opened);assertTrue(activity.isFinishing());assertNull(Shadows.shadowOf(activity).getNextStartedActivity());end(controller);
+    }
+    @Test public void failedDockFallbackKeepsShortcutAndMenuAvailable() throws Exception {
+        var controller=start();var activity=controller.get();backend.failOpen=true;
+        QuickAccess.save(app.getSharedPreferences("settings",0),List.of("test.game7"));
+        invoke(activity,"launchFavorite",new Class[]{String.class},"test.game7");drain();
+        assertFalse(activity.isFinishing());assertFalse((Boolean)field(activity,"busy"));assertTrue(field(activity,"feedback").toString().contains("kept"));
+        assertEquals(List.of("test.game7"),QuickAccess.read(app.getSharedPreferences("settings",0)));end(controller);
+    }
+    @Test public void packageReplacementInvalidatesDockStateWithoutRestartingActivity() throws Exception {
+        var controller=start();var activity=controller.get();installLauncher("test.game7","Updated game");
+        QuickAccess.save(app.getSharedPreferences("settings",0),List.of("test.game7"));
+        var cache=(android.util.LruCache<String,android.graphics.drawable.Drawable.ConstantState>)field(activity,"iconCache");
+        cache.put("test.game7",new android.graphics.drawable.ColorDrawable(android.graphics.Color.RED).getConstantState());
+        controller.pause();app.sendBroadcast(new android.content.Intent(android.content.Intent.ACTION_PACKAGE_REPLACED,android.net.Uri.parse("package:test.game7")));
+        Shadows.shadowOf(Looper.getMainLooper()).idle();assertNull(cache.get("test.game7"));
+        controller.resume();drain();invoke(activity,"launchFavorite",new Class[]{String.class},"test.game7");drain();
+        assertEquals(-1,backend.opened);assertEquals("test.game7.Main",Shadows.shadowOf(activity).getNextStartedActivity().getComponent().getClassName());
+        assertEquals(List.of("test.game7"),QuickAccess.read(app.getSharedPreferences("settings",0)));end(controller);
+    }
     @Test public void dpadSelectsAndOpensSecondCardWithoutTouchOrNativeListFocus() throws Exception {
         var controller=start(); SwitcherActivity activity=controller.get(); activity.getWindow().getDecorView().clearFocus();
         press(activity,KeyEvent.KEYCODE_DPAD_RIGHT);
@@ -128,6 +159,7 @@ public class SwitcherActivityTest {
         }
         assertTrue("Only "+visible+" cards visible",visible>2); end(controller);
     }
+    private void invoke(SwitcherActivity activity,String name,Class<?>[] types,Object... args) throws Exception {var method=SwitcherActivity.class.getDeclaredMethod(name,types);method.setAccessible(true);method.invoke(activity,args);}
     private void invoke(SwitcherActivity activity,String name) throws Exception { var method=SwitcherActivity.class.getDeclaredMethod(name); method.setAccessible(true); method.invoke(activity); }
     private void show(SwitcherActivity activity,SwitcherActivity.Page page) throws Exception { var method=SwitcherActivity.class.getDeclaredMethod("show",SwitcherActivity.Page.class); method.setAccessible(true); method.invoke(activity,page); Shadows.shadowOf(Looper.getMainLooper()).idle(); }
     private android.widget.Button findButton(View view,String text){ if(view instanceof android.widget.Button && (text.equals(((android.widget.Button)view).getText().toString())||text.contentEquals(view.getContentDescription()==null?"":view.getContentDescription())||text.contentEquals(view.getTooltipText()==null?"":view.getTooltipText()))) return (android.widget.Button)view; if(view instanceof ViewGroup) for(int i=0;i<((ViewGroup)view).getChildCount();i++){ var found=findButton(((ViewGroup)view).getChildAt(i),text); if(found!=null) return found; } return null; }

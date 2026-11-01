@@ -1,3 +1,17 @@
+# Validation — 3.0.1 local update
+
+2026-11-01. VersionCode 301. This update has not been published to GitHub.
+
+- 220 tests passed, including four new dock-launch regressions: stale recent task → current launcher fallback, successful recent restoration without a second launch, unavailable launcher retaining the pin/menu, and package replacement while paused without restarting the activity.
+- Lint: 0 errors, 33 warnings. Signed release APK and App Bundle built using existing dependencies/toolchain.
+- Dock update events invalidate per-package icons and mark the package for a fresh launcher; saved favorites/order are not modified. A failed or expired recent-task reference also falls back when no broadcast was observed.
+- Package receiver is scoped to the activity lifetime and unregistered on destroy. Android 13+ uses a non-exported receiver for protected system package broadcasts.
+- Packaging verifies the original release signing key, version/permissions/release flags, source exclusions, final-commit AAB provenance and SHA-256 sums.
+
+Limits: regression tests simulate Android package replacement and backend responses. The precise user error and an actual RP6 app-install/update cycle were not captured here. Successful simulations do not establish OEM-specific behavior. No new permissions, external services or backend API changes are introduced.
+
+## Previous published validation
+
 # Validation — TaskDeck 3.0
 
 31 October 2026. versionCode **300**, UserService **9**, package `org.taskdeck.app`.

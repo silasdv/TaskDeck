@@ -110,16 +110,19 @@ public class SwitcherActivity extends Activity {
         if(state!=null){recordingQuickSwitch=state.getBoolean("recordingQuickSwap");inlineCapture=state.getBoolean("inlineCapture");inlineConfirm=state.getBoolean("inlineConfirm");}
         if(state!=null){memorySampleAt=state.getLong("memorySampleAt",-1);importPage=state.getInt("importPage",0);try{if(state.containsKey("pendingImport"))pendingImport=new JSONObject(state.getString("pendingImport"));}catch(JSONException ignored){}}
         if(state!=null&&state.getLong("undoUntil",0)>SystemClock.elapsedRealtime()){undoDock=state.getStringArrayList("undoDock");undoStyle=state.getString("undoStyle","thumb");undoSwap=state.getBoolean("undoSwap");undoUntil=state.getLong("undoUntil");main.postDelayed(undoExpiry,undoUntil-SystemClock.elapsedRealtime());}
+        IntentFilter packages=new IntentFilter();packages.addDataScheme("package");
+        for(String action:new String[]{Intent.ACTION_PACKAGE_ADDED,Intent.ACTION_PACKAGE_REMOVED,Intent.ACTION_PACKAGE_REPLACED,Intent.ACTION_PACKAGE_CHANGED})packages.addAction(action);
+        if(Build.VERSION.SDK_INT>=33)registerReceiver(packageUpdates,packages,Context.RECEIVER_NOT_EXPORTED);else registerReceiver(packageUpdates,packages);
         show(initial); if(initial==Page.PICKER) showPicker();
     }
     @Override public Object onRetainNonConfigurationInstance(){ return entryTask; }
     @Override public void onSaveInstanceState(Bundle out){ out.putString("page",page.name()); out.putInt("setupStep",setupStep); out.putInt("settingsCategory",settingsCategory); out.putInt("ramPage",ramPage); out.putString("pickerReturn",pickerReturn.name()); out.putBoolean("recordingQuickSwap",recordingQuickSwitch);out.putBoolean("inlineCapture",inlineCapture);out.putBoolean("inlineConfirm",inlineConfirm);if(undoDock!=null){out.putStringArrayList("undoDock",new ArrayList<>(undoDock));out.putString("undoStyle",undoStyle);out.putBoolean("undoSwap",undoSwap);out.putLong("undoUntil",undoUntil);}if(pendingImport!=null)out.putString("pendingImport",pendingImport.toString());out.putInt("importPage",importPage);out.putLong("memorySampleAt",memorySampleAt);super.onSaveInstanceState(out); }
     @Override protected void onResume(){
-        super.onResume(); TaskDeckApp.recordingShortcut=inlineCapture||inlineConfirm||page==Page.CHORD || page==Page.CONFIRM || page==Page.BIND;
+        super.onResume();resumed=true;if(packageUiDirty){renderDock();packageUiDirty=false;} TaskDeckApp.recordingShortcut=inlineCapture||inlineConfirm||page==Page.CHORD || page==Page.CONFIRM || page==Page.BIND;
         app.changed=this::connectionChanged; app.verifyLiveAccess(); if(page==Page.SETUP || page==Page.SETTINGS || page==Page.SHORTCUTS) show(page);main.removeCallbacks(ramTick);main.post(ramTick); updateStatus();
         if(app.backend!=null) refresh(); else app.connect(false);
     }
-    @Override protected void onPause(){main.removeCallbacks(ramTick); app.changed=null; TaskDeckApp.recordingShortcut=false; stopStick(); super.onPause(); }
+    @Override protected void onPause(){resumed=false;main.removeCallbacks(ramTick); app.changed=null; TaskDeckApp.recordingShortcut=false; stopStick(); super.onPause(); }
     @Override protected void onNewIntent(Intent intent){ super.onNewIntent(intent); setIntent(intent); if(intent.getBooleanExtra("controllerEntry",false)) controllerMode=true; resetSelection=true; captureEntry=true; entryTask=null; show(prefs().getBoolean("setupComplete",false)?Page.APPS:Page.SETUP); if(app.backend!=null) refresh(); }
     private void connectionChanged(){
         if(isFinishing() || isDestroyed()) return;
@@ -198,10 +201,42 @@ public class SwitcherActivity extends Activity {
         }); root.addView(dock,new LinearLayout.LayoutParams(-1,-2)); renderDock();
     }
     private void renderDock(){ if(dock==null||page!=Page.APPS) return; ((LinearLayout.LayoutParams)dock.getLayoutParams()).topMargin=dp(QuickAccess.read(prefs()).isEmpty()?DECK_GAP:DECK_GAP-4); dock.update(theme); if(dockZone&&controllerMode){ dockIndex=Math.max(0,Math.min(dock.items.size()-1,dockIndex)); dock.focusItem(dockIndex); } }
+    private final Set<String> changedDockPackages=new HashSet<>();
+    private boolean packageUiDirty,resumed;
+    private final BroadcastReceiver packageUpdates=new BroadcastReceiver(){
+        @Override public void onReceive(Context context,Intent event){
+            if(event.getData()==null || Intent.ACTION_PACKAGE_REMOVED.equals(event.getAction())&&event.getBooleanExtra(Intent.EXTRA_REPLACING,false))return;
+            String pkg=event.getData().getSchemeSpecificPart();if(pkg==null)return;
+            changedDockPackages.add(pkg);iconCache.remove(pkg);previewApps=null;packageUiDirty=true;
+            if(resumed&&!isDestroyed()&&!isFinishing()){
+                renderDock();packageUiDirty=false;
+                if(page==Page.APPS&&!busy)refresh();
+            }
+        }
+    };
+    @Override protected void onDestroy(){unregisterReceiver(packageUpdates);super.onDestroy();}
     private void launchFavorite(String pkg){
-        if(busy) return; if(app.backend!=null) for(JSONObject task:rawTasks) if(pkg.equals(task.optString("package"))){ openWindow(task); return; }
-        Intent intent=getPackageManager().getLaunchIntentForPackage(pkg); if(intent==null){ feedback="App is no longer installed or has no launchable screen. Select it to remove the shortcut."; updateStatus(); return; }
-        try { startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); finish(); } catch(RuntimeException denied){ feedback="Android could not open "+launchLabel(pkg); updateStatus(); }
+        if(busy) return;
+        if(changedDockPackages.contains(pkg)){launchFavoriteFresh(pkg);return;}
+        ITaskBackend backend=app.backend;
+        if(backend!=null) for(JSONObject task:rawTasks) if(pkg.equals(task.optString("package"))){
+            busy=true;
+            app.request("Open dock app",5000,()->new JSONObject(backend.openTask(task.optInt("id"),pkg)),result->{
+                busy=false;
+                if(isDestroyed()||isFinishing()) return;
+                if(!result.has("error")) finish(); else launchFavoriteFresh(pkg);
+            });
+            return;
+        }
+        launchFavoriteFresh(pkg);
+    }
+    private void launchFavoriteFresh(String pkg){
+        // Updates can invalidate a recent task's ID or launch activity. Never reuse its component here.
+        try {
+            Intent intent=getPackageManager().getLaunchIntentForPackage(pkg);
+            if(intent==null){ feedback="App is unavailable or has no launchable screen. Your Dock shortcut has been kept."; updateStatus(); return; }
+            startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); finish();
+        } catch(RuntimeException denied){ feedback="Android could not open "+launchLabel(pkg)+". Your Dock shortcut has been kept."; updateStatus(); }
     }
     private void pin(String pkg){
         if(!QuickAccess.read(prefs()).contains(pkg)&&getPackageManager().getLaunchIntentForPackage(pkg)==null){ feedback="This app has no launchable shortcut"; updateStatus(); return; }
