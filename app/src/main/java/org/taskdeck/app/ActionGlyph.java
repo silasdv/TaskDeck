@@ -72,6 +72,7 @@ public final class ActionGlyph extends Drawable {
         Paint p=new Paint(Paint.ANTI_ALIAS_FLAG); p.setColor(color); p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(2); p.setStrokeCap(Paint.Cap.ROUND); p.setStrokeJoin(Paint.Join.ROUND);
         switch(kind){
             case "none": break;
+            case "chevronDown": line(canvas,p,6,9,12,15,18,9);break;
             case "eye": canvas.drawOval(new RectF(2,6,22,18),p);canvas.drawCircle(12,12,3,p);break;
             case "activity": for(int x=5;x<=19;x+=7)canvas.drawCircle(x,12,2,p);break;
             case "search": canvas.drawCircle(10,10,6,p);canvas.drawLine(15,15,21,21,p);break;

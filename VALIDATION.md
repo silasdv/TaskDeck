@@ -1,3 +1,17 @@
+# Validation — 3.1.1 corrected visual implementation
+
+2026-11-02. VersionCode 311. Not published to GitHub.
+
+- Final `testDebugUnitTest`: 221 passed; 0 failures/errors/skips. Final lintRelease: 0 errors, 32 warnings. assembleRelease passed offline with existing dependencies.
+- Reviewed native Android-view raster renders in dark and light themes at 960×540, with six task cards, Current and Protected badges, simulated physical/app RAM and a six-entry Thumb Corners Dock. Fixture icons/package labels are illustrative and do not represent installed hardware apps.
+- Confirmed icon-only Refresh, selected-value dropdowns with separated vector chevrons, A Open, black face-button letters, 8 dp badge/text spacing, Start divider, larger proportional artwork, fine glass edges and a centered icon/name/RAM core (within 5 dp in the reference fixture).
+- Confirmed two Memory panels, readable used/total hierarchy, app-icon/name/bar/value rows and no toolbar/task or task/Memory separator. Existing green current/running Dock treatment retained.
+- Existing smaller-landscape/portrait layouts, controller navigation/mapping, setup, font scaling, total-physical-RAM graph scale, bulk-close operations and app-update launch recovery regressions passed. A dedicated 640 dp toolbar check verifies all six actions remain visible in one row.
+- Snapshot traversal explicitly settles/re-measures the view tree; native-render fixtures are separate from generated concept artwork. Physical RP6 visual/controller behavior remains unverified.
+- No new permissions or dependencies. The final APK retains the existing release signing configuration.
+
+## Previous local validation
+
 # Validation — 3.1 local visual refresh
 
 2026-11-02. VersionCode 310. Not published to GitHub.

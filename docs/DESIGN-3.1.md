@@ -20,3 +20,24 @@ No settings navigation redesign. Dock/background and Icons remain separate pages
 ## Verification boundaries
 
 Automated controller/input regressions and native Android-view rendering provide local evidence. This is not physical RP6 confirmation; OEM font rendering, controller navigation feel and the final appearance still need device review. No new permission, network dependency or publication is introduced.
+
+## 3.1.1 correction and visual acceptance review
+
+Compared the generated landscape reference with native Android-view renders, rather than accepting layout bounds alone. Fixture package names/icons/RAM values are test data, not device evidence.
+
+| Requirement | Reviewed result |
+| --- | --- |
+| Icon-only Refresh | Rounded rectangle; accessible name and tooltip retained |
+| Selected-value Sort/View | Independent vector chevrons, consistent insets, anchored menus |
+| Controller labels | A Open restored; black letters on existing face colors; 8 dp badge/text gap |
+| Start separation | Short subtle vertical rule immediately before the shared Start/Settings control |
+| Main section separators | No horizontal toolbar border or vertical task/Memory border |
+| Task artwork | Scales with card width/height; no former 88 dp ceiling |
+| Core alignment | Icon/name/RAM core centered within 5 dp in the reviewed landscape fixture; badge displacement constrained by card padding |
+| Status badges | Current and Protected centered above artwork, with the existing status meanings |
+| Cards | Neutral dark surfaces, fine light-catching border, restrained focus tint |
+| Memory | Two panels, clear heading, stronger used-value hierarchy, aligned app rows and total-RAM-scale bars |
+| Dock | Individual bubbles, centered artwork, retained green/current and running indicators |
+| Settings | Existing styles/navigation retained; Dock preview surfaces match main follow-theme bubbles |
+
+The final dark/light fixtures use six tasks and six Dock entries. Local layout/controller regressions cover smaller landscape sizes, portrait, font scaling and alternate views. The raster fixtures do not establish physical RP6 rendering, controller feel or OEM behavior. No public release was performed.

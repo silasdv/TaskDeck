@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.1.1 — local visual correction, 2026-11-02
+
+- Restore A Open; use black face-button letters, more badge/text spacing and a subtle divider before Start. Retain mapped controller symbols, SNES colors and touch actions.
+- Refine icon-only Refresh and selected-value dropdowns with separate vector chevrons and responsive toolbar spacing.
+- Replace the small fixed icon cap with proportional task artwork; optically center the icon/name/RAM core while keeping Current and Protected above it with safe card padding.
+- Balance Fit all against empty cells, including a 3×2 layout for six tasks, and use quieter neutral dark surfaces, lighter focus tint and a finer glass edge.
+- Add a Memory heading and compact controller-accessible details action. System usage has a stronger numeric hierarchy; app rows align icons, names, bars and MB values. Bars retain total-physical-RAM scaling and no longer depend on platform drawable insets.
+- Retain current/running Dock states and existing settings styling. Follow-theme Dock previews use the same neutral surfaces as the main screen.
+- Validate the actual Android-view rendering with populated task cards, selected/protected states, RAM fixtures and a six-app Dock in dark and light themes.
+
 ## 3.1 — local redesign, 2026-11-02
 
 - Compact main toolbar: icon-only Refresh, selected-value Sort/View dropdowns anchored to their buttons, and background-free controller hints retaining the existing badge colors and mappings.

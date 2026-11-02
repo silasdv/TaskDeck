@@ -23,7 +23,7 @@ public final class ControllerBadge extends Drawable {
             return;
         }
         if(shoulder) c.drawRoundRect(new RectF(b.left+1,b.top+1,b.right-1,b.bottom-1),5,5,p); else c.drawCircle(x,y,b.height()/2f-1,p);
-        p.setStyle(Paint.Style.FILL); p.setColor(shoulder?neutral:Color.WHITE);
+        p.setStyle(Paint.Style.FILL); p.setColor(shoulder?neutral:Color.BLACK);
         if(key.equals("Start")&&!textLabel){ Path play=new Path(); play.moveTo(x-r*.6f,y-r); play.lineTo(x+r,y); play.lineTo(x-r*.6f,y+r); play.close(); c.drawPath(play,p); return; }
         if(key.equals("Options")&&!textLabel){ p.setStyle(Paint.Style.STROKE); for(int i=-1;i<=1;i++) c.drawLine(x-r,y+i*r*.65f,x+r,y+i*r*.65f,p); return; }
         p.setTypeface(Typeface.DEFAULT_BOLD); p.setTextSize(b.height()*(shoulder?(key.length()>2?.33f:.44f):.57f)); p.setTextAlign(Paint.Align.CENTER); c.drawText(key,x,y-(p.ascent()+p.descent())/2,p);
