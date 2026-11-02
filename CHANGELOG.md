@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.1 — local redesign, 2026-11-02
+
+- Compact main toolbar: icon-only Refresh, selected-value Sort/View dropdowns anchored to their buttons, and background-free controller hints retaining the existing badge colors and mappings.
+- Task cards use subtle tonal surfaces with a fine light-catching edge, larger app icons, smaller names and concise MB RAM labels.
+- A reserved status row aligns Current and Protected above app icons, including both badges when applicable. Current colors and running indicators remain unchanged.
+- Balanced Fit all columns, two separate RAM panels and quieter Dock bubble surfaces; no full-height or toolbar divider lines.
+- Dock/background and icon settings retain their separate pages with roomier previews on larger screens and compact arrangements on short screens.
+- Includes the 3.0.1 dock-launch recovery fix for updated apps.
+
 ## 3.0.1 — local update, 2026-11-01
 
 - Dock shortcuts recover from obsolete recent-task IDs or activities after app updates by resolving the current package launcher when reopening a recent task fails.

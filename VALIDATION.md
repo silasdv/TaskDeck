@@ -1,3 +1,17 @@
+# Validation — 3.1 local visual refresh
+
+2026-11-02. VersionCode 310. Not published to GitHub.
+
+- 221 tests passed, zero failures/errors/skips. The additional native-graphics render checks icon-only Refresh, selected-value dropdowns, bounded larger task icons, reserved badge rows and rendered task surfaces.
+- Existing controller navigation, setup, settings, compact/portrait dock layouts, font scaling, bulk close and package-update launch recovery regressions passed.
+- Lint: 0 errors, 34 warnings (one additional English-only SetTextI18n warning for the selected sort caption).
+- Release APK built and signed with the existing release configuration. No new permissions or runtime dependencies.
+- Native Android-view rendering inspected at 960×540 with simulated tasks: aligned Current/Protected badges, balanced task grid and separate RAM surfaces. Placeholder icons and simulated RAM are not device evidence.
+
+Limits: no physical RP6 visual/input review was performed. The generated design is a visual reference; existing themes, current-app colors, running indicators and controller glyphs are intentionally retained.
+
+## Previous local validation
+
 # Validation — 3.0.1 local update
 
 2026-11-01. VersionCode 301. This update has not been published to GitHub.
