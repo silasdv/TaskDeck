@@ -1,3 +1,15 @@
+# Validation — 3.1.2 local refinement
+
+2026-11-02. VersionCode 312. Not published to GitHub.
+
+- 221 tests passed; zero failures/errors/skips. lintRelease: 0 errors, 32 warnings. assembleRelease passed offline.
+- Native Android-view snapshots reviewed in Dark, Light and OLED with populated tasks, RAM and Dock fixtures. Confirmed the restored View RAM Details button, icon-free RAM rows, enlarged filled START label, monochrome face/shoulder badges and readable Light inversion.
+- OLED task fills are nearly black without a fill gradient; fine light-catching edges remain. Dark retains its gradient.
+- The compact-landscape RAM test confirms at least one app chart and correct total-physical-RAM scaling with the restored action. Existing controller focus, navigation, single-row toolbar and settings regressions passed.
+- No new permission or dependency. RP6/OEM rendering and physical input remain outside this local validation; preview app icons and RAM values are fixtures.
+
+## Previous local validation
+
 # Validation — 3.1.1 corrected visual implementation
 
 2026-11-02. VersionCode 311. Not published to GitHub.

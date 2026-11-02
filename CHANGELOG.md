@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.1.2 — local visual refinement, 2026-11-02
+
+- Restore the visible, controller-accessible View RAM Details button beneath the Memory panels.
+- Remove app icons from the App RAM list; retain aligned names, total-RAM-scaled bars and MB values. Place sample age beside the section title and reduce short-screen insets to retain chart space.
+- Render controller badges monochromatically: white face circles and filled shoulder/Start labels with black lettering in dark/OLED themes; invert fills, lettering and PlayStation symbols in Light.
+- Enlarge and clarify the filled START label beside the Settings glyph while retaining compact-display spacing.
+- Use nearly black, flat task-card fills in OLED while preserving the light-catching edge and current/focus outlines. Dark retains its tonal gradient.
+
 ## 3.1.1 — local visual correction, 2026-11-02
 
 - Restore A Open; use black face-button letters, more badge/text spacing and a subtle divider before Start. Retain mapped controller symbols, SNES colors and touch actions.

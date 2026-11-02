@@ -16,8 +16,8 @@ final class TaskCardSurface extends Drawable {
     @Override public void draw(Canvas canvas){
         RectF box=new RectF(getBounds());float stroke=(focused?2:1)*density;box.inset(stroke/2,stroke/2);float radius=12*density;
         boolean light=Color.luminance(theme.background)>.5;
-        int base=focused?mix(theme.surface,theme.accent,.075f):theme.surface;
-        paint.setStyle(Paint.Style.FILL);paint.setShader(new LinearGradient(0,box.top,0,Math.max(box.top+1,box.bottom),mix(base,light?Color.BLACK:Color.WHITE,light?.01f:.055f),base,Shader.TileMode.CLAMP));
+        boolean oled=theme.background==Color.BLACK;int surface=oled?Color.rgb(4,5,7):theme.surface;int base=focused?mix(surface,theme.accent,oled?.025f:.075f):surface;
+        paint.setStyle(Paint.Style.FILL);paint.setColor(base);paint.setShader(oled?null:new LinearGradient(0,box.top,0,Math.max(box.top+1,box.bottom),mix(base,light?Color.BLACK:Color.WHITE,light?.01f:.055f),base,Shader.TileMode.CLAMP));
         canvas.drawRoundRect(box,radius,radius,paint);
         paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(stroke);
         if(focused||current){paint.setShader(null);paint.setColor(focused?theme.accent:currentColor);}

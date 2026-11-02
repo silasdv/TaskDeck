@@ -41,3 +41,7 @@ Compared the generated landscape reference with native Android-view renders, rat
 | Settings | Existing styles/navigation retained; Dock preview surfaces match main follow-theme bubbles |
 
 The final dark/light fixtures use six tasks and six Dock entries. Local layout/controller regressions cover smaller landscape sizes, portrait, font scaling and alternate views. The raster fixtures do not establish physical RP6 rendering, controller feel or OEM behavior. No public release was performed.
+
+## 3.1.2 user revision
+
+This supersedes the 3.1.1 colored-badge and icon-based RAM-details decisions. Controller labels now use theme-inverted monochrome fills; the visible View RAM Details button is restored under the two Memory panels, and App RAM rows contain no application artwork. START has a wider, readable filled label beside the Settings glyph. OLED task fills are almost black without a fill gradient; the fine edge remains. Dark keeps its gradient. Native reference fixtures cover Dark, Light and OLED, including the restored button and populated app-RAM list.
