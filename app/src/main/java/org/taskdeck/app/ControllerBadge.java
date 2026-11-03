@@ -27,7 +27,7 @@ public final class ControllerBadge extends Drawable {
         p.setStyle(Paint.Style.FILL); p.setColor(letterColor);
         if(key.equals("Start")&&!textLabel){ Path play=new Path(); play.moveTo(x-r*.6f,y-r); play.lineTo(x+r,y); play.lineTo(x-r*.6f,y+r); play.close(); c.drawPath(play,p); return; }
         if(key.equals("Options")&&!textLabel){ p.setStyle(Paint.Style.STROKE); for(int i=-1;i<=1;i++) c.drawLine(x-r,y+i*r*.65f,x+r,y+i*r*.65f,p); return; }
-        p.setTypeface(Typeface.DEFAULT_BOLD); p.setTextSize(key.equals("Start")?Math.min(b.height()*.48f,b.width()/3.4f):b.height()*(shoulder?(key.length()>2?.33f:.44f):.57f)); p.setTextAlign(Paint.Align.CENTER); c.drawText(key.equals("Start")?"START":key,x,y-(p.ascent()+p.descent())/2,p);
+        p.setTypeface(Typeface.DEFAULT_BOLD); p.setTextSize(key.equals("Start")?b.height()*.396f:b.height()*(shoulder?(key.length()>2?.33f:.44f):.57f)); p.setTextAlign(Paint.Align.CENTER); c.drawText(key.equals("Start")?"START":key,x,y-(p.ascent()+p.descent())/2,p);
     }
     @Override public void setAlpha(int alpha){}
     @Override public void setColorFilter(ColorFilter filter){}
