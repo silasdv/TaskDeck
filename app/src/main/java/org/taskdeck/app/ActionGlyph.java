@@ -17,6 +17,7 @@ public final class ActionGlyph extends Drawable {
         if(s.contains("playstation")) return "playstation";
         if(s.equals("google play")) return "googleplay";
         if(s.startsWith("ram")) return "ramchip";
+        if(s.equals("settings backup")) return "diskette";
         if(s.equals("about")) return "info";
         if(s.startsWith("github")) return "github";
         if(s.startsWith("redo")||s.startsWith("reset setup")) return "undo";
@@ -79,6 +80,19 @@ public final class ActionGlyph extends Drawable {
             case "unlock": canvas.drawRoundRect(5,10,19,22,2,2,p);canvas.drawArc(new RectF(8,1,18,13),180,190,false,p);canvas.drawCircle(12,16,1,p);break;
             case "dpad": {Path cross=new Path();cross.moveTo(8,2);cross.lineTo(16,2);cross.lineTo(16,8);cross.lineTo(22,8);cross.lineTo(22,16);cross.lineTo(16,16);cross.lineTo(16,22);cross.lineTo(8,22);cross.lineTo(8,16);cross.lineTo(2,16);cross.lineTo(2,8);cross.lineTo(8,8);cross.close();canvas.drawPath(cross,p);break;}
             case "shortcut": canvas.drawOval(new RectF(2,3,14,13),p);canvas.drawOval(new RectF(10,11,22,21),p);canvas.drawLine(8,9,16,15,p);break;
+            case "diskette": {
+                Path outline=new Path();
+                outline.moveTo(4,3);
+                outline.lineTo(16,3);
+                outline.lineTo(21,8);
+                outline.lineTo(21,21);
+                outline.lineTo(4,21);
+                outline.close();
+                canvas.drawPath(outline,p);
+                canvas.drawRect(8,3,16,9,p);
+                canvas.drawRect(8,13,17,21,p);
+                break;
+            }
             case "undo": {Path loop=new Path();loop.moveTo(5,8);loop.cubicTo(8,3,15,3,19,7);loop.cubicTo(23,12,20,20,14,21);loop.cubicTo(8,22,3,18,3,13);canvas.drawPath(loop,p);line(canvas,p,5,2,5,8,11,8);break;}
             case "ramchip": canvas.drawRoundRect(6,6,18,18,2,2,p);canvas.drawRect(9,9,15,15,p);for(int n=8;n<=16;n+=4){canvas.drawLine(n,3,n,6,p);canvas.drawLine(n,18,n,21,p);canvas.drawLine(3,n,6,n,p);canvas.drawLine(18,n,21,n,p);}break;
             case "brush": canvas.drawLine(8,15,19,3,p);canvas.drawLine(12,18,22,6,p);canvas.drawLine(19,3,22,6,p);Path brush=new Path();brush.moveTo(8,14);brush.cubicTo(2,13,7,20,2,22);brush.cubicTo(9,24,15,20,12,17);brush.close();canvas.drawPath(brush,p);break;

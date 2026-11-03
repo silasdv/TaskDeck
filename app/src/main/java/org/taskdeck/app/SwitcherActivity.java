@@ -178,6 +178,8 @@ public class SwitcherActivity extends Activity {
         String printed=ControllerBindings.badge(prefs(),actionFor(key)); Button b=compactButton(button(parent,label,action));
         Drawable badge=new ControllerBadge(printed,theme.text); boolean shoulder=printed.length()>1&&!ControllerBadge.symbol(printed); badge.setBounds(0,0,dp(shoulder?25:22),dp(shoulder?18:22));
         b.setCompoundDrawables(badge,null,null,null); b.setCompoundDrawablePadding(dp(8)); StateListDrawable legend=new StateListDrawable();GradientDrawable focus=rounded(theme.selected);focus.setStroke(dp(2),theme.accent);legend.addState(new int[]{android.R.attr.state_activated},focus);legend.addState(new int[]{android.R.attr.state_focused},focus);legend.addState(new int[]{android.R.attr.state_pressed},focus);legend.addState(new int[]{},new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));b.setBackground(legend);b.setStateListAnimator(null);b.setElevation(0); String full=ControllerBindings.NAMES[Arrays.asList(ControllerBindings.ACTIONS).indexOf(actionFor(key))]; b.setTag("action:"+actionFor(key));b.setContentDescription(printed+": "+full); b.setTooltipText(full); b.setTextSize(key.equals("R1")?10:11); b.setPadding(dp(shoulder?9:7),dp(4),dp(shoulder?9:7),dp(4)); b.setSingleLine(true);
+        int labelWidth = (int) Math.ceil(b.getPaint().measureText(label));
+        b.setMinWidth(labelWidth + b.getCompoundPaddingLeft() + b.getCompoundPaddingRight());
         ((LinearLayout.LayoutParams)b.getLayoutParams()).rightMargin=dp(compactToolbar()?4:DECK_GAP); return b;
     }
 
@@ -397,7 +399,7 @@ public class SwitcherActivity extends Activity {
         Button view=compactButton(button(header,viewCaption(),this::viewMenu));view.setTooltipText("View");view.setContentDescription("App view: "+viewCaption());view.setCompoundDrawables(null,null,null,null);view.setPadding(dp(compactToolbar()?8:14),dp(4),dp(compactToolbar()?8:14),dp(4));toolbarSurface(view);dropdownArrow(view,92);tools.add(view);
         View gap=new View(this);LinearLayout.LayoutParams dividerSize=new LinearLayout.LayoutParams(dp(1),dp(20));dividerSize.leftMargin=dp(compactToolbar()?4:8);dividerSize.rightMargin=dp(compactToolbar()?4:8);header.addView(gap,dividerSize);gap.setContentDescription("Controller actions");
         HorizontalScrollView hints=new HorizontalScrollView(this); hints.setHorizontalScrollBarEnabled(false); hints.setFillViewport(true); header.addView(hints,new LinearLayout.LayoutParams(0,-2,1));
-        LinearLayout actions=new LinearLayout(this); actions.setGravity(Gravity.CENTER_VERTICAL|Gravity.RIGHT); hints.addView(actions);
+        LinearLayout actions=new LinearLayout(this); actions.setGravity(Gravity.CENTER_VERTICAL|Gravity.START); hints.addView(actions);
         controllerButton(actions,"A","Open","open",this::openSelected); controllerButton(actions,"B","Exit","exit",this::finish); controllerButton(actions,"X","Close","close",this::closeSelected);
         controllerButton(actions,"Y","Close all","all",this::closeAll); controllerButton(actions,"R1","Close all but current","others",this::closeOthers); controllerButton(actions,"Select","Options","options",this::protectSelected);
         View startDivider=new View(this);startDivider.setBackgroundColor(theme.muted);startDivider.setAlpha(.35f);startDivider.setTag("startDivider");LinearLayout.LayoutParams startGap=new LinearLayout.LayoutParams(dp(1),dp(20));startGap.setMargins(dp(compactToolbar()?4:6),0,dp(compactToolbar()?6:10),0);header.addView(startDivider,startGap);
@@ -638,7 +640,7 @@ public class SwitcherActivity extends Activity {
             smallNote(formInfo,"Notifications "+(notificationsAllowed("ram_results")?"allowed":"blocked")+". Android controls banner visibility.");
         } else {
             TextView about=smallNote(formInfo,"TaskDeck "+versionName()+" · SilasDV · MIT\nVibecoded with OpenAI Codex.");about.setPadding(0,0,0,0);
-            aboutLink(formInfo,"Ko-fi","ko-fi.com/silasdv","https://ko-fi.com/silasdv");aboutLink(formInfo,"GitHub","github.com/silasdv/TaskDeck","https://github.com/silasdv/TaskDeck"); AppearanceOptions utilities=new AppearanceOptions(this);formInfo.addView(utilities,new LinearLayout.LayoutParams(-1,-2));button(utilities,"Settings backup",()->show(Page.BACKUP)); button(utilities,"Redo Setup",()->{prefs().edit().putBoolean("setupComplete",false).apply();setupStep=0;inlineCapture=false;inlineConfirm=false;show(Page.SETUP);});
+            aboutLink(formInfo,"Ko-fi","ko-fi.com/silasdv","https://ko-fi.com/silasdv");aboutLink(formInfo,"GitHub","github.com/silasdv/TaskDeck","https://github.com/silasdv/TaskDeck"); LinearLayout utilities=new LinearLayout(this); utilities.setOrientation(LinearLayout.VERTICAL); formInfo.addView(utilities); compactButton(button(utilities,"Settings backup",()->show(Page.BACKUP))); compactButton(button(utilities,"Redo Setup",()->{prefs().edit().putBoolean("setupComplete",false).apply();setupStep=0;inlineCapture=false;inlineConfirm=false;show(Page.SETUP);}));
         }
     }
     private void aboutLink(LinearLayout parent,String label,String display,String url){LinearLayout line=row(parent);Button action=button(line,label,()->openLink(url));action.setPadding(dp(12),dp(4),dp(12),dp(4));TextView target=note(line,display);target.setTextSize(12);target.setPadding(dp(10),0,0,0);target.setLayoutParams(new LinearLayout.LayoutParams(0,-2,1));}
@@ -648,7 +650,9 @@ public class SwitcherActivity extends Activity {
         for(int i=0;i<ControllerBindings.ACTIONS.length;i++){
             String action=ControllerBindings.ACTIONS[i],name=ControllerBindings.NAMES[i];
             Button option=compactButton(button(formMain,name,()->{ bindingAction=action; show(Page.BIND); })); String printed=ControllerBindings.badge(prefs(),action);
-            Drawable badge=new ControllerBadge(printed,theme.text); badge.setBounds(0,0,dp(printed.length()>1&&!ControllerBadge.symbol(printed)?30:22),dp(22)); option.setCompoundDrawables(badge,null,null,null); option.setContentDescription(name+": "+printed); option.setLayoutParams(new LinearLayout.LayoutParams(-1,dp(40)));
+            Drawable badge=new ControllerBadge(printed,theme.text); badge.setBounds(0,0,dp(printed.length()>1&&!ControllerBadge.symbol(printed)?30:22),dp(22)); option.setCompoundDrawables(badge,null,null,null); option.setContentDescription(name+": "+printed);
+            option.setLayoutParams(new LinearLayout.LayoutParams(-1,dp(40)));
+            option.setBackground(new InsetDrawable(option.getBackground(),0,dp(3),0,dp(3)));
         }
         Button profile=button(formInfo,"Labels: "+profileName(),this::profileMenu); Drawable chevron=new ActionGlyph("next",theme.text); chevron.setBounds(0,0,dp(16),dp(16)); profile.setCompoundDrawables(null,null,chevron,null);
         button(formInfo,"Calibrate confirm button",()->show(Page.CONFIRM));
