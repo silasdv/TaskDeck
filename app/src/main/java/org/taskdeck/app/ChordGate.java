@@ -21,6 +21,12 @@ public final class ChordGate {
             if(swallowed.isEmpty()) consumed.remove(device);
             return captured?Result.CONSUME:Result.PASS;
         }
+        if(repeat==0 && (pressed.contains(key) || swallowed.contains(key))){
+            // A fresh press means Android did not deliver the previous release.
+            pressed.clear();
+            swallowed.remove(key);
+            latched.remove(device);
+        }
         if(swallowed.contains(key)) return Result.CONSUME;
         if(!enabled){ held.clear(); latched.clear(); return Result.PASS; }
         if(repeat>0) return Result.PASS;
@@ -30,5 +36,7 @@ public final class ChordGate {
         }
         return Result.PASS;
     }
-    public void clear(){ held.clear(); consumed.clear(); latched.clear(); }
+    /** Drop old chord state while still consuming releases for captured presses. */
+    public void resetHeldKeys(){ held.clear(); latched.clear(); }
+    public void clear(){ resetHeldKeys(); consumed.clear(); }
 }

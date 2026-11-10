@@ -21,6 +21,11 @@ public class TaskDeckApp extends Application {
     private int recoveryAttempts;
     private final java.util.concurrent.atomic.AtomicInteger pendingRequests=new java.util.concurrent.atomic.AtomicInteger();
     private final Handler main=new Handler(Looper.getMainLooper());
+    private final IBinder recordingOwner=new Binder();
+    private final SharedPreferences.OnSharedPreferenceChangeListener shortcutSettingsListener=(prefs,key)->{
+        if(HotkeyStateProvider.isShortcutPreference(key)) publishShortcutSettings(prefs);
+    };
+    private ResultReceiver pendingQuickSwap;
     private boolean binding,pendingPermissionRequest;
     private int connectionGeneration;
     private final Shizuku.UserServiceArgs args=new Shizuku.UserServiceArgs(new ComponentName("org.taskdeck.app",TaskBackend.class.getName()))
@@ -75,14 +80,30 @@ public class TaskDeckApp extends Application {
         status=manual?"Reconnecting Shizuku…":reason+" timed out. Reconnecting without repeating the action."; notifyChanged();
         if(recoveryAttempts++<1) main.postDelayed(()->connect(false),500); else { status="Repeated timeout. Open Connect to retry manually."; notifyChanged(); }
     }
-    public void quickSwitch(){
+    void quickSwitchFromShortcut(ResultReceiver reply){
+        if(reply==null) return;
+        if(backend!=null){ quickSwitch(reply); return; }
+        if(pendingQuickSwap!=null) return;
+        pendingQuickSwap=reply;
+        connect(false);
+        main.postDelayed(()->{
+            if(pendingQuickSwap!=reply) return;
+            pendingQuickSwap=null;
+            android.widget.Toast.makeText(this,"Connect TaskDeck to Shizuku first",android.widget.Toast.LENGTH_LONG).show();
+        },5000);
+    }
+
+    private void quickSwitch(ResultReceiver reply){
         if(pendingRequests.get()>0){ android.widget.Toast.makeText(this,"Wait for the current action to finish",android.widget.Toast.LENGTH_SHORT).show(); return; }
         ITaskBackend service=backend;
         if(service==null){ android.widget.Toast.makeText(this,"Connect TaskDeck to Shizuku first",android.widget.Toast.LENGTH_LONG).show(); connect(false); return; }
         request("Quick Swap Apps",5000,()->new JSONObject(service.switchPreviousTask()),result->{
             if(result.has("error")){ android.widget.Toast.makeText(this,result.optString("error"),android.widget.Toast.LENGTH_LONG).show(); return; }
-            if(result.optBoolean("home")) try { startActivity(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).setPackage(result.optString("package")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); }
-            catch(RuntimeException denied){ android.widget.Toast.makeText(this,"Android blocked the HOME switch",android.widget.Toast.LENGTH_LONG).show(); }
+            if(result.optBoolean("home")){
+                Bundle home=new Bundle();
+                home.putString("package",result.optString("package"));
+                reply.send(1,home);
+            }
         });
     }
     public void verifyRestart(ITaskBackend service,JSONObject task,int[] previous,long before){
@@ -100,6 +121,9 @@ public class TaskDeckApp extends Application {
                 if(generation!=connectionGeneration) return; binding=false; pendingPermissionRequest=false;
                 if(binder==null||!binder.isBinderAlive()){ disconnected("Task backend did not respond."); return; }
                 backend=ITaskBackend.Stub.asInterface(binder); status="Connected. Reading tasks…"; notifyChanged();
+                ResultReceiver reply=pendingQuickSwap;
+                pendingQuickSwap=null;
+                if(reply!=null) quickSwitch(reply);
             });
         }
         @Override public void onServiceDisconnected(ComponentName name) { main.post(()->{ if(generation==connectionGeneration) disconnected("Task backend disconnected. Reconnect to continue."); }); }
@@ -115,9 +139,46 @@ public class TaskDeckApp extends Application {
     });
     @Override public void onCreate() {
         super.onCreate();
+        if((getPackageName()+":hotkey").equals(Application.getProcessName())) return;
         android.content.SharedPreferences preferences=getSharedPreferences("settings",MODE_PRIVATE);
         if(!preferences.contains("shortcutChord")) preferences.edit().putBoolean("shortcutEnabled",false).apply();
+        preferences.registerOnSharedPreferenceChangeListener(shortcutSettingsListener);
+        if(preferences.contains("shortcutChord")||preferences.contains("quickSwitchChord")) publishShortcutSettings(preferences);
+        BroadcastReceiver hotkeyConnection=new BroadcastReceiver(){
+            @Override public void onReceive(Context context,Intent intent){
+                if(recordingShortcut) publishRecording();
+            }
+        };
+        IntentFilter connected=new IntentFilter(HotkeyStateProvider.CONNECTED);
+        if(Build.VERSION.SDK_INT>=33) registerReceiver(hotkeyConnection,connected,Context.RECEIVER_NOT_EXPORTED);
+        else registerReceiver(hotkeyConnection,connected,getPackageName()+".HOTKEY_INTERNAL",null);
         Shizuku.addBinderReceivedListenerSticky(received); Shizuku.addBinderDeadListener(dead); Shizuku.addRequestPermissionResultListener(permission);
+    }
+
+    private void publishShortcutSettings(SharedPreferences prefs){
+        Bundle values=new Bundle();
+        values.putString(HotkeyStateProvider.DECK_CHORD,prefs.getString(HotkeyStateProvider.DECK_CHORD,""));
+        values.putBoolean(HotkeyStateProvider.DECK_ENABLED,prefs.getBoolean(HotkeyStateProvider.DECK_ENABLED,false));
+        values.putString(HotkeyStateProvider.SWAP_CHORD,prefs.getString(HotkeyStateProvider.SWAP_CHORD,""));
+        values.putBoolean(HotkeyStateProvider.SWAP_ENABLED,prefs.getBoolean(HotkeyStateProvider.SWAP_ENABLED,false));
+        publishHotkeyState("configuration",values);
+    }
+
+    void setShortcutRecording(boolean recording){
+        if(recordingShortcut==recording) return;
+        recordingShortcut=recording;
+        publishRecording();
+    }
+
+    private void publishRecording(){
+        Bundle values=new Bundle();
+        values.putBinder("owner",recordingShortcut?recordingOwner:null);
+        publishHotkeyState("recording",values);
+    }
+
+    private void publishHotkeyState(String method,Bundle values){
+        try { HotkeyStateProvider.publish(this,method,values); }
+        catch(RuntimeException error){ android.util.Log.w("TaskDeckHotkey","Could not sync "+method,error); }
     }
     private void disconnected(String message) { connectionGeneration++; backend=null; binding=false; pendingPermissionRequest=false; status=message; notifyChanged(); }
     public void notifyChanged() { main.post(()->{ if(changed!=null) changed.run(); }); }

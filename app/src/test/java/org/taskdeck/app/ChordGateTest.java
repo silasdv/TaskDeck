@@ -4,6 +4,23 @@ import java.util.Set;
 import static org.junit.Assert.*;
 
 public class ChordGateTest {
+    @Test public void freshPressRecoversAfterMissingRelease(){
+        ChordGate gate=new ChordGate();
+        gate.configure(Set.of("1:10"));
+        assertEquals(ChordGate.Result.TRIGGER,gate.update(1,"1:10",true,0,true));
+        assertEquals(ChordGate.Result.TRIGGER,gate.update(1,"1:10",true,0,true));
+        assertEquals(ChordGate.Result.CONSUME,gate.update(1,"1:10",false,0,true));
+    }
+    @Test public void windowResetDropsStaleKeysAndKeepsCapturedReleaseBalanced(){
+        ChordGate gate=new ChordGate();
+        gate.configure(Set.of("1:10","2:20"));
+        gate.update(1,"1:10",true,0,true);
+        assertEquals(ChordGate.Result.TRIGGER,gate.update(1,"2:20",true,0,true));
+        gate.resetHeldKeys();
+        assertEquals(ChordGate.Result.CONSUME,gate.update(1,"2:20",false,0,true));
+        assertEquals(ChordGate.Result.PASS,gate.update(1,"2:20",true,0,true));
+        assertEquals(ChordGate.Result.TRIGGER,gate.update(1,"1:10",true,0,true));
+    }
     @Test public void partialChordsPassAndCompletingKeyHasBalancedDownUp(){
         ChordGate g=new ChordGate(); g.configure(Set.of("1:10","2:20"));
         assertEquals(ChordGate.Result.PASS,g.update(1,"1:10",true,0,true));

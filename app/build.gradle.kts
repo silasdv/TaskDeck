@@ -7,7 +7,7 @@ val releaseStore=signingValue("TASKDECK_KEYSTORE_PATH","storeFile")
 android {
     namespace = "org.taskdeck.app"
     compileSdk = 35
-    defaultConfig { applicationId = "org.taskdeck.app"; minSdk = 29; targetSdk = 35; versionCode = 401; versionName = "4.0.1" }
+    defaultConfig { applicationId = "org.taskdeck.app"; minSdk = 29; targetSdk = 35; versionCode = 403; versionName = "4.0.3" }
     buildFeatures { aidl = true }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     signingConfigs.getByName("debug") { storeFile = rootProject.file(".local/debug.keystore") }

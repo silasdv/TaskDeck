@@ -369,7 +369,7 @@ public class SwitcherActivityTest {
         press(activity,KeyEvent.KEYCODE_BUTTON_START); assertEquals(SwitcherActivity.Page.SHORTCUTS,field(activity,"page")); assertEquals(2,ShortcutKeys.decode(app.getSharedPreferences("settings",0).getString("quickSwitchChord","")).size()); end(controller);
     }
     @Test public void quickSwitchUsesBackendWithoutOpeningAnotherDeckActivity() throws Exception {
-        var controller=start(); app.quickSwitch(); drain(); assertEquals(1,backend.directSwitches); assertNull(Shadows.shadowOf(app).getNextStartedActivity()); end(controller);
+        var controller=start(); app.quickSwitchFromShortcut(new android.os.ResultReceiver(null)); drain(); assertEquals(1,backend.directSwitches); assertNull(Shadows.shadowOf(app).getNextStartedActivity()); end(controller);
     }
     @Test @Config(qualifiers="w800dp-h360dp-land") public void settingsToggleReflectsStateAndControllerCanCrossPanes() throws Exception {
         var controller=start(); var activity=controller.get(); show(activity,SwitcherActivity.Page.SETTINGS);
